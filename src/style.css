@@ -318,3 +318,26 @@ html,body,#game,#hud,#overlay,#touch-controls,
 .survivor-select-panel .actions .quiet,.survivor-select-panel .profile-change{border-color:#465169;background:#20283c;color:#dce0e9;box-shadow:0 3px #101722;}
 .survivor-select-panel .actions .primary{border-color:#34463b;background:#31483a;color:#e3e9e3;box-shadow:0 5px #17251c;font-weight:1000;}
 .survivor-select-panel .actions .primary:hover{background:#3c5847;}
+
+/* Four static explanatory cards; the hero and equipped weapon remain live loadout art. */
+.upgrade-cards .explain-card{display:flex;flex-direction:column;align-items:stretch;gap:0;padding:7px;background:linear-gradient(155deg,#223241,#101e2c);border:2px solid #e9dcb2;border-radius:17px;overflow:hidden;text-align:center;box-shadow:0 6px 16px #09111b55;overflow-wrap:normal}
+.upgrade-cards .explain-card:hover{background:linear-gradient(155deg,#2c4050,#172a39);border-color:#fff0ba;transform:translateY(-2px)}
+.explain-art{position:relative;display:block;aspect-ratio:1;width:100%;overflow:hidden;border-radius:11px;background-image:url('/assets/cards/upgrade-explanations.png');background-size:200% 200%;isolation:isolate}
+.explain-art.art-pierce{background-position:0 0}.explain-art.art-wide{background-position:100% 0}.explain-art.art-health{background-position:0 100%}.explain-art.art-regen{background-position:100% 100%}
+.explain-hero{position:absolute;left:0;bottom:14%;width:37%;height:51%;z-index:2;filter:drop-shadow(0 4px 1px #101b27aa)}
+.explain-hero .art-image{width:100%;height:100%;object-fit:contain;filter:none}
+.art-pierce .explain-hero{width:29%;height:43%;bottom:18%;left:0}
+.explain-weapon{position:absolute;left:12%;bottom:22%;width:28%;height:30%;z-index:3;transform:rotate(5deg)}
+.explain-weapon .art-image{width:100%;height:100%;object-fit:contain;filter:none}
+.art-pierce .explain-weapon{left:13%;bottom:23%;width:23%;height:23%;transform:rotate(80deg)}
+.upgrade-cards .explain-card .explain-copy{display:flex;flex:1;flex-direction:column;padding:12px 5px 10px;gap:7px}
+.upgrade-cards .explain-card h3{font:900 clamp(15px,1.8vw,23px)/1.12 system-ui;text-transform:uppercase;color:#fff0c5;min-height:0;margin:0;letter-spacing:-.4px}
+.upgrade-cards .explain-card .card-benefit{font:600 12px/1.35 system-ui;color:#dfe8ed;min-height:32px;margin:0;display:block}
+.upgrade-cards .explain-card .choice-value{font:800 12px/1.3 monospace;color:#a7dded;margin:0}
+.explain-level{display:block;border:1px solid #bbc7c7;border-radius:20px;padding:7px 3px;font:800 11px/1.2 monospace;color:#f6edcf}.explain-level small{display:block;font:8px/1.3 monospace;color:#95a7b2;margin-top:3px}
+.explain-card *{animation:none!important}
+@media(max-width:600px){.upgrade-cards .explain-card{padding:4px;border-radius:11px}.explain-art{border-radius:7px}.upgrade-cards .explain-card .explain-copy{padding:9px 2px 8px;gap:5px}.upgrade-cards .explain-card h3{font-size:12px;line-height:1.15;letter-spacing:-.3px;min-height:28px;margin:0}.upgrade-cards .explain-card .card-benefit{font-size:9px;line-height:1.3;min-height:35px}.upgrade-cards .explain-card .choice-value{font-size:9px;line-height:1.3}.explain-level{font-size:8px;padding:6px 2px}.explain-level small{font-size:7px}}
+
+.art-health .explain-hero,.art-regen .explain-hero{bottom:24%;height:46%;left:0;width:35%}
+.art-pierce .explain-weapon{left:14%;bottom:34%;width:27%;height:25%;transform:rotate(20deg)}
+.art-health .explain-hero,.art-regen .explain-hero{bottom:32%}

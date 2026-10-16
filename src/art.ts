@@ -26,7 +26,7 @@ export function weaponSvg(id: WeaponId) {
     }
     return svg(b, '0 0 240 240');
 }
-export function heroSvg(id: HeroId) {
+export function heroSvg(id: HeroId, equipped = true) {
     const c = '#' + HEROES[id].color.toString(16);
     let b = '';
     const legs = path('M87 181 L120 179 L118 230 L111 260 L81 260 L89 230 Z', '#253244') + path('M122 179 L153 181 L151 228 L166 254 L138 260 L125 230 Z', '#253244') + path('M80 248 L112 248 L111 267 L75 267 Z', '#141d2b') + path('M139 248 L166 247 L172 265 L135 269 Z', '#141d2b');
@@ -38,6 +38,10 @@ export function heroSvg(id: HeroId) {
         b = legs + path('M86 81 L144 80 L159 184 L84 187 L74 126 Z', '#d6a449') + path('M86 87 L135 85 L143 163 L93 166 Z', '#33404a') + path('M99 100 L119 99 L120 129 L99 128 Z', '#53606a') + path('M125 96 L139 96 L142 127 L124 130 Z', '#53606a') + path('M80 89 L60 98 L44 147 L63 162 L95 115 Z', '#e7b65c') + path('M142 86 L162 94 L185 139 L165 156 L130 114 Z', '#e7b65c') + path('M83 174 L156 171 L158 186 L83 190 Z', '#75543b') + path('M85 187 L102 187 L105 213 L83 215 Z', '#a57748') + path('M136 183 L155 183 L166 204 L146 210 Z', '#a57748') + path('M100 70 L93 37 L106 25 L135 27 L145 42 L139 68 L120 81 Z', '#d5a28a') + path('M95 41 L96 27 L117 16 L139 25 L145 43 L130 36 L110 39 Z', '#513937') + path('M97 45 L115 41 L120 50 L125 40 L141 44 L139 59 L125 57 L119 52 L113 58 L99 60 Z', '#314e64') + path('M102 46 L109 46 M128 46 L135 47', 'none', '#d5e9e6', 2) + path('M37 129 L64 130 L65 149 L47 149 L47 171 L32 169 Z', '#485764') + path('M167 125 L194 117 L198 133 L184 139 L190 158 L177 164 Z', '#485764') + path('M37 133 L61 134 M170 128 L192 122', 'none', '#c6a35b', 3);
     if (id === 'tank')
         b = legs + path('M76 78 L154 78 L173 154 L151 194 L87 197 L64 145 Z', '#355963') + path('M88 93 L143 94 L150 151 L133 171 L97 163 Z', '#6c9398') + path('M70 84 L40 94 L44 129 L80 130 L94 101 Z', '#527e85') + path('M149 84 L179 87 L194 116 L160 130 L139 106 Z', '#527e85') + path('M91 109 L140 107 M91 125 L144 125', 'none', '#a0c5c1', 3) + path('M88 177 L155 171 L155 188 L88 197 Z', '#1f3947') + path('M91 68 L89 33 L102 17 L136 18 L153 39 L148 73 L127 84 Z', '#49737e') + path('M90 46 L149 42 L147 61 L95 67 Z', '#172935') + path('M109 49 L134 47', 'none', '#b4e7de', 3) + path('M100 24 L111 31 M137 23 L130 40', 'none', '#b2c6c7', 3) + `<g transform="translate(-23 21) scale(.69)">${weaponSvg('shield').replace(/<svg[^>]*>|<\/svg>/g, '')}</g>`;
+    if(!equipped){
+        const equipmentStart={ninja:'<path d="M70 159',samurai:'<path d="M157 152',gunner:'<path d="M37 129',tank:'<g transform="translate(-23 21)'}[id];
+        const start=b.indexOf(equipmentStart);if(start>=0)b=b.slice(0,start);
+    }
     return svg(`<ellipse cx="121" cy="267" rx="74" ry="9" fill="#050a13" stroke="none" opacity=".45"/>${b}${path('M84 203 L99 207 M143 230 L152 224', 'none', '#627181', 2)}`);
 }
 export function enemySvg(id: EnemyId) {
@@ -65,6 +69,7 @@ export function enemySvg(id: EnemyId) {
     if(id==='commander')b+=path('M75 85 L151 82 L173 166 L151 215 L80 210 L61 154 Z','#3e4f65')+path('M72 91 L47 84 L43 106 L78 119 M152 86 L181 82 L188 103 L156 115','#aa9766')+path('M90 34 L96 14 L137 14 L151 31 L149 48 L88 48 Z','#526779')+path('M91 42 L152 41','none','#d0b779',7)+path('M191 88 L188 204','none','#9db8bd',8)+circle(191,85,12,'#a8c4ca')+path('M113 113 L126 105 L139 113 L126 130 Z','#b6a16f');
     return svg(b);
 }
+export const heroFigureImage = (id:HeroId) => `<img class="art-image" alt="${HEROES[id].name} illustration" src="data:image/svg+xml,${encodeURIComponent(heroSvg(id,false))}">`;
 export const artImage = (kind: 'hero' | 'weapon' | 'enemy', id: string, cls = '') => `<img class="art-image ${cls}" alt="${kind === 'hero' ? HEROES[id as HeroId].name : kind === 'weapon' ? WEAPONS[id as WeaponId].name : ENEMIES[id as EnemyId].name} illustration" src="data:image/svg+xml,${encodeURIComponent(kind === 'hero' ? heroSvg(id as HeroId) : kind === 'weapon' ? weaponSvg(id as WeaponId) : enemySvg(id as EnemyId))}">`;
 // Cached top-down animation frames: canvas is used once at scene creation, never per frame.
 export function actorCanvas(kind: 'hero' | 'enemy', id: HeroId | EnemyId, frame: number) {

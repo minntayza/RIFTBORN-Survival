@@ -1,4 +1,4 @@
-import {artImage} from './art';
+import {artImage,heroFigureImage} from './art';
 import {upgradeRole,type Upgrade} from './upgrades';
 import type {HeroId,WeaponId} from './config';
 const UPGRADE_ICONS:Record<string,string>={health:'\u2665',speed:'\u2197',crit:'\u2726',magnet:'\u25ce',regen:'\u271a',ward:'\u25c7',fire:'\u2600',orbit:'\u2737',damage:'\u2694',wide:'\u25d4',double:'\u2161',cooldown:'\u27a4',trail:'\u25b0',clone:'\u2667',range:'\u2194',bleed:'\u2022',counter:'\u25c8',wind:'\u224b',magazine:'\u25a3',pierce:'\u2192',ricochet:'\u2311',explosive:'\u2739',reload:'\u21bb',stamina:'\u25a3',block:'\u25d2',reflect:'\u21c4',spikes:'\u2737',rush:'\u25c9',heal:'\u271a'};
@@ -18,7 +18,25 @@ export function cardBenefit(u:Upgrade){
  if(u.evolves){const evolved:Record<string,string>={damage:'Every fifth kill bursts outward.',wide:'Every third attack cuts all around.',double:'Add a third shadow slash.',orbit:'Two kunai orbit around you.',fire:'Burning kills leave fire behind.',magnet:'Pull in drops every 5 seconds.',ward:'Block three hits each wave.',wind:'Launch two piercing crescents.',ricochet:'Shots bounce twice.',speed:'Moving charges a speed burst.',regen:'Elite kills boost recovery.',bleed:'Bleeding kills heal you.',reload:'Reloading grants a speed burst.',spikes:'Every third bash makes a shockwave.',explosive:'Final-round blasts grow wider.'};return evolved[u.evolves]||u.description.split(';')[0];}
  return brief[u.id]||u.description;
 }
+const EXPLAINED_CARDS:Record<string,{title:string;benefit:string;scene:string;description:string}>={
+ pierce:{title:'Piercing Shots',benefit:'Hits through enemies',scene:'pierce',description:'One bullet travels through three zombies.'},
+ wide:{title:'Wider Slash',benefit:'Catch more enemies in your swing',scene:'wide',description:'A wide slash reaches several zombies; the dotted arc shows the old width.'},
+ health:{title:'More Health',benefit:'+15% maximum HP',scene:'health',description:'A red heart and an extended health bar show more maximum health.'},
+ regen:{title:'Regeneration',benefit:'Recover HP over time',scene:'regen',description:'Green healing marks refill missing health segments.'}
+};
+function explainedCard(u:Upgrade,index:number,hero:HeroId,weapon:WeaponId,level:number){
+ const design=EXPLAINED_CARDS[u.id],value=upgradeValues(u,level);
+ return `<button class="upgrade choice-card explain-card" data-action="upgrade:${index}" aria-label="Choose ${design.title}: ${design.benefit}. ${value.after}. Level ${level} to ${level+1}">
+ <span class="explain-art art-${design.scene}" role="img" aria-label="${design.description}">
+ <span class="explain-hero">${heroFigureImage(hero)}</span>
+ ${['pierce','wide'].includes(u.id)?`<span class="explain-weapon">${artImage('weapon',weapon)}</span>`:''}
+ </span>
+ <span class="explain-copy"><h3>${design.title}</h3><span class="card-benefit">${design.benefit}</span><strong class="choice-value">${value.after}</strong></span>
+ <span class="explain-level">LEVEL ${level} <span aria-hidden="true">→</span> ${level+1}<small>MAX ${u.max}</small></span>
+ </button>`;
+}
 export function visualUpgradeCard(u:Upgrade,index:number,_hero:HeroId,_weapon:WeaponId,level:number,_combo=''){
+ if(!u.evolves&&EXPLAINED_CARDS[u.id])return explainedCard(u,index,_hero,_weapon,level);
  const v=upgradeValues(u,level),role=upgradeRole(u);
  const category=u.evolves?'EVOLUTION':role==='offence'?'DAMAGE':role==='survival'?'SURVIVAL':'TECHNIQUE';
  const maxStars=Number.isFinite(u.max)?u.max:5;
