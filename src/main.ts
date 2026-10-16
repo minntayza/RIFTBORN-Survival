@@ -61,7 +61,7 @@ function runMenu(mode:RunMode='endless'){
 }
 function runLoadout(){
  menuState='run-loadout';const dailyMode=selectedMode==='daily',daily=dailySetup();
- const hero=dailyMode?daily.hero!:save.hero,weapon=dailyMode?daily.weapon!:save.weapon,build=dailyMode?daily.build!:selectedBuild,kills=save.mastery[hero]?.kills||0;
+ const hero=save.hero,weapon=save.weapon,build=dailyMode?daily.build:selectedBuild,kills=save.mastery[hero]?.kills||0;
  const modeName=selectedMode==='short'?'LAST STAND':dailyMode?'DAILY CHALLENGE':'ENDLESS';
  const modeTitle={short:'WILD STREETS',endless:'IRON FORTRESS',daily:'RADIO OUTPOST'}[selectedMode];
  const heroData=HEROES[hero],identity=HERO_IDENTITIES[hero],buildInfo=BUILDS.find(b=>b.id===build)!;
@@ -170,7 +170,7 @@ overlay.addEventListener('click', e => {
         runMenu(MODE_ORDER[(current+step+MODE_ORDER.length)%MODE_ORDER.length]);
     }
     if(a==='build'&&BUILDS.some(build=>build.id===b)){selectedBuild=b as BuildId;runLoadout();}
-    if(a==='begin')start(selectedMode==='daily'?dailySetup():{mode:selectedMode,build:selectedBuild,technique:save.techniques[save.hero]||'standard'});
+    if(a==='begin')start(selectedMode==='daily'?{...dailySetup(),hero:save.hero,weapon:save.weapon}:{mode:selectedMode,build:selectedBuild,technique:save.techniques[save.hero]||'standard'});
     if(a==='retry'&&scene)start({...scene.options});
     if(a==='mastery')masteryMenu();
     if(a==='technique'&&['standard','swift','fortified'].includes(b)&&techniqueUnlocked(save.mastery[save.hero]?.kills||0,b as TechniqueId)){save.techniques[save.hero]=b as TechniqueId;persist();masteryMenu();}

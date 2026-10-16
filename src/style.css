@@ -458,3 +458,17 @@ html,body,#game,#hud,#overlay,#touch-controls,
   .main-menu .records>div:nth-child(3){padding-left:0;border:0}
 }
 @media(prefers-reduced-motion:reduce){.main-menu button{transition:none}.main-menu button:hover,.main-menu button:active{transform:none}}
+
+/* Keep every live level-up option the same size; image art sits in a fixed preview slot. */
+.ingame .cards.upgrade-cards{grid-template-columns:repeat(3,minmax(0,1fr));align-items:stretch;gap:12px}
+.ingame .upgrade-cards .choice-card{display:flex;height:clamp(290px,35vh,330px);min-width:0;min-height:0;flex-direction:column;align-items:stretch;overflow:hidden;padding:12px;border-radius:10px;text-align:left}
+.ingame .upgrade-cards .choice-card h3{display:flex;min-height:38px;max-height:38px;align-items:center;margin:4px 0 7px;overflow:hidden;font-size:16px;line-height:1.2}
+.ingame .upgrade-cards .choice-card .upgrade-demo,.ingame .upgrade-cards .choice-card .explain-art{flex:none;height:clamp(80px,10vh,100px);min-height:0;aspect-ratio:auto;margin:0 0 8px;overflow:hidden;border-radius:7px}
+.ingame .upgrade-cards .choice-card .upgrade-demo.upgrade-reference-demo{height:clamp(80px,10vh,100px);background:linear-gradient(145deg,#182838,#1d2b39)}
+.ingame .upgrade-cards .choice-card .upgrade-reference-art{object-fit:contain;padding:3px}
+.ingame .upgrade-cards .choice-card .card-benefit{display:-webkit-box;min-height:40px;max-height:40px;margin:0;overflow:hidden;font-size:11px;line-height:1.35;-webkit-box-orient:vertical;-webkit-line-clamp:3}
+.ingame .upgrade-cards .choice-card .choice-value{display:block;min-height:18px;margin-top:auto;font-size:12px;line-height:1.3}
+.ingame .upgrade-cards .choice-card .choice-level{display:block;min-height:13px;margin-top:5px;font-size:8px;line-height:1.4}
+.ingame .upgrade-cards .choice-card .choice-stars{flex:none;height:22px;align-items:center;margin-top:5px}
+.ingame .upgrade-cards .choice-card .choice-stars span{font-size:17px}
+@media(max-width:600px){.ingame .cards.upgrade-cards{gap:6px}.ingame .upgrade-cards .choice-card{height:260px;padding:8px 6px}.ingame .upgrade-cards .choice-card h3{min-height:32px;max-height:32px;font-size:13px}.ingame .upgrade-cards .choice-card .upgrade-demo,.ingame .upgrade-cards .choice-card .explain-art,.ingame .upgrade-cards .choice-card .upgrade-demo.upgrade-reference-demo{height:72px}.ingame .upgrade-cards .choice-card .card-benefit{min-height:36px;max-height:36px;font-size:9px}.ingame .upgrade-cards .choice-card .choice-value{font-size:10px}.ingame .upgrade-cards .choice-card .choice-stars span{font-size:14px}}

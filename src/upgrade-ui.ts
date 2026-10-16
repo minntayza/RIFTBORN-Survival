@@ -26,12 +26,19 @@ const EXPLAINED_CARDS:Record<string,{title:string;benefit:string;scene:string;de
 };
 function explainedCard(u:Upgrade,index:number,hero:HeroId,weapon:WeaponId,level:number){
  const design=EXPLAINED_CARDS[u.id],value=upgradeValues(u,level);
+ const stars=Array.from({length:5},(_,i)=>`<span class="${i<level?'filled':''} ${i>=u.max?'locked':''}" aria-hidden="true">\u2605</span>`).join('');
+ const role=upgradeRole(u),category=role==='offence'?'DAMAGE':role==='survival'?'SURVIVAL':'TECHNIQUE';
  return `<button class="upgrade choice-card explain-card" data-action="upgrade:${index}" aria-label="Choose ${design.title}: ${design.benefit}. ${value.after}. Level ${level} to ${level+1}">
  <span class="explain-art art-${design.scene}" role="img" aria-label="${design.description}">
  <span class="explain-hero">${heroFigureImage(hero)}</span>
  ${['pierce','wide'].includes(u.id)?`<span class="explain-weapon">${artImage('weapon',weapon)}</span>`:''}
  </span>
- <span class="explain-copy"><h3>${design.title}</h3><span class="card-benefit">${design.benefit}</span><strong class="choice-value">${value.after}</strong></span>
+ <span class="choice-top"><small>${category}</small>${level===0?'<b class="choice-new">NEW</b>':`<kbd>${index+1}</kbd>`}</span>
+ <h3>${design.title}</h3>
+ <span class="card-benefit">${design.benefit}</span>
+ <strong class="choice-value">${value.after}</strong>
+ <span class="choice-level">LV ${level} · MAX ${u.max}</span>
+ <span class="choice-stars" role="img" aria-label="${level} of ${u.max} levels">${stars}</span>
  <span class="explain-level">LEVEL ${level} <span aria-hidden="true">→</span> ${level+1}<small>MAX ${u.max}</small></span>
  </button>`;
 }
