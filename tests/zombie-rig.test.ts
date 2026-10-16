@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {advanceZombieRig,crowdSeparation,type RigState} from '../src/zombie-rig';
+import {advanceZombieRig,crowdSeparation,zombieVisualScale,type RigState} from '../src/zombie-rig';
 import {rigPose,ZOMBIE_SPRITES} from '../src/zombie-sprites';
 const fresh=():RigState=>({x:0,y:0,time:0,phase:0,moving:0,facing:1,candidate:1,held:0});
 test('all nine rigs have invariant head/torso joints while feet and arms move',()=>{
@@ -26,4 +26,18 @@ test('real displacement advances steps, rest settles, attack freezes phase and t
 test('crowd separation resolves stacks gently with bounded correction',()=>{
  assert.deepEqual(crowdSeparation(100,0,15,15,1/60),{x:0,y:0});
  for(const distance of [0,1,20,31]){const p=crowdSeparation(distance,0,15,15,1/60);assert.ok(p.x>0&&p.x<=36/60);assert.equal(p.y,0);}
+});
+
+test('zombie dog keeps a horizontal body with four canine limb joints and diagonal strides',()=>{
+ const a=rigPose('runner',.25,1),b=rigPose('runner',.75,1);
+ assert.ok(a.head.x>a.torso.x+25);assert.ok(a.head.y<a.torso.y);
+ assert.equal(new Set([a.leftArm.x,a.rightArm.x,a.leftLeg.x,a.rightLeg.x]).size,4);
+ assert.ok(a.leftArm.angle*a.rightLeg.angle>0);assert.ok(a.rightArm.angle*a.leftLeg.angle>0);
+ assert.ok(a.leftArm.angle*b.leftArm.angle<0);assert.deepEqual(a.head,b.head);assert.deepEqual(a.torso,b.torso);
+});
+
+test('dog gets a larger visual silhouette without changing other zombies or zoom rules',()=>{
+ assert.equal(zombieVisualScale('runner',1.05),1.2);
+ assert.equal(zombieVisualScale('runner',.525),1.17*1.2);
+ assert.equal(zombieVisualScale('basic',1.05),1);assert.equal(zombieVisualScale('basic',.525),1.17);
 });

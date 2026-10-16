@@ -1,3 +1,6 @@
+import {bossAction,type BossAction} from './boss-motion';
+import {bossMarks,type BossMark} from './boss-skills';
+import {spawnFaction,robotStats,robotProtection,enemyFaction,enemyName,ROBOTS,ROBOT_ROLES,type EnemyFaction} from './robot-enemies';
 import {crowdSeparation,isRigZombie} from './zombie-rig';
 import {ZOMBIE_ATLASES} from './zombie-sprites';
 import {RobotMapArt} from './robot-map-art';
@@ -31,12 +34,17 @@ export type RunStats = {
     elites: number;
 };
 type Enemy = {
+    skillAge:number;
+    skillWindup:number;
+    skillAction?:BossAction;
+    squad:number;
     active: boolean;
     x: number;
     y: number;
     hp: number;
     max: number;
     type: EnemyId;
+    faction:EnemyFaction;
     r: number;
     speed: number;
     slow:number;
@@ -97,6 +105,12 @@ export class ArenaScene extends Phaser.Scene {
     gfx!: Phaser.GameObjects.Graphics;
     warningGfx!:Phaser.GameObjects.Graphics;
     impactCount=0;
+    bossMarks:(BossMark&{remaining:number;owner:Enemy;fired:boolean})[]=[];
+    markBoss(e:Enemy){
+        e.skillAction=bossAction(e.type,e.phase);e.skillAge=0;e.skillWindup=e.type==='shooterBoss'?.9:1.15;
+        this.bossMarks.push(...bossMarks(e.type as 'boss'|'shooterBoss'|'commander',e.phase,e.faction,e.x,e.y,e.targetX,e.targetY).map(mark=>({...mark,remaining:mark.delay,owner:e,fired:false})));
+    }
+
     visuals!: ArenaVisuals;
     swing = 0;
     attackSequence=0;
@@ -381,24 +395,26 @@ export class ArenaScene extends Phaser.Scene {
         return n;
     }
     get maxAmmo() { return (this.weapon === 'shotgun' ? 6 : this.weapon==='smg'?28:12) + this.u('magazine') * 4; }
-    startWave() { if(this.floorTheme !== (this.stats.wave>10?1:0)){this.drawFloor();this.cameras.main.fadeIn(900,15,8,12);} this.boostDamage=this.pendingReward==='damage'?15:0;this.boostSpeed=this.pendingReward==='speed'?15:0;this.pendingReward=undefined;this.eventName=waveEvent(this.stats.wave);if(this.stats.wave<=10)this.eventName=({2:'Supply rush',4:'Hold the zone',6:'Elite hunt',8:'Supply rush',10:'Boss encounter'} as Record<number,string>)[this.stats.wave]||'Survival';this.waveObjectives=0;this.zoneSpawnClock=5;this.bossDefeated=false;this.supplies=[];this.huntTarget=undefined;this.zone={x:this.x+180,y:this.y,progress:0,done:false};this.hazard=undefined;this.hazardClock=8;
+    startWave() { this.bossMarks=[];if(this.floorTheme !== (this.stats.wave>10?1:0)){this.drawFloor();this.cameras.main.fadeIn(900,15,8,12);} this.boostDamage=this.pendingReward==='damage'?15:0;this.boostSpeed=this.pendingReward==='speed'?15:0;this.pendingReward=undefined;this.eventName=waveEvent(this.stats.wave);if(this.stats.wave<=10)this.eventName=({2:'Supply rush',4:'Hold the zone',6:'Elite hunt',8:'Supply rush',10:'Boss encounter'} as Record<number,string>)[this.stats.wave]||'Survival';this.waveObjectives=0;this.zoneSpawnClock=5;this.bossDefeated=false;this.supplies=[];this.huntTarget=undefined;this.zone={x:this.x+180,y:this.y,progress:0,done:false};this.hazard=undefined;this.hazardClock=8;
         if(this.eventName==='Supply rush')this.supplies=Array.from({length:3},(_,i)=>{const x=this.x+Math.cos(i*2.1)*260,y=this.y+Math.sin(i*2.1)*260;return {...this.clearGroundPoint(x,y,65),active:true};});
         this.createLandmark();this.waveTime = 0; this.spawnIndex = 0; this.plan = wavePlan(this.stats.wave,this.random); this.waveStats = { kills: 0, gold: 0, damage: 0, time: 0 }; this.waiting = false;if(this.evolved('ward'))this.rewardShield=Math.max(this.rewardShield,3); this.waveWard = !!this.u('ward'); if(this.eventName==='Elite hunt'){this.spawn('elite');this.huntTarget=this.enemies.find(e=>e.active&&e.type==='elite');} this.audio.play('wave'); this.banner(`WAVE ${String(this.stats.wave).padStart(2, '0')} · ${this.eventName.toUpperCase()}`, 0x9eefae); }
     banner(message: string, color = 0xffffff) { const t = this.add.text(this.cameras.main.width/2, 125, message, { fontFamily: 'monospace', fontSize: Math.min(26,Math.max(13,this.cameras.main.width/32))+'px', color: '#' + color.toString(16).padStart(6, '0'), fontStyle: 'bold' }).setOrigin(.5).setScrollFactor(0); this.tweens.add({ targets: t, alpha: 0, y: 100, delay: 1400, duration: 600, onComplete: () => t.destroy() }); }
-    spawn(type: EnemyId, side = Math.floor(this.random() * 4), offset = this.random()) {
+    spawnSerial=0;
+    spawn(type: EnemyId, side = Math.floor(this.random() * 4), offset = this.random(), factionOverride?:EnemyFaction) {
         if(this.count>=BALANCE.maxEnemies){if(['boss','shooterBoss','commander'].includes(type)){const replace=this.enemies.filter(e=>e.active&&['basic','runner'].includes(e.type)).sort((a,b)=>Math.hypot(b.x-this.x,b.y-this.y)-Math.hypot(a.x-this.x,a.y-this.y))[0];if(!replace)return;replace.active=false;}else return;}
-        const d = ENEMIES[type], s = scaling(this.stats.wave);
+        const serial=this.spawnSerial++,faction=factionOverride??spawnFaction(this.stats.wave,serial,type);
+        const d = ENEMIES[type], s = scaling(this.stats.wave), robot=faction==='robot'?robotStats(type):{health:1,damage:1,speed:1};
         let e = this.enemies.find(e => !e.active);
         if (!e) {
             e = {} as Enemy;
             this.enemies.push(e);
         }
         const view=this.cameras.main.worldView; const halfW=view.width/2||600,halfH=view.height/2||380; const x=side===0?this.x-halfW-70:side===1?this.x+halfW+70:this.x-halfW+view.width*offset,y=side===2?this.y-halfH-70:side===3?this.y+halfH+70:this.y-halfH+view.height*offset;
-        Object.assign(e, { active: true, x, y, hp: d.hp * s.health, max: d.hp * s.health, type, r: d.radius, speed: d.speed * s.speed, slow:0, stagger:0, burn:0, commandTime:0, shotKick:0, chargeTime:0, chargeHit:false, damage: d.damage * s.damage, flash: 0, attack: type === 'boss' ? 3 : 2, telegraph: 0, targetX: x, targetY: y, bleed: 0, touched: false, mod: Math.floor(this.random() * 5), phase: 0, threshold: 0 });
+        Object.assign(e, { active: true, skillAge:99,skillWindup:1.15,skillAction:undefined,squad:Math.floor(serial/8), x, y, hp: d.hp * s.health*robot.health, max: d.hp * s.health*robot.health, type, faction, r: d.radius, speed: d.speed * s.speed*robot.speed, slow:0, stagger:0, burn:0, commandTime:0, shotKick:0, chargeTime:0, chargeHit:false, damage: d.damage * s.damage*robot.damage, flash: 0, attack: type === 'boss' ? 3 : 2, telegraph: 0, targetX: x, targetY: y, bleed: 0, touched: false, mod: Math.floor(this.random() * 5), phase: 0, threshold: 0 });
         if (['elite','boss','brute','shooterBoss','commander'].includes(type)) {
             this.burst(x, y, 0xef6879, 22);
             this.audio.play(type === 'boss' ? 'boss' : 'elite');
-            if(type!=='brute')this.banner('⚠ '+ENEMIES[type].name.toUpperCase(), 0xff8b94);
+            if(type!=='brute')this.banner('⚠ '+enemyName(type,faction).toUpperCase(), 0xff8b94);
         }
         return e;
     }
@@ -435,7 +451,7 @@ export class ArenaScene extends Phaser.Scene {
         if (!e.active)
             return;
         const crit = this.random() < .05 + (this.earlyPower&&this.hero==='ninja'?.05:0) + this.u('crit') * .07, raw = damageValue(base, HEROES[this.hero].damage * (1 + this.u('damage') * .12 + this.meta('damage') * .05 + this.honour * .05 + (this.options.build==='assault'?.1:0) + (this.boostDamage>0?.4:0) + (this.earlyPower&&this.hero==='samurai'?.12:0)), crit, bullet && e.type === 'armoured');
-        const d=crit&&this.evolved('crit')?Math.round(raw*1.2):raw;
+        const d=Math.max(1,Math.round((crit&&this.evolved('crit')?raw*1.2:raw)*robotProtection(e,this.enemies)));
         const contactX=e.x,contactY=e.y;
         e.hp -= d;
         const actual=Math.min(d,Math.max(0,e.hp+d));
@@ -445,9 +461,10 @@ export class ArenaScene extends Phaser.Scene {
 
         this.hitConfirm={time:.2,x:contactX,y:contactY,crit};
         e.flash = .12;
-        const heavy=!bullet&&['nodachi','hammer','shield','spiked'].includes(this.weapon);e.stagger=Math.max(e.stagger||0,(heavy?.22:bullet?.035:.08)*(['boss','shooterBoss','commander'].includes(e.type)?.25:1));
+        const boss=['boss','shooterBoss','commander'].includes(e.type);
+        const heavy=!bullet&&['nodachi','hammer','shield','spiked'].includes(this.weapon);e.stagger=boss?0:Math.max(e.stagger||0,heavy?.22:bullet?.035:.08);
         const a = Math.atan2(e.y - this.y, e.x - this.x);
-        {const p=this.moveOnGround(e.x,e.y,Math.cos(a)*knock*.65*(this.earlyPower&&this.hero==='tank'?1.2:1),Math.sin(a)*knock*.65*(this.earlyPower&&this.hero==='tank'?1.2:1),e.r);e.x=p.x;e.y=p.y;}
+        if(!boss){const p=this.moveOnGround(e.x,e.y,Math.cos(a)*knock*.65*(this.earlyPower&&this.hero==='tank'?1.2:1),Math.sin(a)*knock*.65*(this.earlyPower&&this.hero==='tank'?1.2:1),e.r);e.x=p.x;e.y=p.y;}
         if (this.u('bleed'))
             e.bleed = 3;
         this.number(e.x, e.y, d, crit);
@@ -477,6 +494,7 @@ export class ArenaScene extends Phaser.Scene {
         if (e.hp <= 0&&e.active)this.kill(e);
     }
     kill(e: Enemy) {
+        this.bossMarks=this.bossMarks.filter(mark=>mark.owner!==e);
         this.visuals.death(e, this.elapsed);
         e.active = false;
         if(this.landmark)this.landmark.guards=this.landmark.guards.filter(guard=>guard!==e);
@@ -509,7 +527,7 @@ export class ArenaScene extends Phaser.Scene {
 
         if(this.stats.kills%5===0){if(this.evolved('damage')){this.impactRing(this.x,this.y,95,0xb898b9);for(const n of this.enemies)if(n.active&&Math.hypot(n.x-this.x,n.y-this.y)<95)this.hit(n,15,0,false,false);}if(this.evolved('magazine'))this.ammo=Math.min(this.maxAmmo,this.ammo+2);}
         this.master('combo', this.combo, true);
-        this.burst(e.x, e.y, ENEMIES[e.type].color, 14);
+        this.burst(e.x,e.y,e.faction==='robot'?parseInt(ROBOTS[ROBOT_ROLES[e.type]].color.slice(1),16):ENEMIES[e.type].color,14);
         this.drop(e.x, e.y, ENEMIES[e.type].xp, false);
         if (this.random() < BALANCE.goldChance || ['elite','brute','boss','shooterBoss','commander'].includes(e.type))
             this.drop(e.x + 8, e.y, ENEMIES[e.type].gold, true);
@@ -673,7 +691,7 @@ export class ArenaScene extends Phaser.Scene {
         }
         if(e){if(this.enemies.some(c=>c.active&&c.type==='commander'&&c.commandTime>0&&Math.hypot(c.x-e.x,c.y-e.y)<220))value*=1.15;e.touched=true;}
         if(e)a=Math.atan2(e.y-this.y,e.x-this.x);
-        this.lastCause=e?ENEMIES[e.type].name:source;
+        this.lastCause=e?enemyName(e.type,e.faction):source;
         this.damageFeedback={time:.65,angle:a,value:Math.round(value),label:this.lastCause};
         this.showHpChange(-Math.min(this.hp,value));
         this.hp -= value;
@@ -885,7 +903,18 @@ export class ArenaScene extends Phaser.Scene {
         this.render();
     }
     updateEnemies(dt: number) {
-        for(const shot of this.enemyBursts)shot.delay-=dt;const readyShots=this.enemyBursts.filter(s=>s.delay<=0);this.enemyBursts=this.enemyBursts.filter(s=>s.delay>0&&s.enemy.active&&s.enemy.type==='shooterBoss');for(const s of readyShots)if(s.enemy.active&&s.enemy.type==='shooterBoss'){this.shoot(s.enemy.x,s.enemy.y,s.angle,s.damage,true,0,false,false,'round','Siege Gunner');s.enemy.shotKick=.12;}
+        for(const mark of this.bossMarks){
+            mark.remaining-=dt;
+            if(!mark.fired&&mark.remaining<=0&&mark.owner.active){
+                mark.fired=true;
+                if(mark.damage&&Math.hypot(this.x-mark.x,this.y-mark.y)<mark.radius+17)this.hurt(mark.owner.damage*mark.damage,mark.owner,Math.atan2(this.y-mark.y,this.x-mark.x),mark.style==='reactor'?'Reactor cross':mark.style==='mortar'?'Mortar barrage':'Grave rupture');
+                this.impactRing(mark.x,mark.y,mark.radius,mark.color);
+                this.burst(mark.x,mark.y,mark.color,mark.style==='rally'?16:22);
+            }
+        }
+        this.bossMarks=this.bossMarks.filter(mark=>mark.owner.active&&mark.remaining>-.55);
+
+        for(const shot of this.enemyBursts)shot.delay-=dt;const readyShots=this.enemyBursts.filter(s=>s.delay<=0);this.enemyBursts=this.enemyBursts.filter(s=>s.delay>0&&s.enemy.active&&s.enemy.type==='shooterBoss');for(const s of readyShots)if(s.enemy.active&&s.enemy.type==='shooterBoss'){this.shoot(s.enemy.x,s.enemy.y,s.angle,s.damage,true,0,false,false,'round',s.enemy.faction==='robot'?'Pulse Overseer':'Siege Gunner');s.enemy.shotKick=.12;}
         this.grid.clear();const commanders=this.enemies.filter(e=>e.active&&e.type==='commander'&&e.commandTime>0);
         for (const e of this.enemies)
             if (e.active) {
@@ -900,6 +929,7 @@ export class ArenaScene extends Phaser.Scene {
         for (const e of this.enemies) {
             if (!e.active)
                 continue;
+            e.skillAge+=dt;
             e.shotKick=Math.max(0,e.shotKick-dt);
             e.commandTime=Math.max(0,e.commandTime-dt);
             e.burn=Math.max(0,e.burn-dt);if(e.burn>0){e.hp-=16*dt;if(e.hp<=0){this.kill(e);continue;}}
@@ -916,10 +946,16 @@ export class ArenaScene extends Phaser.Scene {
                 if(e.chargeTime===0){this.impactRing(e.x,e.y,55,0xb19a79);this.burst(e.x,e.y,0xb19a79,10);}
                 continue;
             }
+            if(e.skillAction&&e.telegraph<=0&&e.skillAge>=e.skillWindup&&e.skillAge<e.skillWindup+.65)continue;
             const view=this.cameras.main.worldView;
             if(e.type!=='boss'&&Math.hypot(e.x-this.x,e.y-this.y)>Math.max(view.width,view.height)*2.5){const direction=Math.atan2(e.y-this.y,e.x-this.x),radius=Math.hypot(view.width/2,view.height/2)+100;e.x=this.x+Math.cos(direction)*radius;e.y=this.y+Math.sin(direction)*radius;}
             const dx = this.x - e.x, dy = this.y - e.y, d = Math.hypot(dx, dy) || 1, a = Math.atan2(dy, dx);
-            e.slow=Math.max(0,e.slow-dt);let speed=e.speed*(e.slow>0?.5:1),moveAngle=a;if(e.type!=='commander'&&commanders.some(c=>Math.hypot(c.x-e.x,c.y-e.y)<220))speed*=1.3;
+            e.slow=Math.max(0,e.slow-dt);let speed=e.speed*(e.slow>0?.5:1),moveAngle=a;if(e.type!=='commander'&&commanders.some(c=>c.faction===e.faction&&(e.faction==='zombie'||c.squad===e.squad)&&Math.hypot(c.x-e.x,c.y-e.y)<220))speed*=1.3;
+            if(e.faction==='robot'&&e.type==='runner'&&d>100){
+                // Scouts approach a point ahead of the rider, then commit to the chase.
+                const lead=Math.min(110,d*.3),side=e.mod%2?1:-1;
+                moveAngle=Math.atan2(dy+Math.cos(a)*lead*side,dx-Math.sin(a)*lead*side);
+            }
             if(this.decoy&&['basic','runner','armoured','elite'].includes(e.type)&&Math.hypot(e.x-this.decoy.x,e.y-this.decoy.y)<260){moveAngle=Math.atan2(this.decoy.y-e.y,this.decoy.x-e.x);if(Math.hypot(e.x-this.decoy.x,e.y-this.decoy.y)<e.r+10)speed=0;}
             if (e.type === 'elite') {
                 if (e.mod === 0)
@@ -943,15 +979,15 @@ export class ArenaScene extends Phaser.Scene {
                 e.telegraph -= dt;
                 if (e.telegraph <= 0) {
                     if (e.type === 'spitter')
-                        this.shoot(e.x, e.y, Math.atan2(e.targetY - e.y, e.targetX - e.x), e.damage, true);
+                        this.shoot(e.x,e.y,Math.atan2(e.targetY-e.y,e.targetX-e.x),e.damage,true,0,false,false,'round',e.faction==='robot'?'Pulse shot':'Spitter');
                     else if(e.type==='rifle'){
-                        e.shotKick=.16;this.shoot(e.x,e.y,Math.atan2(e.targetY-e.y,e.targetX-e.x),e.damage,true,0,false,false,'round','Rifle shot');const shot=this.bullets.find(b=>b.active&&b.hostile&&b.x===e.x&&b.y===e.y);if(shot){shot.vx*=1.5;shot.vy*=1.5;shot.life=3;}this.burst(e.x,e.y,0xb2ac88,4);
+                        e.shotKick=.16;this.shoot(e.x,e.y,Math.atan2(e.targetY-e.y,e.targetX-e.x),e.damage,true,0,false,false,'round',e.faction==='robot'?'Pulse shot':'Rifle shot');const shot=this.bullets.find(b=>b.active&&b.hostile&&b.x===e.x&&b.y===e.y);if(shot){shot.vx*=1.5;shot.vy*=1.5;shot.life=3;}this.burst(e.x,e.y,0xb2ac88,4);
                     }
                     else if(e.type==='shooterBoss'){
-                        e.shotKick=.2;const aim=Math.atan2(e.targetY-e.y,e.targetX-e.x);if(e.phase%2===0){this.shoot(e.x,e.y,aim,e.damage,true,0,false,false,'round','Siege Gunner');this.enemyBursts.push({enemy:e,delay:.13,angle:aim-.035,damage:e.damage},{enemy:e,delay:.26,angle:aim+.035,damage:e.damage});}else for(const offset of [-.5,-.25,0,.25,.5])this.shoot(e.x,e.y,aim+offset,e.damage,true,0,false,false,'round','Siege Gunner');this.burst(e.x,e.y,0xc6af89,8);e.phase++;
+                        e.shotKick=.2;const aim=Math.atan2(e.targetY-e.y,e.targetX-e.x);if(e.phase%3===2){this.impactRing(e.x,e.y,65,e.faction==='robot'?0x79e4ed:0xd7a579);}else if(e.phase%2===0){this.shoot(e.x,e.y,aim,e.damage,true,0,false,false,'round',e.faction==='robot'?'Pulse Overseer':'Siege Gunner');this.enemyBursts.push({enemy:e,delay:.13,angle:aim-.035,damage:e.damage},{enemy:e,delay:.26,angle:aim+.035,damage:e.damage});}else for(const offset of [-.5,-.25,0,.25,.5])this.shoot(e.x,e.y,aim+offset,e.damage,true,0,false,false,'round',e.faction==='robot'?'Pulse Overseer':'Siege Gunner');this.burst(e.x,e.y,0xc6af89,8);e.phase++;
                     }
                     else if(e.type==='commander'){
-                        e.commandTime=4;for(let i=0;i<4;i++){const view=this.cameras.main.worldView;const x=i===0?view.x+20:i===1?view.right-20:this.x,y=i===2?view.y+30:i===3?view.bottom-30:this.y;this.reinforcementMarks.push({x,y,life:1.2});this.spawn(i%2?'runner':'basic',i%4,.25+i*.15);}this.impactRing(e.x,e.y,220,0xa0b9d4);e.phase++;
+                        e.commandTime=4;for(let i=0;i<4;i++){const view=this.cameras.main.worldView;const x=i===0?view.x+20:i===1?view.right-20:this.x,y=i===2?view.y+30:i===3?view.bottom-30:this.y;this.reinforcementMarks.push({x,y,life:1.2});this.spawn(i%2?'runner':'basic',i%4,.25+i*.15,e.faction);}this.impactRing(e.x,e.y,220,0xa0b9d4);e.phase++;
                     }
                     else if(e.type==='cleaver'||e.type==='spear'){
                         const spear=e.type==='spear',reach=spear?155:110,arc=spear?.45:1.9,aim=Math.atan2(e.targetY-e.y,e.targetX-e.x);
@@ -963,13 +999,11 @@ export class ArenaScene extends Phaser.Scene {
                     }
                     else if (e.type === 'boss') {
                         if (e.phase % 3 === 0) {
-                            if (Math.hypot(this.x - e.targetX, this.y - e.targetY) < 115)
-                                this.hurt(e.damage, e, a + Math.PI);
-                            this.impactRing(e.targetX,e.targetY,115,0xb79b7d);
-                            this.burst(e.targetX,e.targetY,0xb79b7d,35);
+                            // The marked rupture / reactor pattern resolves on the simulation clock.
+                            this.impactRing(e.x,e.y,55,e.faction==='robot'?0x79e4ed:0xd7a579);
                         }
                         else if (e.phase % 3 === 1) {
-                            for(let i=0;i<5;i++)this.spawn('basic',i%4,.2+i*.15);
+                            for(let i=0;i<5;i++)this.spawn('basic',i%4,.2+i*.15,e.faction);
                             this.impactRing(e.x,e.y,85,0xa8b58b);
                         }
                         else {
@@ -986,7 +1020,7 @@ export class ArenaScene extends Phaser.Scene {
             }
             if(e.type==='shooterBoss'||e.type==='commander'){
                 if(e.type==='shooterBoss'&&d<210)speed*=-.5;else if(d<330)speed=0;
-                if(e.attack<=0&&view.contains(e.x,e.y)){e.telegraph=e.type==='commander'?1.15:.9;e.attack=e.type==='commander'?6:3.2;e.targetX=this.x;e.targetY=this.y;continue;}
+                if(e.attack<=0&&view.contains(e.x,e.y)){e.telegraph=e.type==='commander'?1.15:.9;e.attack=e.type==='commander'?6:3.2;e.targetX=this.x;e.targetY=this.y;this.markBoss(e);continue;}
             }
             if(e.type==='cleaver'||e.type==='spear'||e.type==='rifle'){
                 const ranged=e.type==='rifle';if(ranged){if(d<180)speed*=-.5;else if(d<330)speed=0;}
@@ -1007,13 +1041,14 @@ export class ArenaScene extends Phaser.Scene {
             if (e.type === 'boss' && e.threshold < 2 && e.hp < e.max * (e.threshold === 0 ? .66 : .33)) {
                 e.threshold++;
                 for (let i = 0; i < 4; i++)
-                    this.spawn('runner');
+                    this.spawn('runner',undefined,undefined,e.faction);
             }
             if (e.type === 'boss' && e.attack <= 0) {
                 e.telegraph = 1.15;
                 e.attack = 4;
                 e.targetX = this.x;
                 e.targetY = this.y;
+                this.markBoss(e);
                 if(e.phase%3===1){for(let i=0;i<5;i++){const side=i%4,f=.2+i*.15;this.reinforcementMarks.push({x:side===0?view.x+20:side===1?view.right-20:view.x+view.width*f,y:side===2?view.y+25:side===3?view.bottom-25:view.y+view.height*f,life:1.5});}}
                 continue;
             }
@@ -1036,7 +1071,7 @@ export class ArenaScene extends Phaser.Scene {
                             if (other === e || checks++ > 12)
                                 continue;
                             const sx = e.x - other.x, sy = e.y - other.y, dist = Math.hypot(sx, sy);
-                            if(isRigZombie(e.type)&&isRigZombie(other.type)){
+                            if((e.faction==='robot'||isRigZombie(e.type))&&(other.faction==='robot'||isRigZombie(other.type))){
                                 const push=crowdSeparation(sx,sy,e.r,other.r,dt);e.x+=push.x;e.y+=push.y;
                             }else if (dist > 0 && dist < e.r + other.r) {
                                 e.x+=sx/dist*18*dt;e.y+=sy/dist*18*dt;
@@ -1045,7 +1080,7 @@ export class ArenaScene extends Phaser.Scene {
                 }
             {const p=separateWrecks(e.x,e.y,e.r,this.mapCars);e.x=p.x;e.y=p.y;}
             if (d < e.r + 17 && !['brute','cleaver','spear','rifle','shooterBoss','commander'].includes(e.type) && e.attack <= 0) {
-                this.hurt(e.damage, e, a + Math.PI,'Zombie bite',true);
+                this.hurt(e.damage, e, a + Math.PI,e.faction==='robot'?'Robot strike':'Zombie bite',true);
                 e.attack = .9;
             }
         }
@@ -1186,16 +1221,17 @@ export class ArenaScene extends Phaser.Scene {
                 g.fillRect(e.x - 30, e.y - e.r - 15, 60 * e.hp / e.max, 5);
             }
             if(e.type==='commander'&&e.commandTime>0){g.lineStyle(2,0x91a9d0,.65);g.strokeCircle(e.x,e.y,220);for(const n of this.enemies)if(n.active&&n!==e&&Math.hypot(n.x-e.x,n.y-e.y)<220){g.lineStyle(2,0x9bb2d1,.8);g.strokeCircle(n.x,n.y,n.r+7);}}
-            if(e.telegraph>0&&['shooterBoss','commander'].includes(e.type)){if(e.type==='commander'){g.lineStyle(3,0x98b5d6,.8);g.strokeCircle(e.x,e.y,80+Math.sin(this.elapsed*8)*12);}else{const aim=Math.atan2(e.targetY-e.y,e.targetX-e.x);for(const offset of e.phase%2===0?[0]:[-.5,0,.5]){g.lineStyle(3,0x1c2733,.9);g.lineBetween(e.x,e.y,e.x+Math.cos(aim+offset)*480,e.y+Math.sin(aim+offset)*480);g.lineStyle(1,0xc7ab7d,.9);g.lineBetween(e.x,e.y,e.x+Math.cos(aim+offset)*480,e.y+Math.sin(aim+offset)*480);}}continue;}
-            if(e.telegraph>0&&['cleaver','spear','rifle'].includes(e.type)){
-                const aim=Math.atan2(e.targetY-e.y,e.targetX-e.x),range=e.type==='rifle'?480:e.type==='spear'?155:110;
+            if(e.telegraph>0&&['shooterBoss','commander'].includes(e.type)){if(e.type==='commander'){g.lineStyle(3,0x98b5d6,.8);g.strokeCircle(e.x,e.y,80+Math.sin(this.elapsed*8)*12);}else if(e.phase%3!==2){const aim=Math.atan2(e.targetY-e.y,e.targetX-e.x);for(const offset of e.phase%2===0?[0]:[-.5,0,.5]){g.lineStyle(3,0x1c2733,.9);g.lineBetween(e.x,e.y,e.x+Math.cos(aim+offset)*480,e.y+Math.sin(aim+offset)*480);g.lineStyle(1,0xc7ab7d,.9);g.lineBetween(e.x,e.y,e.x+Math.cos(aim+offset)*480,e.y+Math.sin(aim+offset)*480);}}continue;}
+            if(e.telegraph>0&&e.type==='rifle')continue;
+            if(e.telegraph>0&&['cleaver','spear'].includes(e.type)){
+                const aim=Math.atan2(e.targetY-e.y,e.targetX-e.x),range=e.type==='spear'?155:110;
                 if(e.type!=='cleaver'){g.lineStyle(6,0x142027,.9);g.lineBetween(e.x,e.y,e.x+Math.cos(aim)*range,e.y+Math.sin(aim)*range);g.lineStyle(2,0xc1967c,.9);g.lineBetween(e.x,e.y,e.x+Math.cos(aim)*range,e.y+Math.sin(aim)*range);}else{g.fillStyle(0xb88d77,.15);g.fillPoints([{x:e.x,y:e.y},...Array.from({length:12},(_,i)=>({x:e.x+Math.cos(aim-.95+i*1.9/11)*range,y:e.y+Math.sin(aim-.95+i*1.9/11)*range}))],true);}
                 if(e.type==='spear'){g.lineStyle(2,0x91b7bf,.8);const sx=Math.sin(aim)*12,sy=-Math.cos(aim)*12;g.lineBetween(e.x+sx,e.y+sy,e.x+Math.cos(aim)*range+sx,e.y+Math.sin(aim)*range+sy);g.lineBetween(e.x-sx,e.y-sy,e.x+Math.cos(aim)*range-sx,e.y+Math.sin(aim)*range-sy);}else if(e.type==='cleaver'){const arc=1.9;g.lineStyle(3,0xc1967c,.9);g.beginPath();g.arc(e.x,e.y,range,aim-arc/2,aim+arc/2);g.strokePath();}continue;
             }
             if(e.type==='boss'&&e.telegraph>0){
                 const phase=e.phase%3,remaining=Phaser.Math.Clamp(e.telegraph/1.15,0,1);
                 if(phase===0){
-                    g.fillStyle(0xc17d78,.14);g.fillCircle(e.targetX,e.targetY,115);g.lineStyle(7,0x182129,.95);g.strokeCircle(e.targetX,e.targetY,115);g.lineStyle(3,0xc17d78,.95);g.strokeCircle(e.targetX,e.targetY,115);g.lineStyle(2,0xe0b49b,.9);g.strokeCircle(e.targetX,e.targetY,12+103*remaining);
+                    // Pattern circles above are the exact damage footprint.
                 }else if(phase===1){
                     g.lineStyle(5,0x182129,.9);g.strokeCircle(e.x,e.y,78);g.lineStyle(3,0xa8b58b,.9);g.strokeCircle(e.x,e.y,78);for(let i=0;i<4;i++){const a=i*Math.PI/2,r=85+12*(1-remaining),x=e.x+Math.cos(a)*r,y=e.y+Math.sin(a)*r;g.lineBetween(x,y,x-Math.cos(a-.55)*14,y-Math.sin(a-.55)*14);g.lineBetween(x,y,x-Math.cos(a+.55)*14,y-Math.sin(a+.55)*14);}
                 }else{
@@ -1215,6 +1251,33 @@ export class ArenaScene extends Phaser.Scene {
                 g.fillCircle(e.type === 'boss' ? e.targetX : e.x, e.type === 'boss' ? e.targetY : e.y, e.type === 'boss' ? 115 : 50);
             }
         }
+        for(const mark of this.bossMarks){
+            if(!mark.owner.active)continue;
+            const g=this.warningGfx,progress=Phaser.Math.Clamp(1-mark.remaining/mark.delay,0,1);
+            if(mark.remaining>0){
+                g.fillStyle(mark.color,.09);g.fillCircle(mark.x,mark.y,mark.radius);
+                g.lineStyle(5,0x14202a,.9);g.strokeCircle(mark.x,mark.y,mark.radius);
+                g.lineStyle(2,mark.color,.95);g.strokeCircle(mark.x,mark.y,mark.radius);
+                g.beginPath();g.arc(mark.x,mark.y,mark.radius-6,-Math.PI/2,-Math.PI/2+Math.PI*2*progress);g.strokePath();
+                if(mark.style!=='rally')for(const side of [-1,1]){g.lineBetween(mark.x+side*9,mark.y,mark.x+side*18,mark.y);g.lineBetween(mark.x,mark.y+side*9,mark.x,mark.y+side*18);}
+            }else{
+                const fade=Math.max(0,1+mark.remaining/.55),t=1-fade;
+                g.lineStyle(3,mark.color,fade);g.strokeCircle(mark.x,mark.y,mark.radius*(.4+t*.6));
+                for(let i=0;i<(mark.style==='reactor'?8:6);i++){
+                    const a=i*Math.PI/(mark.style==='reactor'?4:3),r=mark.radius*.8;
+                    const x=mark.x+Math.cos(a)*r,y=mark.y+Math.sin(a)*r;
+                    if(mark.style==='rupture'){
+                        g.fillStyle(mark.color,fade);g.fillTriangle(x-8,y,x+8,y,x+Math.cos(a)*9,y-30*Math.sin(t*Math.PI));
+                        g.lineBetween(mark.x,mark.y,x,y);
+                    }else if(mark.style==='reactor'){
+                        g.lineBetween(mark.x+Math.cos(a)*12,mark.y+Math.sin(a)*12,x,y);
+                        g.strokeRect(x-5,y-5-t*18,10,10);
+                    }else if(mark.style==='mortar'){
+                        g.lineBetween(x,y,x+Math.cos(a)*t*25,y+Math.sin(a)*t*25-20*t);
+                    }else{g.strokeCircle(x,y,4+4*t);}
+                }
+            }
+        }
         if(this.hitConfirm.time>0){const h=this.hitConfirm,w=this.warningGfx;w.lineStyle(h.crit?3:2,h.crit?0xe0c98b:0xc5d3c4,Math.min(1,h.time*5));for(const side of [-1,1]){w.lineBetween(h.x+side*5,h.y+side*5,h.x+side*10,h.y+side*10);w.lineBetween(h.x+side*5,h.y-side*5,h.x+side*10,h.y-side*10);}}
         if(this.enemies.filter(e=>e.active&&Math.hypot(e.x-this.x,e.y-this.y)<240).length>=10){const w=this.warningGfx,a=this.escapeAngle;w.lineStyle(2,0xa7b69a,.5);for(const distance of [65,83]){const x=this.x+Math.cos(a)*distance,y=this.y+Math.sin(a)*distance;w.lineBetween(x,y,x-Math.cos(a-.55)*8,y-Math.sin(a-.55)*8);w.lineBetween(x,y,x-Math.cos(a+.55)*8,y-Math.sin(a+.55)*8);}}
         for (const b of this.bullets)
@@ -1228,7 +1291,7 @@ export class ArenaScene extends Phaser.Scene {
                 if(b.explosive){g.lineStyle(2,0xad9479,.9);g.strokeCircle(b.x,b.y,5);}
                 const tail=b.hostile?.025:this.weapon==='shotgun'?.009:this.weapon==='smg'?.013:.023;
                 g.lineStyle(b.hostile?8:5,0x141820,.9);g.lineBetween(b.x,b.y,b.x-b.vx*tail,b.y-b.vy*tail);
-                g.lineStyle(b.hostile?4:this.weapon==='shotgun'?2:1.5,b.hostile?0xc58ce9:WEAPON_EFFECTS[this.weapon].color,.9);g.lineBetween(b.x,b.y,b.x-b.vx*tail,b.y-b.vy*tail);
+                g.lineStyle(b.hostile?4:this.weapon==='shotgun'?2:1.5,b.hostile?(this.stats.wave>=11?0x67e8ff:0xc58ce9):WEAPON_EFFECTS[this.weapon].color,.9);g.lineBetween(b.x,b.y,b.x-b.vx*tail,b.y-b.vy*tail);
                 if(!b.hostile){g.fillStyle(WEAPON_EFFECTS[this.weapon].color,.9);g.fillCircle(b.x,b.y,this.weapon==='shotgun'?2.5:1.5);}
             }
         for (const p of this.particles)

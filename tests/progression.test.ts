@@ -9,7 +9,7 @@ test('roulette chooses exactly one reward and excludes useless healing',()=>{
 });
 test('later waves rotate events with a boss every five waves',()=>{
  assert.equal(waveEvent(10),'Survival');
- assert.deepEqual([11,12,13,14,15].map(waveEvent),['Supply rush','Runner swarm','Elite hunt','Hold the zone','Boss encounter']);
+ assert.deepEqual([11,12,13,14,15].map(waveEvent),['Supply rush','Zombie dog pack','Elite hunt','Hold the zone','Boss encounter']);
  for(const w of [15,20,25,30])assert.ok(wavePlan(w).some(s=>s.type==='boss'));
 });
 test('evolution options match ranged and melee weapons',()=>{

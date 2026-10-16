@@ -24,3 +24,5 @@ export function crowdSeparation(dx:number,dy:number,r:number,otherR:number,dt:nu
  return distance>.001?{x:dx/distance*push,y:dy/distance*push}:{x:push,y:0};
 }
 export function isRigZombie(id:EnemyId):id is WalkingZombie{return id in WALK_PROFILES;}
+
+export function zombieVisualScale(id:EnemyId,zoom:number){return (zoom<.8?1.17:1)*(id==='runner'?1.2:1);}

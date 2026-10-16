@@ -203,7 +203,25 @@ game.events.once('ready', () => {
  scene.x=3400;scene.render();ok(scene.robotSector==='REACTOR GARDENS'&&scene.robotOrigin===anchor);scene.x=600;scene.render();ok(scene.robotSector==='ROBOT FACTORY'&&scene.robotOrigin===anchor);
  const prop=scene.mapCars[0];const p=scene.moveOnGround(prop.x,prop.y,1,0,17);ok(Math.abs(p.x-prop.x)>=prop.halfW+17||Math.abs(p.y-prop.y)>=prop.halfH+17);
  });
- lines.push(`\n${failures ? `${failures} CHECKS FAILED` : 'ALL 36 INTEGRATION CHECKS PASSED'}`);
+ check('Bosses resist hit knockback and stagger while ordinary enemies still react',()=>{
+ scene.enemies.forEach(e=>e.active=false);scene.stats.wave=10;scene.hero='ninja';scene.weapon='hammer';scene.x=600;scene.y=380;
+ for(const type of ['boss','shooterBoss','commander','basic'] as const){
+ const e=scene.spawn(type)!;e.x=850;e.y=380;e.hp=e.max=10000;const x=e.x,y=e.y;
+ scene.hit(e,1,100,false,false);
+ if(type==='basic')ok(Math.hypot(e.x-x,e.y-y)>0&&e.stagger>0);else ok(e.x===x&&e.y===y&&e.stagger===0&&e.hp<10000);
+ e.active=false;
+ }
+ });
+ check('Boss pattern waits for warning, damages once, pauses and cancels on death',()=>{
+ scene.ended=false;scene.paused=true;scene.stats.wave=10;scene.enemies.forEach(e=>e.active=false);scene.bossMarks=[];scene.x=600;scene.y=380;
+ scene.dash=0;scene.counter=0;scene.rewardShield=0;scene.invuln=0;scene.hp=1000;scene.maxHp=1000;scene.hero='ninja';
+ const boss=scene.spawn('boss')!;boss.x=200;boss.y=100;boss.phase=0;boss.telegraph=0;boss.attack=999;boss.targetX=600;boss.targetY=380;scene.markBoss(boss);
+ ok(scene.bossMarks.length===3);const delay=scene.bossMarks[0].remaining;scene.update(0,100);ok(scene.bossMarks[0].remaining===delay);
+ scene.updateEnemies(.5);ok(scene.hp===1000);scene.updateEnemies(.66);ok(scene.hp<1000&&scene.bossMarks[0].fired);
+ const hp=scene.hp;scene.updateEnemies(.001);ok(scene.hp===hp);
+ scene.kill(boss);ok(scene.bossMarks.length===0);scene.spawn('basic');ok(scene.bossMarks.length===0);
+ });
+ lines.push(`\n${failures ? `${failures} CHECKS FAILED` : 'ALL INTEGRATION CHECKS PASSED'}`);
         out.textContent = lines.join('\n');
         game.destroy(true);
     }, 300);

@@ -1,3 +1,4 @@
+import {enemyName} from '../src/robot-enemies';
 import Phaser from 'phaser';
 import {ArenaScene} from '../src/combat';
 import {freshSave} from '../src/save';
@@ -8,15 +9,15 @@ const scene=new ArenaScene(freshSave(),new AudioManager(),()=>{},()=>{},()=>{});
 new Phaser.Game({type:Phaser.CANVAS,parent:'game',width:innerWidth,height:innerHeight,scene:[scene],scale:{mode:Phaser.Scale.RESIZE},audio:{noAudio:true}});
 const ready=setInterval(()=>{
  if(!scene.visuals)return;
- clearInterval(ready);scene.paused=true;for(const e of scene.enemies)e.active=false;scene.x=600;scene.y=380;scene.save.settings.mapView=new URLSearchParams(location.search).has('wide')?2:1;scene.applyMapView();
+ clearInterval(ready);scene.paused=true;if(new URLSearchParams(location.search).has('robots')){scene.stats.wave=10;const carried=scene.spawn('basic')!;scene.stats.wave=11;scene.startWave();scene.paused=true;document.body.dataset.transition=carried.faction;const command=scene.spawn('commander')!;command.telegraph=.001;scene.updateEnemies(.01);document.body.dataset.reinforcements=String(scene.enemies.filter(e=>e.active).every(e=>e.faction==='robot'));document.querySelector('header')!.textContent='Wave 11+ · colorful 2D robots · actual game renderer';scene.drawFloor();}for(const e of scene.enemies)e.active=false;scene.x=600;scene.y=380;scene.save.settings.mapView=new URLSearchParams(location.search).has('wide')?2:1;scene.applyMapView();
  for(const type of ZOMBIE_SPRITES){scene.spawn(type);const enemy=scene.enemies.filter(e=>e.active).at(-1)!;const i=ZOMBIE_SPRITES.indexOf(type);enemy.x=600+(i%3-1)*230;enemy.y=380+(Math.floor(i/3)-1)*200;enemy.telegraph=0;enemy.flash=0;
- scene.add.text(enemy.x,enemy.y+enemy.r*1.8,ENEMIES[type].name,{fontSize:'15px',color:'#f6edcf',stroke:'#17212a',strokeThickness:4}).setOrigin(.5,0).setDepth(8);
+ scene.add.text(enemy.x,enemy.y+enemy.r*1.8,enemyName(type,enemy.faction),{fontSize:'15px',color:'#f6edcf',stroke:'#17212a',strokeThickness:4}).setOrigin(.5,0).setDepth(8);
  }
  // Keep the hero out of the atlas lineup while using the actual live renderer.
  scene.x=600;scene.y=760;scene.render();scene.cameras.main.centerOn(600,380);
  document.body.dataset.uniquePoseCounts=ZOMBIE_SPRITES.map(id=>new Set(Array.from({length:49},(_,i)=>i).map(frame=>(scene.textures.get(`enemy-${id}-${frame}`).getSourceImage() as HTMLCanvasElement).toDataURL())).size).join(',');
  document.body.dataset.headStable=ZOMBIE_SPRITES.map(id=>{
-  const patch=(f:number)=>{const c=scene.textures.get(`enemy-${id}-${f}`).getSourceImage() as HTMLCanvasElement;return Array.from(c.getContext('2d')!.getImageData(58,28,10,12).data).join(',');};
+  const patch=(f:number)=>{const c=scene.textures.get(`enemy-${id}-${f}`).getSourceImage() as HTMLCanvasElement;return Array.from(c.getContext('2d')!.getImageData(id==='runner'?94:58,id==='runner'?68:28,8,8).data).join(',');};
   const idle=patch(0);return Array.from({length:49},(_,f)=>patch(f)).every(p=>p===idle);
  }).join(',');
  if(new URLSearchParams(location.search).has('walk')){
@@ -28,6 +29,7 @@ const ready=setInterval(()=>{
    requestAnimationFrame(tick);
   };requestAnimationFrame(tick);
  }
+ document.body.dataset.factions=scene.enemies.filter(e=>e.active).map(e=>e.faction).join(',');
  document.body.dataset.spriteCount=String(ZOMBIE_SPRITES.length);
  document.body.dataset.atlasLoaded=String(ZOMBIE_ATLASES.every(atlas=>scene.textures.exists(atlas.key)));
 },50);

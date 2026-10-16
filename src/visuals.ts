@@ -1,15 +1,21 @@
-import {advanceZombieRig,isRigZombie,type RigState} from './zombie-rig';
+import {bossAction,type BossAction} from './boss-motion';
+import {ROBOTS,ROBOT_ROLES,robotCanvas,robotMovementType,type EnemyFaction} from './robot-enemies';
+import {advanceZombieRig,isRigZombie,zombieVisualScale,type RigState} from './zombie-rig';
 import {WALK_FRAMES} from './zombie-walk';
 import {WEAPON_EFFECTS,weaponPose,isGun} from './weapon-effects';
 import Phaser from 'phaser';
-import {zombieWalkCanvases,zombieSpriteLocation,minifiedZombieCanvas,rifleHandsCanvas} from './zombie-sprites';
+import {zombieWalkCanvases,zombieSpriteLocation,minifiedZombieCanvas,rifleHandsCanvas,zombieBossCanvas} from './zombie-sprites';
 import { actorCanvas, weaponCanvas } from './art';
 import { HEROES, WEAPONS, ENEMIES, type HeroId, type WeaponId, type EnemyId } from './config';
 type EnemyVisual = {
+    skillAge?:number;
+    skillWindup?:number;
+    skillAction?:BossAction;
     active: boolean;
     x: number;
     y: number;
     type: EnemyId;
+    faction?:EnemyFaction;
     r: number;
     flash: number;
     telegraph: number;
@@ -27,6 +33,7 @@ export class ArenaVisuals {
     veteran(){this.hero.setTint(0xd7c8ac);}
     private decoyImage!:Phaser.GameObjects.Image;
     showDecoy(hero:HeroId,decoy:{x:number;y:number;angle:number}|undefined){this.decoyImage.setVisible(!!decoy);if(decoy)this.decoyImage.setTexture(`hero-${hero}-0`).setPosition(decoy.x,decoy.y).setRotation(decoy.angle).setTint(0x8d86ae).setAlpha(.45);}
+    private shieldFx!:Phaser.GameObjects.Graphics;
     private attackFx!:Phaser.GameObjects.Graphics;
     private tipTrail:{x:number;y:number}[]=[];
     private secondTrail:{x:number;y:number}[]=[];
@@ -57,6 +64,7 @@ export class ArenaVisuals {
     private lastX = 600;
     private lastY = 380;
     constructor(private scene: Phaser.Scene) {
+        this.shieldFx=scene.add.graphics().setDepth(.9);
         this.attackFx=scene.add.graphics().setDepth(3.3);
         this.accents=scene.add.graphics().setDepth(3.4);
         for (const id of Object.keys(HEROES) as HeroId[])
@@ -70,6 +78,16 @@ export class ArenaVisuals {
                 if(art&&!scene.textures.exists(`enemy-${id}-${f}-small`))scene.textures.addCanvas(`enemy-${id}-${f}-small`,minifiedZombieCanvas(canvas));
             });
         }
+        for(const type of Object.keys(ENEMIES) as EnemyId[])for(let f=0;f<=WALK_FRAMES*2;f++){
+            const key=`robot-unit-${type}-${f}`;if(scene.textures.exists(key))continue;const c=robotCanvas(ROBOT_ROLES[type],f,undefined,type);scene.textures.addCanvas(key,c);scene.textures.addCanvas(key+'-small',minifiedZombieCanvas(c));
+        }
+        for(const type of ['boss','commander','shooterBoss'] as const)for(const action of ['slam','rally','charge','fire'] as const)for(let f=0;f<36;f++){
+            for(const faction of ['zombie','robot'] as const){
+                const key=`skill-${faction}-${type}-${action}-${f}`;if(scene.textures.exists(key))continue;
+                const c=faction==='robot'?robotCanvas(ROBOT_ROLES[type],f,action,type):zombieBossCanvas(type,action,f);
+                scene.textures.addCanvas(key,c);scene.textures.addCanvas(key+'-small',minifiedZombieCanvas(c));
+            }
+        }
         const rifleArt=zombieSpriteLocation('rifle')!;
         if(!scene.textures.exists('enemy-rifle-hands'))scene.textures.addCanvas('enemy-rifle-hands',rifleHandsCanvas(scene.textures.get(rifleArt.atlas.key).getSourceImage() as HTMLImageElement));
         for (const id of Object.keys(WEAPONS) as WeaponId[])
@@ -80,12 +98,12 @@ export class ArenaVisuals {
         this.offhand = scene.add.image(600, 380, 'weapon-katana').setDepth(3.1).setVisible(false);
     }
     defeat() { this.hero.setRotation(this.hero.rotation + 1.2).setAlpha(.5).setScale(.5); this.weapon.setVisible(false); this.offhand.setVisible(false); }
-    death(e: EnemyVisual, time: number) { const size=e.r*3.4*(this.scene.cameras.main.zoom<.8?1.17:1);let slot = this.ghosts.find(s => s.expires <= time); if (!slot) {
+    death(e: EnemyVisual, time: number) { const key=e.faction==='robot'?`robot-unit-${e.type}-0`:`enemy-${e.type}-0`;const size=e.r*3.4*zombieVisualScale(e.type,this.scene.cameras.main.zoom);let slot = this.ghosts.find(s => s.expires <= time); if (!slot) {
         if (this.ghosts.length >= 24)
             return;
-        slot = { image: this.scene.add.image(0, 0, `enemy-${e.type}-0`).setDepth(1), size, expires: 0 };
+        slot = { image: this.scene.add.image(0, 0, key).setDepth(1), size, expires: 0 };
         this.ghosts.push(slot);
-    } slot.size=size;slot.expires = time + .55; slot.image.setTexture(`enemy-${e.type}-0`).setPosition(e.x, e.y).setRotation(.7).setDisplaySize(size,size).setAlpha(.7).setTint(0x778b81).setVisible(true); }
+    } slot.size=size;slot.expires = time + .55; slot.image.setTexture(key).setPosition(e.x, e.y).setRotation(.7).setDisplaySize(size,size).setAlpha(.7).setTint(0x778b81).setVisible(true); }
     render(enemies: EnemyVisual[], hero: HeroId, weapon: WeaponId, x: number, y: number, angle: number, time: number, swing: number, dash: number, invuln: number, blocking: boolean, counter: number, ammo: number, sequence=0,reach=1,arcScale=1) {
         const moved = Math.hypot(x - this.lastX, y - this.lastY) > .2, frame = moved ? 1 + Math.floor(time * 10) % 2 : 0;
         this.lastX = x;
@@ -137,6 +155,7 @@ export class ArenaVisuals {
             if (left > 0)
                 s.image.setRotation(.7+(1-left/.55)*.9).setDisplaySize(s.size,s.size*Math.max(.35,left/.55));
         }
+        this.shieldFx.clear();
         for (const e of enemies) {
             let sprite = this.enemies.get(e), shadow = this.shadows.get(e);
             if (!e.active) {
@@ -155,25 +174,34 @@ export class ArenaVisuals {
             const locked=(e.telegraph>0||!!e.chargeTime)&&['cleaver','spear','rifle','shooterBoss','boss'].includes(e.type);
             const targetAngle=Math.atan2((locked?e.targetY??y:y)-e.y,(locked?e.targetX??x:x)-e.x);
             let gait=e.telegraph>0?0:1+Math.floor(time*(e.type==='runner'?15:6)+e.x*.01)%2,rotation=targetAngle;
-            const rig=isRigZombie(e.type),small=this.scene.cameras.main.zoom<.8;
+            const robot=e.faction==='robot',rig=robot||isRigZombie(e.type),small=this.scene.cameras.main.zoom<.8;
             let flip=false;
-            if(isRigZombie(e.type)){
+            if(robot||isRigZombie(e.type)){
                 let state=this.walking.get(e);
                 if(!state){const side=x<e.x?-1:1;state={x:e.x,y:e.y,time,phase:0,moving:0,facing:side,candidate:side,held:0};this.walking.set(e,state);}
-                const walk=advanceZombieRig(state,e.type,e.x,e.y,time,e.r,x-e.x,y-e.y,e.telegraph>0||!!e.chargeTime||!!e.stagger||e.flash>0);
+                const walk=advanceZombieRig(state,robotMovementType(e.type),e.x,e.y,time,e.r,x-e.x,y-e.y,e.telegraph>0||!!e.chargeTime||!!e.stagger||e.flash>0);
                 gait=walk.level===1&&walk.frame>0?walk.frame+WALK_FRAMES:walk.frame;rotation=0;flip=walk.facing<0;
             }
-            const camera=this.scene.cameras.main,zoom=camera.zoom,visualScale=small?1.17:1,size=e.r*3.4*visualScale;
+            if(!robot&&isRigZombie(e.type)&&e.telegraph>0){
+                const duration=['boss','commander'].includes(e.type)?1.15:e.type==='brute'?.7:e.type==='spitter'?.75:.9;
+                gait=49+Math.min(11,Math.floor((1-Math.min(1,e.telegraph/duration))*12));
+            }
+            if(!robot&&e.type==='shooterBoss'){rotation=0;flip=x<e.x;}
+            const camera=this.scene.cameras.main,zoom=camera.zoom,visualScale=zombieVisualScale(e.type,zoom)*(robot?1.15:1),size=e.r*3.4*visualScale;
             const px=rig&&small?Math.round((e.x-camera.worldView.x)*zoom)/zoom+camera.worldView.x:e.x;
             const py=rig&&small?Math.round((e.y-camera.worldView.y)*zoom)/zoom+camera.worldView.y:e.y;
-            sprite.setVisible(true).setTexture(`enemy-${e.type}-${gait}${rig&&small?'-small':''}`).setPosition(px,py).setDisplaySize(size,size).setRotation(rotation).setFlipX(flip);
+            sprite.setVisible(true).setTexture(`${robot?'robot-unit-'+e.type:'enemy-'+e.type}-${gait}${rig&&small?'-small':''}`).setPosition(px,py).setDisplaySize(size,size).setRotation(rotation).setFlipX(flip);
+            if(e.skillAction&&e.skillAge!==undefined&&e.skillWindup&&e.skillAge<e.skillWindup+.65){
+                const f=Math.min(35,Math.floor(e.skillAge/(e.skillWindup+.65)*35));
+                sprite.setTexture(`skill-${robot?'robot':'zombie'}-${e.type}-${e.skillAction}-${f}${small?'-small':''}`).setRotation(0).setFlipX(x<e.x);
+            }
             sprite.setDepth(2+Math.atan((e.y+e.r)/1000)*.1);
-            if(e.type==='rifle'){
+            if(e.type==='rifle'&&!robot){
                 let hands=this.rifleHands.get(e);if(!hands){hands=this.scene.add.image(e.x,e.y,'enemy-rifle-hands');this.rifleHands.set(e,hands);}
                 hands.setVisible(true).setPosition(px,py+e.r*.2*visualScale).setRotation(targetAngle).setDisplaySize(size,size).setDepth(sprite.depth+.01);
             }else this.rifleHands.get(e)?.setVisible(false);
-            if(e.flash>0&&!zombieSpriteLocation(e.type)){sprite.rotation+=Math.sin(e.flash/.12*Math.PI)*.14;sprite.setDisplaySize(size*.96,size*1.04);}
-            if(e.telegraph>0&&e.type==='cleaver')sprite.rotation+=(e.telegraph/.8-.5)*1.3;
+            if(e.flash>0&&!rig){sprite.rotation+=Math.sin(e.flash/.12*Math.PI)*.14;sprite.setDisplaySize(size*.96,size*1.04);}
+            if(e.telegraph>0&&e.type==='cleaver'&&!robot)sprite.rotation+=(e.telegraph/.8-.5)*1.3;
             if(e.telegraph>0&&e.type==='spear'){const a=Math.atan2((e.targetY??y)-e.y,(e.targetX??x)-e.x),pull=e.telegraph/.8*6;sprite.setPosition(e.x-Math.cos(a)*pull,e.y-Math.sin(a)*pull);}
             if(e.type==='boss'&&e.telegraph>0&&!rig){
                 // Wind up the illustrated body; extra procedural arms would cover
@@ -185,12 +213,16 @@ export class ArenaVisuals {
             if(e.shotKick){const a=targetAngle;sprite.x-=Math.cos(a)*e.shotKick*25;sprite.y-=Math.sin(a)*e.shotKick*25;}
             sprite.clearTint();
             if (e.flash > 0)
-                zombieSpriteLocation(e.type)?sprite.setTint(0xffc8ba):sprite.setTintFill(0xa9b0a5);
-            else if (e.type === 'elite')
+                rig?sprite.setTint(0xffc8ba):sprite.setTintFill(0xa9b0a5);
+            else if (e.type === 'elite'&&!robot)
                 sprite.setTint([0xd3e4c6, 0xffa078, 0xc2efad, 0xd4b3e8, 0xff858d][e.mod]);
+            if(robot&&ROBOT_ROLES[e.type]==='shield'){
+                this.shieldFx.lineStyle(1.5,0x70cbda,.24);
+                this.shieldFx.strokeEllipse(e.x,e.y,230,155);
+            }
             shadow!.setVisible(true).setPosition(e.x, e.y + e.r * .6*visualScale).setDisplaySize(e.r * 2.3*visualScale, e.r*visualScale);
             if (e.type === 'spitter' && e.telegraph > 0)
-                sprite.setTint(0xddc5ef);
+                sprite.setTint(robot?0xb5f4ff:0xddc5ef);
         }
         if (counter > 0)
             this.weapon.setRotation(angle - .5);
