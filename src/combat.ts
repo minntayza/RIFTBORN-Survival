@@ -1,3 +1,5 @@
+import {crowdSeparation,isRigZombie} from './zombie-rig';
+import {ZOMBIE_ATLASES} from './zombie-sprites';
 import {RobotMapArt} from './robot-map-art';
 import {robotPropsNear,reactorBlend,type RobotOrigin} from './robot-map';
 import {drawSupply,drawBeacon,drawMagnet} from './supply-art';
@@ -107,7 +109,7 @@ export class ArenaScene extends Phaser.Scene {
     wreckImages:Phaser.GameObjects.Image[]=[];
     mapCars:Wreck[]=[];
     robotArt:RobotMapArt|undefined;
-    preload(){for(const key of ['robot-factory-ground','robot-garden-ground','robot-factory-props','robot-garden-props'])this.load.image(key,`/assets/maps/${key}.png`);this.load.image('park-ground','/assets/maps/park-cartoon.png');this.load.image('city-asphalt','/assets/maps/city-asphalt-cartoon.png');this.load.image('city-wreck','/assets/maps/wreck-sedan-cartoon.png');}
+    preload(){for(const atlas of ZOMBIE_ATLASES)this.load.image(atlas.key,atlas.url);for(const key of ['robot-factory-ground','robot-garden-ground','robot-factory-props','robot-garden-props'])this.load.image(key,`/assets/maps/${key}.png`);this.load.image('park-ground','/assets/maps/park-cartoon.png');this.load.image('city-asphalt','/assets/maps/city-asphalt-cartoon.png');this.load.image('city-wreck','/assets/maps/wreck-sedan-cartoon.png');}
     moveOnGround(x:number,y:number,dx:number,dy:number,r:number){
         if(!this.mapCars.length)return {x:x+dx,y:y+dy};
         // Substeps prevent dash and knockback from crossing a thin chassis.
@@ -1034,7 +1036,9 @@ export class ArenaScene extends Phaser.Scene {
                             if (other === e || checks++ > 12)
                                 continue;
                             const sx = e.x - other.x, sy = e.y - other.y, dist = Math.hypot(sx, sy);
-                            if (dist > 0 && dist < e.r + other.r) {
+                            if(isRigZombie(e.type)&&isRigZombie(other.type)){
+                                const push=crowdSeparation(sx,sy,e.r,other.r,dt);e.x+=push.x;e.y+=push.y;
+                            }else if (dist > 0 && dist < e.r + other.r) {
                                 e.x+=sx/dist*18*dt;e.y+=sy/dist*18*dt;
                             }
                         }

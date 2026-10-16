@@ -45,13 +45,13 @@ export function heroSvg(id: HeroId, equipped = true) {
     return svg(`<ellipse cx="121" cy="267" rx="74" ry="9" fill="#050a13" stroke="none" opacity=".45"/>${b}${path('M84 203 L99 207 M143 230 L152 224', 'none', '#627181', 2)}`);
 }
 export function enemySvg(id: EnemyId) {
+    if(id==='runner')return svg(`${path('M58 145 L43 112 L21 100 L37 137 Z','#46534b')}${path('M50 149 Q76 116 148 139 L172 170 L144 193 L66 191 Z','#62765a')}${path('M67 173 L57 222 L77 228 L88 183 M133 175 L131 225 L151 227 L156 183 M87 178 L82 210 L98 214 L105 182 M151 173 L167 213 L181 209 L169 168','#88a961')}${path('M137 145 L137 100 L155 116 L177 88 L185 137 L213 153 L205 177 L168 185 L147 168 Z','#9cbb6c')}${path('M144 119 L143 108 L151 122 M171 118 L179 103 L179 127','#3d4e47')}${circle(175,141,8,'#eff46e')}${path('M198 149 L215 152 L208 160 Z','#142025')}${path('M173 161 L203 164 L194 176 L175 173 Z','#18212b')}${path('M179 162 L183 169 L187 164 M192 165 L196 169 L198 165','none','#f1e5bf',3)}`);
+
     const d = ENEMIES[id], skin = '#' + d.color.toString(16), large = id === 'brute' || id === 'boss', coat = id === 'boss' ? '#513345' : id === 'armoured' ? '#475465' : id === 'spitter' ? '#564363' : '#3c5045';
     let b = path('M86 170 L117 171 L111 236 L89 262 L65 261 L83 230 Z', '#303837') + path('M126 172 L154 172 L158 231 L173 253 L147 265 L131 230 Z', '#303837');
     b += path(large ? 'M68 79 L157 74 L182 151 L157 197 L76 195 L53 147 Z' : 'M90 83 L146 80 L164 161 L144 189 L85 184 L72 138 Z', coat);
     b += path('M78 90 L55 102 L38 158 L56 181 L75 157 L97 111 Z', skin) + path('M151 86 L176 96 L196 143 L185 177 L166 157 L143 117 Z', skin);
     b += path('M95 79 L84 43 L96 22 L134 21 L154 47 L140 82 L115 95 Z', skin) + path('M97 45 L111 49 L104 59 L93 55 Z', '#e2ebac') + path('M125 48 L143 44 L143 54 L128 59 Z', '#f4a47e') + path('M104 73 L123 67 L136 73 L126 84 L108 82 Z', '#1a2525') + path('M115 73 L115 78 M125 72 L125 78', 'none', '#e6dbb7', 3) + path('M89 120 L104 130 L96 154 L115 168 M144 115 L132 143 L146 156', 'none', skin, 5);
-    if (id === 'runner')
-        b += path('M91 90 L105 115 L147 151 L143 180 L120 175 L92 139 Z', '#758451') + path('M53 146 L27 189 M178 145 L207 182', 'none', skin, 9);
     if (id === 'spitter')
         b += circle(124, 91, 25, '#9765aa') + circle(120, 87, 14, '#ca99cd') + circle(112, 81, 4, '#efd8e5') + path('M118 70 L116 97 L127 106', 'none', '#bfdd87', 5);
     if (id === 'armoured')
