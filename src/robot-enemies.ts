@@ -9,11 +9,11 @@ export function spawnFaction(wave:number,serial:number,type:EnemyId):EnemyFactio
  return serial%4< wave-10?'robot':'zombie';
 }
 export const ROBOTS={
- walker:{name:'Scrap Walker',color:'#71dd59',role:'Close-range pursuer',cue:'Angular green helmet, cyan cyclops eye and hooked claws.',tip:'Keep an escape route through the pack.'},
- scout:{name:'Scout Bot',color:'#ffbd38',role:'Fast pursuer',cue:'Yellow-orange low chassis and two big wheels.',tip:'Watch your flanks; it curves around your approach and closes gaps quickly.'},
+ walker:{name:'Scrap Walker',color:'#71dd59',role:'Close-range pursuer',cue:'Round orange-and-cream head, cyan eyes, bolt antenna, and chunky clamp hands.',tip:'Keep an escape route through the pack.'},
+ scout:{name:'Scout Bot',color:'#ffbd38',role:'Fast pursuer',cue:'Small yellow chassis, swept-back head fins, blue visor, and oversized running boots.',tip:'Watch your flanks; it curves around your approach and closes gaps quickly.'},
  pulse:{name:'Pulse Shooter',color:'#f176cc',role:'Ranged attacker',cue:'Pink armor and a large blue pulse cannon.',tip:'Sidestep the locked aim line before it fires.'},
  shield:{name:'Shield Unit',color:'#39cbef',role:'Armored defender',cue:'Blue armor and a broad cyan shield.',tip:'Reduces damage to allies within its cyan field by 15%. Eliminate it first; heavy melee helps against its own armor.'},
- crusher:{name:'Crusher',color:'#ff8746',role:'Heavy melee',cue:'Orange body and oversized red piston fists.',tip:'Leave its marked attack area before impact.'},
+ crusher:{name:'Crusher',color:'#ff8746',role:'Heavy melee',cue:'Broad red body, small yellow visor, and enormous hazard-striped hammer fists.',tip:'Leave its marked attack area before impact.'},
  command:{name:'Command Unit',color:'#b48aff',role:'Reinforcements',cue:'Purple armor, yellow antenna and raised signal hand.',tip:'Defeat it to stop reinforcements and its support aura.'},
  sentinel:{name:'Factory Sentinel',color:'#ff5d65',role:'Boss',cue:'Red crowned armor, four articulated legs and a bright gold reactor.',tip:'Dodge its locked charge lane and ground slams.'}
 } as const;

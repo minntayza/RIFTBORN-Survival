@@ -1,3 +1,5 @@
+import {ROBOT_ATLAS} from './cute-robots';
+import {rosterSpawn} from './enemy-roster';
 import {COMMAND_ATLAS} from './cute-command';
 import {HORDE_ATLAS,OFFICER_ATLAS} from './cute-horde';
 import {decodedImages} from './texture-cache';
@@ -133,6 +135,7 @@ export class ArenaScene extends Phaser.Scene {
     onLoadingError?:()=>void;
     preload(){
         const assets=[
+            [ROBOT_ATLAS.key,ROBOT_ATLAS.url],
             [COMMAND_ATLAS.key,COMMAND_ATLAS.url],
             [HORDE_ATLAS.key,HORDE_ATLAS.url],[OFFICER_ATLAS.key,OFFICER_ATLAS.url],
             [NINJA_WEAPONS_ATLAS.key,NINJA_WEAPONS_ATLAS.url],[NINJA_ATTACK_ATLAS.key,NINJA_ATTACK_ATLAS.url],[CUTE_ATLAS.key,CUTE_ATLAS.url],
@@ -422,8 +425,9 @@ export class ArenaScene extends Phaser.Scene {
     banner(message: string, color = 0xffffff) { const t = this.add.text(this.cameras.main.width/2, 125, message, { fontFamily: 'monospace', fontSize: Math.min(26,Math.max(13,this.cameras.main.width/32))+'px', color: '#' + color.toString(16).padStart(6, '0'), fontStyle: 'bold' }).setOrigin(.5).setScrollFactor(0); this.tweens.add({ targets: t, alpha: 0, y: 100, delay: 1400, duration: 600, onComplete: () => t.destroy() }); }
     spawnSerial=0;
     spawn(type: EnemyId, side = Math.floor(this.random() * 4), offset = this.random(), factionOverride?:EnemyFaction) {
-        if(this.count>=BALANCE.maxEnemies){if(['boss','shooterBoss','commander'].includes(type)){const replace=this.enemies.filter(e=>e.active&&['basic','runner'].includes(e.type)).sort((a,b)=>Math.hypot(b.x-this.x,b.y-this.y)-Math.hypot(a.x-this.x,a.y-this.y))[0];if(!replace)return;replace.active=false;}else return;}
         const serial=this.spawnSerial++,faction=factionOverride??spawnFaction(this.stats.wave,serial,type);
+        if(rosterSpawn(type,faction)===undefined)return;
+        if(this.count>=BALANCE.maxEnemies){if(['boss','shooterBoss','commander'].includes(type)){const replace=this.enemies.filter(e=>e.active&&['basic','runner'].includes(e.type)).sort((a,b)=>Math.hypot(b.x-this.x,b.y-this.y)-Math.hypot(a.x-this.x,a.y-this.y))[0];if(!replace)return;replace.active=false;}else return;}
         const d = ENEMIES[type], s = scaling(this.stats.wave), robot=faction==='robot'?robotStats(type):{health:1,damage:1,speed:1};
         let e = this.enemies.find(e => !e.active);
         if (!e) {
@@ -1051,7 +1055,7 @@ export class ArenaScene extends Phaser.Scene {
             }
             if(e.type==='cleaver'||e.type==='spear'||e.type==='rifle'){
                 const ranged=e.type==='rifle';if(ranged){if(d<180)speed*=-.5;else if(d<330)speed=0;}
-                if(e.attack<=0&&d<(ranged?480:e.type==='spear'?175:130)&&(!ranged||view.contains(e.x,e.y))){e.telegraph=ranged?.9:.8;e.attack=ranged?3.5:e.type==='spear'?2.8:2.5;e.targetX=this.x;e.targetY=this.y;continue;}
+                if(e.attack<=0&&d<(ranged?480:e.type==='spear'?175:130)&&(!ranged||view.contains(e.x,e.y))){e.telegraph=ranged?.9:.8;e.attack=ranged?3.5:e.type==='spear'?2.8:2.5;e.targetX=this.x;e.targetY=this.y;if(e.faction==='robot'&&e.type==='cleaver'){e.skillAction='slam';e.skillAge=0;e.skillWindup=.8;}continue;}
             }
             if (e.type === 'spitter'||e.type==='bioScreer') {
                 if (d < 210)
@@ -1081,6 +1085,7 @@ export class ArenaScene extends Phaser.Scene {
             }
             if ((e.type === 'brute'||e.type==='abomination') && d < (e.type==='abomination'?135:100) && e.attack <= 0) {
                 e.telegraph = .7;
+                if(e.faction==='robot'){e.skillAction='slam';e.skillAge=0;e.skillWindup=.7;}
                 e.attack = 2.2;
                 e.targetX = this.x;
                 e.targetY = this.y;

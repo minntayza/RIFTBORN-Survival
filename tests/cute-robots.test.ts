@@ -1,0 +1,6 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import {CUTE_ROBOTS,robotPose,crusherArms,crusherWindup} from '../src/cute-robots';
+test('four robots walk with fixed bodies, heads, shoulders and arms; only legs move',()=>{for(const kind of CUTE_ROBOTS){const rest=robotPose(kind);for(let i=0;i<24;i++){const p=robotPose(kind,i/24,1);assert.deepEqual(p.body,rest.body);assert.deepEqual(p.arms,rest.arms);}assert.notDeepEqual(robotPose(kind,.25,1).legs,rest.legs);}});
+test('only Crusher arms animate during skills and all shoulder anchors remain fixed',()=>{for(const kind of CUTE_ROBOTS){const rest=robotPose(kind),raised=robotPose(kind,0,0,{age:.45,windup:.7});assert.deepEqual(raised.body,rest.body);raised.arms.forEach((arm,i)=>{assert.equal(arm.x,rest.arms[i].x);assert.equal(arm.y,rest.arms[i].y);});if(kind==='crusher')assert.notDeepEqual(raised.arms,rest.arms);else assert.deepEqual(raised.arms,rest.arms);}});
+test('Crusher holds overhead, strikes at impact and recovers without a snap for each attack variant',()=>{for(const type of ['brute','abomination','cleaver'] as const){const windup=crusherWindup(type);assert.deepEqual(crusherArms(windup*.6,windup),crusherArms(windup*.8,windup));assert.ok(crusherArms(windup*.6,windup)[0]>2);assert.ok(crusherArms(windup,windup)[0]<.3);assert.deepEqual(crusherArms(windup+.65,windup),[0,0]);}});

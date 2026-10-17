@@ -1,3 +1,4 @@
+import {ROBOT_ATLAS,isCuteRobot,cuteRobotCanvas} from './cute-robots';
 import {COMMAND_ATLAS,commandCanvas} from './cute-command';
 import {OFFICER_ATLAS,hordeAtlas,isCuteHorde,hordeCanvas,cuteRifleHandsCanvas,rifleHandPose} from './cute-horde';
 import {cachedCanvas} from './texture-cache';
@@ -111,9 +112,10 @@ export class ArenaVisuals {
                 const id=key.split('-')[1] as 'ninja'|'wanderer'|'pulse';
                 return cuteCanvas(textures.get(CUTE_ATLAS.key).getSourceImage() as HTMLImageElement,id,frame===0?0:(frame-1)%24/24,frame===0?0:frame>24?.4:1,id!=='ninja');
             }
-            if(key.startsWith('robot-unit-')){const type=key.split('-')[2] as EnemyId;return robotCanvas(ROBOT_ROLES[type],frame,undefined,type);}
+            if(key.startsWith('robot-unit-')){const type=key.split('-')[2] as EnemyId;const kind=ROBOT_ROLES[type];return isCuteRobot(kind)?cuteRobotCanvas(textures.get(ROBOT_ATLAS.key).getSourceImage() as HTMLImageElement,kind,frame,false,type):robotCanvas(kind,frame,undefined,type);}
             if(key.startsWith('skill-')){
                 const [,faction,type,action]=key.split('-');
+                if(faction==='robot'&&isCuteRobot(ROBOT_ROLES[type as EnemyId]))return cuteRobotCanvas(textures.get(ROBOT_ATLAS.key).getSourceImage() as HTMLImageElement,ROBOT_ROLES[type as EnemyId] as import('./cute-robots').CuteRobot,frame,true,type as EnemyId);
                 if(faction==='zombie'&&(type==='boss'||type==='commander'))return commandCanvas(textures.get(COMMAND_ATLAS.key).getSourceImage() as HTMLImageElement,type,frame,action as BossAction);
                 return faction==='robot'?robotCanvas(ROBOT_ROLES[type as EnemyId],frame,action as BossAction,type as EnemyId):zombieBossCanvas(type as 'boss'|'commander'|'shooterBoss',action as BossAction,frame);
             }
