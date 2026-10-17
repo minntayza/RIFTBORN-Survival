@@ -1,0 +1,13 @@
+import Phaser from 'phaser';
+import {ArenaScene} from '../src/combat';
+import {freshSave} from '../src/save';
+import {AudioManager} from '../src/audio';
+import {artImage,heroFigureImage} from '../src/art';
+import {WEAPON_EFFECTS} from '../src/weapon-effects';
+import type {GunnerWeapon} from '../src/gunner-weapons';
+document.querySelector('#shop')!.innerHTML=artImage('hero','gunner')+heroFigureImage('gunner')+'<span>Fixed head and shoulders<br>Recoil · reload · Overdrive</span>';
+const scene=new ArenaScene(freshSave(),new AudioManager(),()=>{},()=>{},()=>{});new Phaser.Game({type:Phaser.CANVAS,parent:'game',width:innerWidth,height:innerHeight,scene:[scene],scale:{mode:Phaser.Scale.RESIZE},audio:{noAudio:true}});
+let weapon:GunnerWeapon='pistols',remaining=0,walking=true,left=false,scrub:number|undefined,sequence=0,reload=0,overdrive=0,clock=0;
+const fire=()=>{if(reload>0)return;scrub=undefined;remaining=WEAPON_EFFECTS[weapon].duration;sequence++;};
+document.querySelector<HTMLSelectElement>('#weapon')!.onchange=e=>{weapon=(e.target as HTMLSelectElement).value as GunnerWeapon;remaining=0;scrub=undefined;};document.querySelector('#fire')!.addEventListener('click',fire);document.querySelector('#walk')!.addEventListener('click',()=>walking=!walking);document.querySelector('#face')!.addEventListener('click',()=>left=!left);document.querySelector('#reload')!.addEventListener('click',()=>{reload=1.2;scrub=undefined;});document.querySelector('#overdrive')!.addEventListener('click',()=>{overdrive=3;reload=0;fire();});document.querySelector<HTMLInputElement>('#timeline')!.oninput=e=>{scrub=Number((e.target as HTMLInputElement).value);document.querySelector<HTMLInputElement>('#auto')!.checked=false;};
+const ready=setInterval(()=>{if(!scene.visuals)return;clearInterval(ready);scene.paused=true;scene.cameras.main.setZoom(2);let last=performance.now(),age=0;const tick=(now:number)=>{const dt=Math.min(.04,(now-last)/1000);last=now;age+=dt;clock+=dt;remaining=Math.max(0,remaining-dt);reload=Math.max(0,reload-dt);overdrive=Math.max(0,overdrive-dt);const cadence=weapon==='smg'?.11:weapon==='shotgun'?.8:.35;if(document.querySelector<HTMLInputElement>('#auto')!.checked&&clock>cadence/(overdrive>0?1.6:1)){clock=0;fire();}const x=600+(walking?Math.sin(age*2)*14:0);scene.x=x;scene.y=400;scene.cameras.main.centerOn(600,360);scene.visuals.render([],'gunner',weapon,x,400,left?Math.PI:0,age,scrub===undefined?remaining:WEAPON_EFFECTS[weapon].duration*(1-scrub),0,0,false,0,10,sequence,1,1,{reload,reloadDuration:1.2,overdrive});requestAnimationFrame(tick);};requestAnimationFrame(tick);},50);

@@ -1,7 +1,7 @@
 export type ArmPoint={x:number;y:number};
 /** Fixed bone lengths; only joint angles change. */
-export function ninjaArm(shoulder:ArmPoint,hand:ArmPoint,bend=1){
- const upper=13,lower=14,dx=hand.x-shoulder.x,dy=hand.y-shoulder.y,d=Math.hypot(dx,dy);
+export function ninjaArm(shoulder:ArmPoint,hand:ArmPoint,bend=1,upper=13,lower=14){
+ const dx=hand.x-shoulder.x,dy=hand.y-shoulder.y,d=Math.hypot(dx,dy);
  const distance=Math.max(.001,Math.min(upper+lower-.001,Math.max(Math.abs(upper-lower)+.001,d)));
  const a=Math.atan2(dy,dx),cos=(upper*upper+distance*distance-lower*lower)/(2*upper*distance);
  const elbowAngle=a+bend*Math.acos(Math.max(-1,Math.min(1,cos)));

@@ -1,3 +1,10 @@
+import {TANK_WEAPONS_ATLAS} from './tank-weapons';
+import {TANK_ATLAS} from './tank-art';
+import {GUNNER_ATLAS} from './gunner-art';
+import {GUNNER_WEAPONS_ATLAS,isGunnerWeapon} from './gunner-weapons';
+import {gunnerWeaponPose} from './gunner-motion';
+import {SAMURAI_WEAPONS_ATLAS} from './samurai-weapons';
+import {SAMURAI_ATLAS} from './samurai-art';
 import {LEADER_ATLAS} from './cute-robot-leaders';
 import {ROBOT_ATLAS} from './cute-robots';
 import {rosterSpawn} from './enemy-roster';
@@ -136,6 +143,9 @@ export class ArenaScene extends Phaser.Scene {
     onLoadingError?:()=>void;
     preload(){
         const assets=[
+            [TANK_WEAPONS_ATLAS.key,TANK_WEAPONS_ATLAS.url],[TANK_ATLAS.key,TANK_ATLAS.url],[GUNNER_ATLAS.key,GUNNER_ATLAS.url],[GUNNER_WEAPONS_ATLAS.key,GUNNER_WEAPONS_ATLAS.url],
+            [SAMURAI_WEAPONS_ATLAS.key,SAMURAI_WEAPONS_ATLAS.url],
+            [SAMURAI_ATLAS.key,SAMURAI_ATLAS.url],
             [LEADER_ATLAS.key,LEADER_ATLAS.url],
             [ROBOT_ATLAS.key,ROBOT_ATLAS.url],
             [COMMAND_ATLAS.key,COMMAND_ATLAS.url],
@@ -176,6 +186,7 @@ export class ArenaScene extends Phaser.Scene {
     stamina = 100;
     ammo = 12;
     reload = 0;
+    reloadDuration=1.2;
     attack = 0;
     ability = 0;
     invuln = 0;
@@ -621,13 +632,13 @@ export class ArenaScene extends Phaser.Scene {
             if (this.reload > 0)
                 return;
             if (this.ammo <= 0) {
-                this.reload = 1.2 * (1 - this.u('reload') * .2);
+                this.reloadDuration=this.reload = 1.2 * (1 - this.u('reload') * .2);
                 return;
             }
             this.attackSequence++;this.swing=WEAPON_EFFECTS[this.weapon].duration;this.audio.play(this.weapon);
             this.ammo--;
             const last = this.ammo === 0;
-            const muzzle=weaponPose(this.weapon,this.x,this.y,this.angle,0,true,this.attackSequence,this.weapon==='pistols'&&this.attackSequence%2===1);
+            const muzzle=isGunnerWeapon(this.weapon)?gunnerWeaponPose(this.weapon,this.x,this.y,this.angle,0,true,this.weapon==='pistols'&&this.attackSequence%2===1):weaponPose(this.weapon,this.x,this.y,this.angle,0,true,this.attackSequence,false);
             this.burst(muzzle.tip.x,muzzle.tip.y,WEAPON_EFFECTS[this.weapon].color,this.weapon==='shotgun'?7:2);
             this.particle(muzzle.grip.x,muzzle.grip.y,0xb19770,70,2,.22);
             this.master('shots', 1);
@@ -637,7 +648,7 @@ export class ArenaScene extends Phaser.Scene {
             if(this.openingShots>0)this.openingShots--;
             if(this.evolution.tempo>=2||this.evolution.tempo===1&&this.attackSequence%3===0)this.pendingEchoes.push({delay:.16,x:muzzle.tip.x,y:muzzle.tip.y,angle:this.angle,damage:w.damage*.35});
             if (!this.ammo)
-                this.reload = 1.2 * (1 - this.u('reload') * .2);
+                this.reloadDuration=this.reload = 1.2 * (1 - this.u('reload') * .2);
         }
         else {
             this.attackSequence++;this.swing=WEAPON_EFFECTS[this.weapon].duration;this.audio.play(this.weapon);
@@ -650,10 +661,10 @@ export class ArenaScene extends Phaser.Scene {
     }
     resolveStrike(strike:{weapon:WeaponId;damage:number;range:number;arc:number;echo:boolean}){
         const identityReady=this.identityCharge>=100;let connected=false;
-        const pose=weaponPose(strike.weapon,this.x,this.y,this.angle,.55,true,this.attackSequence,false,false,strike.range/WEAPONS[strike.weapon].range,strike.arc/WEAPONS[strike.weapon].arc,this.hero==='ninja');
-        for(const e of this.enemies)if(e.active&&meleeContact(strike.weapon,this.x,this.y,this.angle,e,e.r,this.attackSequence,strike.range/WEAPONS[strike.weapon].range,strike.arc/WEAPONS[strike.weapon].arc,this.hero==='ninja')){connected=true;this.hit(e,strike.damage,WEAPONS[strike.weapon].knock);}
+        const pose=weaponPose(strike.weapon,this.x,this.y,this.angle,.55,true,this.attackSequence,false,false,strike.range/WEAPONS[strike.weapon].range,strike.arc/WEAPONS[strike.weapon].arc,this.hero==='tank'?'tank':this.hero==='samurai'?'samurai':this.hero==='ninja');
+        for(const e of this.enemies)if(e.active&&meleeContact(strike.weapon,this.x,this.y,this.angle,e,e.r,this.attackSequence,strike.range/WEAPONS[strike.weapon].range,strike.arc/WEAPONS[strike.weapon].arc,this.hero==='samurai'?'samurai':this.hero==='tank'?'tank':this.hero==='ninja')){connected=true;this.hit(e,strike.damage,WEAPONS[strike.weapon].knock);}
         if(!strike.echo&&connected&&identityReady&&this.hero==='ninja'){this.identityCharge=0;this.identityProcs++;this.pendingStrikes.push({...strike,damage:strike.damage*.45,delay:.15,echo:true});}
-        if(strike.echo){const ghost=this.add.image(pose.grip.x,pose.grip.y,`weapon-${strike.weapon}`).setOrigin(pose.originX,pose.originY).setDisplaySize(pose.size,pose.size).setRotation(pose.rotation).setTint(0xb6a1d7).setAlpha(.45).setDepth(4);this.tweens.add({targets:ghost,alpha:0,duration:220,onComplete:()=>ghost.destroy()});}
+        if(strike.echo){const ghost=this.add.image(pose.grip.x,pose.grip.y,this.hero==='tank'?`tank-${strike.weapon}`:`weapon-${strike.weapon}`).setOrigin(pose.originX,pose.originY).setDisplaySize(pose.size,pose.size).setRotation(pose.rotation).setFlipY(pose.flipY).setTint(0xb6a1d7).setAlpha(.45).setDepth(4);this.tweens.add({targets:ghost,alpha:0,duration:220,onComplete:()=>ghost.destroy()});}
         const g=this.add.graphics().setDepth(4),tip=pose.tip,id=strike.weapon,color=WEAPON_EFFECTS[id].color;
         if(id==='hammer'){
             for(const e of this.enemies)if(e.active&&Math.hypot(e.x-tip.x,e.y-tip.y)<75+e.r)this.hit(e,strike.damage*.25,12);
@@ -1337,7 +1348,7 @@ export class ArenaScene extends Phaser.Scene {
         const color = HEROES[this.hero].color;
         g.fillStyle(0x040b12, .6);
         g.fillEllipse(this.x, this.y + 17, 44, 18);
-        this.visuals.render(this.enemies, this.hero, this.weapon, this.x, this.y, this.angle, this.elapsed, this.swing, this.dash, this.invuln, this.hero === 'tank' && this.weapon!=='hammer' && this.attacking && this.stamina > 0, this.counter, this.ammo,this.attackSequence,1+this.u('range')*.25,1+this.u('wide')*.25);
+        this.visuals.render(this.enemies, this.hero, this.weapon, this.x, this.y, this.angle, this.elapsed, this.swing, this.dash, this.invuln, this.hero === 'tank' && this.weapon!=='hammer' && this.attacking && this.stamina > 0, this.counter, this.ammo,this.attackSequence,1+this.u('range')*.25,1+this.u('wide')*.25,{reload:this.reload,reloadDuration:this.reloadDuration,overdrive:this.overdrive});
         if (this.u('fire')) {
             g.lineStyle(2, 0xffab60, .35);
             g.strokeCircle(this.x, this.y, 100);
@@ -1355,7 +1366,7 @@ export class ArenaScene extends Phaser.Scene {
         }
         if(this.overdrive>0){g.lineStyle(3,0xab9f73,.85);g.beginPath();g.arc(this.x,this.y,34,-Math.PI/2,-Math.PI/2+Math.PI*2*this.overdrive/3);g.strokePath();}
         this.visuals.showDecoy(this.hero,this.decoy);
-        if(this.earlyPower){const w=this.warningGfx,color=({ninja:0xb9a1f2,samurai:0xffb279,gunner:0xffd16c,tank:0x84e1da})[this.hero];const pose=weaponPose(this.weapon,this.x,this.y,this.angle,this.swing,this.swing>0,this.attackSequence,false,false,1+this.u('range')*.25,1+this.u('wide')*.25);w.fillStyle(color,.28+.15*Math.sin(this.elapsed*5));w.fillCircle(pose.tip.x,pose.tip.y,5);}
+        if(this.earlyPower){const w=this.warningGfx,color=({ninja:0xb9a1f2,samurai:0xffb279,gunner:0xffd16c,tank:0x84e1da})[this.hero];const pose=this.hero==='gunner'&&isGunnerWeapon(this.weapon)?gunnerWeaponPose(this.weapon,this.x,this.y,this.angle,1-this.swing/WEAPON_EFFECTS[this.weapon].duration,this.swing>0,this.weapon==='pistols'&&this.attackSequence%2===1,{reload:this.reload,reloadDuration:this.reloadDuration,overdrive:this.overdrive}):weaponPose(this.weapon,this.x,this.y,this.angle,this.swing,this.swing>0,this.attackSequence,false,false,1+this.u('range')*.25,1+this.u('wide')*.25);w.fillStyle(color,.28+.15*Math.sin(this.elapsed*5));w.fillCircle(pose.tip.x,pose.tip.y,5);}
 
         if(this.decoy){g.fillStyle(0x7d78a4,.35);g.fillEllipse(this.decoy.x,this.decoy.y,36,44);g.lineStyle(2,0xaba3c0,.6);g.strokeCircle(this.decoy.x,this.decoy.y,25);}
         if (this.clone > 0) {
