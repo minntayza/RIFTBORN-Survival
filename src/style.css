@@ -918,3 +918,6 @@ button:disabled{box-shadow:none;filter:saturate(.55)}
 .quick-start .home-tools{margin-top:8px}
 @media(min-width:701px){.quick-start{min-height:820px}}
 .menu-survivor>svg.art-image{width:100%;height:100%;filter:drop-shadow(0 12px 12px #0008)}
+.arena-loading{text-align:center;padding:24px 10px}
+.arena-loading progress{display:block;width:100%;height:14px;margin:24px 0 10px;accent-color:#c5a5ed}
+.arena-loading p,.arena-loading small{color:#cad0d3}

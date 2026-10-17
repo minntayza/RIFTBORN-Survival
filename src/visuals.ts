@@ -1,3 +1,4 @@
+import {cachedCanvas} from './texture-cache';
 import {NINJA_ATTACK_ATLAS,NINJA_WEAPONS_ATLAS,ninjaAttackPart,ninjaSwordCanvas,ninjaWeaponCanvas} from './ninja-attack-art';
 import {ninjaArm} from './ninja-arm';
 import {CUTE_ATLAS,cuteCanvas,cuteArmCanvas} from './cute-trio';
@@ -77,26 +78,8 @@ export class ArenaVisuals {
         for (const id of Object.keys(HEROES) as HeroId[])
             for (let f = 0; f < 3; f++)
                 if(!scene.textures.exists(`hero-${id}-${f}`))scene.textures.addCanvas(`hero-${id}-${f}`, actorCanvas('hero', id, f));
-        for (const id of Object.keys(ENEMIES) as EnemyId[]) {
-            const art = zombieSpriteLocation(id);
-            const poses=art?zombieWalkCanvases(scene.textures.get(art.atlas.key).getSourceImage() as HTMLImageElement,id)!:[0,1,2].map(f=>actorCanvas('enemy',id,f));
-            poses.forEach((canvas,f)=>{
-                if(!scene.textures.exists(`enemy-${id}-${f}`))scene.textures.addCanvas(`enemy-${id}-${f}`,canvas);
-                if(art&&!scene.textures.exists(`enemy-${id}-${f}-small`))scene.textures.addCanvas(`enemy-${id}-${f}-small`,minifiedZombieCanvas(canvas));
-            });
-        }
-        for(const type of Object.keys(ENEMIES) as EnemyId[])for(let f=0;f<=WALK_FRAMES*2;f++){
-            const key=`robot-unit-${type}-${f}`;if(scene.textures.exists(key))continue;const c=robotCanvas(ROBOT_ROLES[type],f,undefined,type);scene.textures.addCanvas(key,c);scene.textures.addCanvas(key+'-small',minifiedZombieCanvas(c));
-        }
-        for(const type of ['boss','commander','shooterBoss'] as const)for(const action of ['slam','rally','charge','fire'] as const)for(let f=0;f<36;f++){
-            for(const faction of ['zombie','robot'] as const){
-                const key=`skill-${faction}-${type}-${action}-${f}`;if(scene.textures.exists(key))continue;
-                const c=faction==='robot'?robotCanvas(ROBOT_ROLES[type],f,action,type):zombieBossCanvas(type,action,f);
-                scene.textures.addCanvas(key,c);scene.textures.addCanvas(key+'-small',minifiedZombieCanvas(c));
-            }
-        }
         const rifleArt=zombieSpriteLocation('rifle')!;
-        if(!scene.textures.exists('enemy-rifle-hands'))scene.textures.addCanvas('enemy-rifle-hands',rifleHandsCanvas(scene.textures.get(rifleArt.atlas.key).getSourceImage() as HTMLImageElement));
+        if(!scene.textures.exists('enemy-rifle-hands'))scene.textures.addCanvas('enemy-rifle-hands',rifleHandsCanvas(scene.textures.get(CUTE_ATLAS.key).getSourceImage() as HTMLImageElement));
         for (const id of Object.keys(WEAPONS) as WeaponId[])
             if(!scene.textures.exists(`weapon-${id}`))scene.textures.addCanvas(`weapon-${id}`, weaponCanvas(id));
         const attackSource=scene.textures.get(NINJA_ATTACK_ATLAS.key).getSourceImage() as HTMLImageElement;
@@ -108,11 +91,6 @@ export class ArenaVisuals {
         if(!scene.textures.exists('ninja-katana'))scene.textures.addCanvas('ninja-katana',ninjaSwordCanvas(attackSource));
         for(let side=0;side<2;side++)for(const part of ['upper','forearm','hand'] as const)this.ninjaBones.push(scene.add.image(0,0,`ninja-${part}`).setVisible(false).setDepth(part==='hand'?3.21:3.14));
         const cuteSource=scene.textures.get(CUTE_ATLAS.key).getSourceImage() as HTMLImageElement;
-        for(const id of ['ninja','wanderer','pulse'] as const)for(let f=0;f<=48;f++){
-            const key=`cute-${id}-${f}`;if(scene.textures.exists(key))continue;
-            const c=cuteCanvas(cuteSource,id,f===0?0:(f-1)%24/24,f===0?0:f>24?.4:1,id!=='ninja');
-            scene.textures.addCanvas(key,c);scene.textures.addCanvas(key+'-small',minifiedZombieCanvas(c));
-        }
         if(!scene.textures.exists('cute-ninja-full'))scene.textures.addCanvas('cute-ninja-full',cuteCanvas(cuteSource,'ninja',0,0,true));
         for(const part of ['leftArm','rightArm'] as const){
             const key=`cute-ninja-${part}`;if(!scene.textures.exists(key))scene.textures.addCanvas(key,cuteArmCanvas(cuteSource,part));
@@ -123,17 +101,38 @@ export class ArenaVisuals {
         this.weapon = scene.add.image(600, 380, 'weapon-katana').setDepth(3.2);
         this.offhand = scene.add.image(600, 380, 'weapon-katana').setDepth(3.1).setVisible(false);
     }
+    prepareTexture(key:string){
+        const textures=this.scene.textures;if(textures.exists(key))return;
+        const canvas=cachedCanvas(key,()=>{
+            if(key.endsWith('-small')){const full=key.slice(0,-6);this.prepareTexture(full);return minifiedZombieCanvas(textures.get(full).getSourceImage() as HTMLCanvasElement);}
+            const frame=Number(key.slice(key.lastIndexOf('-')+1));
+            if(key.startsWith('cute-')){
+                const id=key.split('-')[1] as 'ninja'|'wanderer'|'pulse';
+                return cuteCanvas(textures.get(CUTE_ATLAS.key).getSourceImage() as HTMLImageElement,id,frame===0?0:(frame-1)%24/24,frame===0?0:frame>24?.4:1,id!=='ninja');
+            }
+            if(key.startsWith('robot-unit-')){const type=key.split('-')[2] as EnemyId;return robotCanvas(ROBOT_ROLES[type],frame,undefined,type);}
+            if(key.startsWith('skill-')){
+                const [,faction,type,action]=key.split('-');
+                return faction==='robot'?robotCanvas(ROBOT_ROLES[type as EnemyId],frame,action as BossAction,type as EnemyId):zombieBossCanvas(type as 'boss'|'commander'|'shooterBoss',action as BossAction,frame);
+            }
+            const id=key.split('-')[1] as EnemyId;
+            return zombieSpriteLocation(id)?zombieWalkCanvases(textures.get(CUTE_ATLAS.key).getSourceImage() as HTMLImageElement,id)![frame]:actorCanvas('enemy',id,frame);
+        });
+        textures.addCanvas(key,canvas);
+    }
     defeat() { this.hero.setRotation(this.hero.rotation + 1.2).setAlpha(.5).setScale(.5); this.weapon.setVisible(false); this.offhand.setVisible(false);this.cuteArms.forEach(arm=>arm.setVisible(false));this.ninjaArmFx.clear();this.ninjaBones.forEach(bone=>bone.setVisible(false)); }
     death(e: EnemyVisual, time: number) { const key=e.faction==='robot'?(e.type==='spitter'?'cute-pulse-0':`robot-unit-${e.type}-0`):(e.type==='basic'?'cute-wanderer-0':`enemy-${e.type}-0`);const size=e.r*3.4*zombieVisualScale(e.type,this.scene.cameras.main.zoom);let slot = this.ghosts.find(s => s.expires <= time); if (!slot) {
         if (this.ghosts.length >= 24)
             return;
+        this.prepareTexture(key);
         slot = { image: this.scene.add.image(0, 0, key).setDepth(1), size, expires: 0 };
         this.ghosts.push(slot);
-    } slot.size=size;slot.expires = time + .55; slot.image.setTexture(key).setPosition(e.x, e.y).setRotation(.7).setDisplaySize(size,size).setAlpha(.7).setTint(0x778b81).setVisible(true); }
+    } this.prepareTexture(key);slot.size=size;slot.expires = time + .55; slot.image.setTexture(key).setPosition(e.x, e.y).setRotation(.7).setDisplaySize(size,size).setAlpha(.7).setTint(0x778b81).setVisible(true); }
     render(enemies: EnemyVisual[], hero: HeroId, weapon: WeaponId, x: number, y: number, angle: number, time: number, swing: number, dash: number, invuln: number, blocking: boolean, counter: number, ammo: number, sequence=0,reach=1,arcScale=1) {
         const moved = Math.hypot(x - this.lastX, y - this.lastY) > .2, frame = moved ? 1 + Math.floor(time * 10) % 2 : 0;
         this.lastX = x;
         this.lastY = y;
+        if(hero==='ninja')this.prepareTexture(`cute-ninja-${moved?1+Math.floor(time*10)%24:0}`);
         this.hero.setTexture(hero==='ninja'?`cute-ninja-${moved?1+Math.floor(time*10)%24:0}`:`hero-${hero}-${frame}`).setPosition(x, y).setRotation(hero==='ninja'?0:angle).setFlipX(hero==='ninja'&&Math.cos(angle)<0).setAlpha(invuln > 0 ? .75 : 1);
         this.hero.setDisplaySize(78,hero==='ninja'?78:78+Math.sin(time*3)*.8);
         this.hero.clearTint();
@@ -207,7 +206,7 @@ export class ArenaVisuals {
                 continue;
             }
             if (!sprite) {
-                sprite = this.scene.add.image(e.x, e.y, `enemy-${e.type}-0`).setDepth(2);
+                sprite = this.scene.add.image(e.x, e.y, 'hero-ninja-0').setDepth(2);
                 shadow = this.scene.add.ellipse(e.x, e.y + 12, e.r * 2.3, e.r, 0x020713, .45).setDepth(.8);
                 this.enemies.set(e, sprite);
                 this.shadows.set(e, shadow!);
@@ -231,14 +230,14 @@ export class ArenaVisuals {
             const camera=this.scene.cameras.main,zoom=camera.zoom,visualScale=zombieVisualScale(e.type,zoom)*(robot?1.15:1),size=e.r*3.4*visualScale;
             const px=rig&&small?Math.round((e.x-camera.worldView.x)*zoom)/zoom+camera.worldView.x:e.x;
             const py=rig&&small?Math.round((e.y-camera.worldView.y)*zoom)/zoom+camera.worldView.y:e.y;
-            sprite.setVisible(true).setTexture(`${robot?'robot-unit-'+e.type:'enemy-'+e.type}-${gait}${rig&&small?'-small':''}`).setPosition(px,py).setDisplaySize(size,size).setRotation(rotation).setFlipX(flip);
-            if(!robot&&e.type==='basic'||robot&&e.type==='spitter'){
-                const cuteFrame=Math.min(48,gait),id=robot?'pulse':'wanderer';
-                sprite.setTexture(`cute-${id}-${cuteFrame}${small?'-small':''}`).setRotation(0);
-            }
+            const cute=(!robot&&e.type==='basic')||(robot&&e.type==='spitter');
+            const texture=cute?`cute-${robot?'pulse':'wanderer'}-${Math.min(48,gait)}${small?'-small':''}`:`${robot?'robot-unit-'+e.type:'enemy-'+e.type}-${gait}${rig&&small?'-small':''}`;
+            this.prepareTexture(texture);
+            sprite.setVisible(true).setTexture(texture).setPosition(px,py).setDisplaySize(size,size).setRotation(cute?0:rotation).setFlipX(flip);
             if(e.skillAction&&e.skillAge!==undefined&&e.skillWindup&&e.skillAge<e.skillWindup+.65){
                 const f=Math.min(35,Math.floor(e.skillAge/(e.skillWindup+.65)*35));
-                sprite.setTexture(`skill-${robot?'robot':'zombie'}-${e.type}-${e.skillAction}-${f}${small?'-small':''}`).setRotation(0).setFlipX(x<e.x);
+                const texture=`skill-${robot?'robot':'zombie'}-${e.type}-${e.skillAction}-${f}${small?'-small':''}`;this.prepareTexture(texture);
+                sprite.setTexture(texture).setRotation(0).setFlipX(x<e.x);
             }
             sprite.setDepth(2+Math.atan((e.y+e.r)/1000)*.1);
             if(e.type==='rifle'&&!robot){

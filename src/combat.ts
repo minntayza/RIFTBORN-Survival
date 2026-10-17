@@ -1,3 +1,4 @@
+import {decodedImages} from './texture-cache';
 import {NINJA_ATTACK_ATLAS,NINJA_WEAPONS_ATLAS} from './ninja-attack-art';
 import {CUTE_ATLAS} from './cute-trio';
 import {bossAction,type BossAction} from './boss-motion';
@@ -125,7 +126,20 @@ export class ArenaScene extends Phaser.Scene {
     wreckImages:Phaser.GameObjects.Image[]=[];
     mapCars:Wreck[]=[];
     robotArt:RobotMapArt|undefined;
-    preload(){this.load.image(NINJA_WEAPONS_ATLAS.key,NINJA_WEAPONS_ATLAS.url);this.load.image(NINJA_ATTACK_ATLAS.key,NINJA_ATTACK_ATLAS.url);this.load.image(CUTE_ATLAS.key,CUTE_ATLAS.url);for(const atlas of ZOMBIE_ATLASES)this.load.image(atlas.key,atlas.url);for(const key of ['robot-factory-ground','robot-garden-ground','robot-factory-props','robot-garden-props'])this.load.image(key,`/assets/maps/${key}.png`);this.load.image('park-ground','/assets/maps/park-cartoon.png');this.load.image('city-asphalt','/assets/maps/city-asphalt-cartoon.png');this.load.image('city-wreck','/assets/maps/wreck-sedan-cartoon.png');}
+    onLoading?:(progress:number)=>void;
+    onArenaReady?:()=>void;
+    onLoadingError?:()=>void;
+    preload(){
+        const assets=[
+            [NINJA_WEAPONS_ATLAS.key,NINJA_WEAPONS_ATLAS.url],[NINJA_ATTACK_ATLAS.key,NINJA_ATTACK_ATLAS.url],[CUTE_ATLAS.key,CUTE_ATLAS.url],
+            ...['robot-factory-ground','robot-garden-ground','robot-factory-props','robot-garden-props'].map(key=>[key,`/assets/maps/${key}.png`]),
+            ['park-ground','/assets/maps/park-cartoon.png'],['city-asphalt','/assets/maps/city-asphalt-cartoon.png'],['city-wreck','/assets/maps/wreck-sedan-cartoon.png']
+        ];
+        this.load.on('progress',(progress:number)=>this.onLoading?.(progress));
+        this.load.on('loaderror',()=>this.onLoadingError?.());
+        this.load.on('filecomplete',(key:string,type:string,image:HTMLImageElement)=>{if(type==='image')decodedImages.set(key,image);});
+        for(const [key,url] of assets){const image=decodedImages.get(key);if(image)this.textures.addImage(key,image);else this.load.image(key,url);}
+    }
     moveOnGround(x:number,y:number,dx:number,dy:number,r:number){
         if(!this.mapCars.length)return {x:x+dx,y:y+dy};
         // Substeps prevent dash and knockback from crossing a thin chassis.
@@ -318,7 +332,7 @@ export class ArenaScene extends Phaser.Scene {
     grid = new Map<string, Enemy[]>();
     dashHits = new Set<Enemy>();
     constructor(save: Save, audio: AudioManager, choice: (wave: boolean) => void, end: () => void, pause: () => void, options?:RunOptions) { super('arena'); this.save = save; this.audio = audio; this.hero = save.hero; this.weapon = save.weapon; this.onChoice = choice; this.onEnd = end; this.onPause = pause; if(options){this.options=options;this.hero=options.hero||save.hero;this.weapon=options.weapon||save.weapon;} if(this.options.seed!==undefined){this.random=seededRandom(this.options.seed);this.cardRandom=seededRandom(this.options.seed^0x85ebca6b);}if(!techniqueUnlocked(save.mastery[this.hero]?.kills||0,this.options.technique))this.options.technique='standard'; }
-    create() { this.robotArt=new RobotMapArt(this);const park=this.textures.get('park-ground'),pw=Math.floor(park.getSourceImage().width/5),ph=Math.floor(park.getSourceImage().height/5);for(let y=0;y<5;y++)for(let x=0;x<5;x++)park.add(`${x}-${y}`,0,x*pw,y*ph,pw,ph); this.textures.get('city-wreck').add('chassis',0,150,18,810,1395); this.floor = this.add.graphics().setDepth(-4); this.gfx = this.add.graphics();this.warningGfx=this.add.graphics().setDepth(6); this.drawFloor(); this.visuals = new ArenaVisuals(this); this.keys = this.input.keyboard!.addKeys('W,A,S,D,UP,DOWN,LEFT,RIGHT,SPACE,ESC,M,ONE,TWO,THREE') as typeof this.keys; this.input.keyboard!.on('keydown-ESC', () => this.onPause()); this.input.keyboard!.on('keydown-M', () => { this.save.settings.sound = !this.save.settings.sound; this.audio.sound = this.save.settings.sound; }); this.input.keyboard!.addCapture(['W', 'A', 'S', 'D', 'UP', 'DOWN', 'LEFT', 'RIGHT', 'SPACE']); const h = HEROES[this.hero]; this.maxHp = h.hp * (1 + this.meta('health') * .05); if(this.options.build==='guard')this.maxHp*=1.15;if(this.options.mode!=='daily'&&this.masteryKills>=100)this.maxHp*=1.05;this.hp = this.maxHp; this.rerolls = 1 + this.meta('reroll'); this.ammo=this.maxAmmo;this.applyMapView(); this.startWave(); }
+    create() { this.robotArt=new RobotMapArt(this);const park=this.textures.get('park-ground'),pw=Math.floor(park.getSourceImage().width/5),ph=Math.floor(park.getSourceImage().height/5);for(let y=0;y<5;y++)for(let x=0;x<5;x++)park.add(`${x}-${y}`,0,x*pw,y*ph,pw,ph); this.textures.get('city-wreck').add('chassis',0,150,18,810,1395); this.floor = this.add.graphics().setDepth(-4); this.gfx = this.add.graphics();this.warningGfx=this.add.graphics().setDepth(6); this.drawFloor(); this.visuals = new ArenaVisuals(this); this.keys = this.input.keyboard!.addKeys('W,A,S,D,UP,DOWN,LEFT,RIGHT,SPACE,ESC,M,ONE,TWO,THREE') as typeof this.keys; this.input.keyboard!.on('keydown-ESC', () => this.onPause()); this.input.keyboard!.on('keydown-M', () => { this.save.settings.sound = !this.save.settings.sound; this.audio.sound = this.save.settings.sound; }); this.input.keyboard!.addCapture(['W', 'A', 'S', 'D', 'UP', 'DOWN', 'LEFT', 'RIGHT', 'SPACE']); const h = HEROES[this.hero]; this.maxHp = h.hp * (1 + this.meta('health') * .05); if(this.options.build==='guard')this.maxHp*=1.15;if(this.options.mode!=='daily'&&this.masteryKills>=100)this.maxHp*=1.05;this.hp = this.maxHp; this.rerolls = 1 + this.meta('reroll'); this.ammo=this.maxAmmo;this.applyMapView(); this.startWave();this.events.once('postupdate',()=>this.onArenaReady?.()); }
     applyMapView(){this.cameras.main.setZoom(1.05/(this.save.settings.mapView||1));this.cameras.main.centerOn(this.x,this.y);}
     floorTheme = 0;
     robotOrigin:RobotOrigin|undefined;

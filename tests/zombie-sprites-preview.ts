@@ -15,6 +15,7 @@ const ready=setInterval(()=>{
  }
  // Keep the hero out of the atlas lineup while using the actual live renderer.
  scene.x=600;scene.y=760;scene.render();scene.cameras.main.centerOn(600,380);
+ for(const id of ZOMBIE_SPRITES)for(let f=0;f<49;f++)scene.visuals.prepareTexture(`enemy-${id}-${f}`);
  document.body.dataset.uniquePoseCounts=ZOMBIE_SPRITES.map(id=>new Set(Array.from({length:49},(_,i)=>i).map(frame=>(scene.textures.get(`enemy-${id}-${frame}`).getSourceImage() as HTMLCanvasElement).toDataURL())).size).join(',');
  document.body.dataset.headStable=ZOMBIE_SPRITES.map(id=>{
   const patch=(f:number)=>{const c=scene.textures.get(`enemy-${id}-${f}`).getSourceImage() as HTMLCanvasElement;return Array.from(c.getContext('2d')!.getImageData(id==='runner'?94:58,id==='runner'?68:28,8,8).data).join(',');};
