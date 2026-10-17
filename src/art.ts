@@ -73,6 +73,7 @@ export function enemySvg(id: EnemyId) {
 }
 export const heroFigureImage = (id:HeroId) => id==='ninja'?cutePortrait('ninja').replace('<svg ','<svg class="art-image" ') : `<img class="art-image" alt="${HEROES[id].name} illustration" src="data:image/svg+xml,${encodeURIComponent(heroSvg(id,false))}">`;
 export const artImage = (kind: 'hero' | 'weapon' | 'enemy', id: string, cls = '') => kind==='weapon'&&(id==='katana'||id==='dual'||id==='kama')?ninjaWeaponPortrait(id).replace('<svg ',`<svg class="art-image ${cls}" `):kind==='hero'&&id==='ninja'?cutePortrait('ninja').replace('<svg ',`<svg class="art-image ${cls}" `):kind==='enemy'&&id==='basic'?cutePortrait('wanderer').replace('<svg ',`<svg class="art-image ${cls}" `): `<img class="art-image ${cls}" alt="${kind === 'hero' ? HEROES[id as HeroId].name : kind === 'weapon' ? WEAPONS[id as WeaponId].name : ENEMIES[id as EnemyId].name} illustration" src="data:image/svg+xml,${encodeURIComponent(kind === 'hero' ? heroSvg(id as HeroId) : kind === 'weapon' ? weaponSvg(id as WeaponId) : enemySvg(id as EnemyId))}">`;
+export const weaponShopImage = (id: WeaponId) => (id==='katana'||id==='dual'||id==='kama')?ninjaWeaponPortrait(id).replace('<svg ','<svg class="weapon-reference-art" '): `<img class="weapon-reference-art" alt="${WEAPONS[id].name} illustrated weapon" src="/assets/weapon-cards/${id}.webp" loading="lazy">`;
 // Cached top-down animation frames: canvas is used once at scene creation, never per frame.
 export function actorCanvas(kind: 'hero' | 'enemy', id: HeroId | EnemyId, frame: number) {
     const canvas = document.createElement('canvas');
@@ -92,8 +93,8 @@ export function actorCanvas(kind: 'hero' | 'enemy', id: HeroId | EnemyId, frame:
     // Feet and trailing cloth are behind the shoulders, with the face on the leading edge.
     const hero=kind==='hero',h=id as HeroId,e=id as EnemyId;
     const skin=hero?(h==='ninja'?'#344469':h==='tank'?'#466a7c':'#c0a189'):'#'+ENEMIES[e].color.toString(16);
-    const body=hero?(h==='ninja'?'#273653':h==='samurai'?'#9e424d':h==='gunner'?'#d7a545':'#497c85'):(e==='boss'?'#563749':e==='armoured'?'#657889':e==='rifle'?'#647153':e==='cleaver'?'#806d57':e==='spear'?'#576e6b':'#405548');
-    const broad=hero&&h==='tank'||!hero&&(e==='boss'||e==='brute');
+    const body=hero?(h==='ninja'?'#273653':h==='samurai'?'#9e424d':h==='gunner'?'#d7a545':'#497c85'):(e==='boss'?'#723641':e==='armoured'?'#657889':e==='rifle'?'#647153':e==='cleaver'?'#806d57':e==='spear'?'#576e6b':e==='brute'?'#c56f43':e==='abomination'?'#875276':e==='bioScreer'?'#596b46':e==='shadowLurker'?'#352c4b':'#405548');
+    const broad=hero&&h==='tank'||!hero&&(e==='boss'||e==='brute'||e==='abomination');
     ellipse(-10,18+walk,6,10,'#172233');ellipse(10,18-walk,6,10,'#172233');
     if(hero&&h==='ninja')shape([[-6,7],[-18,27+walk],[-29,36],[-14,33],[3,13]],'#7562b0');
     if(hero&&h==='samurai'||!hero&&e==='boss')shape([[-20,7],[-23,29],[-7,24],[0,30],[19,27],[20,7]],body);
@@ -120,6 +121,9 @@ export function actorCanvas(kind: 'hero' | 'enemy', id: HeroId | EnemyId, frame:
     if(!hero&&e==='cleaver'){line(28,4,28,-42,'#7d5e40',6);shape([[24,-43],[52,-40],[50,-20],[25,-23]],'#a0aaa5');}
     if(!hero&&e==='spear'){line(27,23,27,-46,'#ab8d61',5);shape([[27,-59],[20,-43],[27,-36],[34,-43]],'#b6c6bc');}
     if(!hero&&e==='rifle'){shape([[15,5],[30,5],[30,-25],[19,-28]],'#35434b');line(25,-25,25,-50,'#a1adab',5);}
+    if(!hero&&e==='abomination'){shape([[-21,1],[-35,-8],[-42,-25],[-35,-30],[-25,-11],[-13,-7]],'#a96591');shape([[21,1],[35,-8],[42,-25],[35,-30],[25,-11],[13,-7]],'#a96591');line(-10,-7,-18,-20,'#d99abb',4);line(10,-7,18,-20,'#d99abb',4);}
+    if(!hero&&e==='bioScreer'){shape([[-25,1],[-21,-13],[-10,-15],[0,-7],[10,-15],[21,-13],[25,1],[14,15],[-14,15]],'#657852');ellipse(0,-7,12,10,'#404f40');ellipse(-5,-8,3,3,'#a5db60');ellipse(5,-8,3,3,'#a5db60');shape([[-28,9],[-35,16],[-32,28],[-22,25]],'#89ce4e');shape([[28,9],[35,16],[32,28],[22,25]],'#89ce4e');}
+    if(!hero&&e==='shadowLurker'){shape([[-23,6],[-29,25],[-19,34],[-7,23],[0,34],[8,23],[20,34],[29,25],[23,6],[15,-4],[-15,-4]],'#312740');shape([[-17,-9],[-13,-20],[0,-25],[14,-19],[19,-8],[12,4],[-12,4]],'#251f34');line(-8,-8,-3,-8,'#cb8aff',3);line(4,-8,9,-8,'#cb8aff',3);}
     return canvas;
 }
 export function weaponCanvas(id: WeaponId) {

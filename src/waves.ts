@@ -40,7 +40,7 @@ export function wavePlan(w: number, random=Math.random): Spawn[] {
             let budget = Math.floor(waveBudget(w) * f * encounterRhythm(w).density), i = 0;
             while (budget >= 5) {
                 const variant=(w-11)%4;
-                const keys: EnemyId[] = [...(variant===1?['runner' as EnemyId,'runner' as EnemyId,'runner' as EnemyId]:['basic' as EnemyId,'basic' as EnemyId]), 'runner', 'spitter', 'armoured', 'brute', 'cleaver', ...(w>=12?['spear' as EnemyId]:[]), ...(w>=13?['rifle' as EnemyId]:[]), ...(w % 4 === 0 ? ['elite' as EnemyId] : [])];
+                const keys: EnemyId[] = [...(variant===1?['runner' as EnemyId,'runner' as EnemyId,'runner' as EnemyId]:['basic' as EnemyId,'basic' as EnemyId]), 'runner', 'spitter', 'armoured', 'brute', 'cleaver', ...(w>=12?['spear' as EnemyId]:[]), ...(w>=13?['rifle' as EnemyId,'bioScreer' as EnemyId]:[]), ...(w>=14?['abomination' as EnemyId]:[]), ...(w>=15?['shadowLurker' as EnemyId,'shadowLurker' as EnemyId]:[]), ...(w % 4 === 0 ? ['elite' as EnemyId] : [])];
                 const affordable=keys.filter(type=>ENEMIES[type].cost<=budget);
                 const type = affordable.length?affordable[Math.floor(random() * affordable.length)]:'basic';
                 if (ENEMIES[type].cost > budget)

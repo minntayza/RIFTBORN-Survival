@@ -158,6 +158,7 @@ export class ArenaScene extends Phaser.Scene {
     invuln = 0;
     private invulnFromBite=false;
     private biteCooldowns=new WeakMap<Enemy,number>();
+    private smokeBombReadyAt=0;
     dash = 0;
     dashX = 0;
     dashY = 0;
@@ -639,7 +640,7 @@ export class ArenaScene extends Phaser.Scene {
         else if(strike.echo){g.lineStyle(2,color,.6);g.beginPath();g.arc(pose.grip.x,pose.grip.y,Math.hypot(tip.x-pose.grip.x,tip.y-pose.grip.y),this.angle-.7,this.angle+.7);g.strokePath();}
         this.tweens.add({targets:g,alpha:0,duration:id==='hammer'?350:140,onComplete:()=>g.destroy()});
         if(!strike.echo&&this.hero==='samurai'&&identityReady){this.identityCharge=0;this.identityProcs++;this.windSlash(WEAPONS[id].damage*.7,tip);}
-        if(!strike.echo){if(this.attackSequence%3===0&&(this.evolved('wide')||this.evolved('spikes'))){this.slash(strike.damage*.4,strike.range,Math.PI*2);this.impactRing(this.x,this.y,strike.range,0xb8abd1);}if(this.evolution.reach>=2)this.windSlash(WEAPONS[id].damage*(.5+this.evolution.reach*.2),tip);if(this.u('wind')){this.windSlash(WEAPONS[id].damage*.6,tip);if(this.evolved('wind')){const a=this.angle;this.angle+=.2;this.windSlash(WEAPONS[id].damage*.6,tip);this.angle=a;}}if(this.evolution.power>=2){for(const e of this.enemies)if(e.active&&Math.hypot(e.x-tip.x,e.y-tip.y)<105+e.r)this.hit(e,WEAPONS[id].damage*.25*this.evolution.power,12);this.impactRing(tip.x,tip.y,105);}}
+        if(!strike.echo){if(this.hero==='samurai'&&this.u('dragon-slash')&&this.attackSequence%3===0){const level=this.u('dragon-slash'),reach=235+level*20+(this.evolved('dragon-slash')?70:0);this.dash=Math.max(this.dash,.16);this.invuln=Math.max(this.invuln,.16);this.dashX=Math.cos(this.angle);this.dashY=Math.sin(this.angle);for(const e of this.enemies){const dx=e.x-this.x,dy=e.y-this.y,d=Math.hypot(dx,dy),a=Math.atan2(dy,dx);if(e.active&&d<reach+e.r&&Math.abs(Phaser.Math.Angle.Wrap(a-this.angle))<.62){this.hit(e,WEAPONS[id].damage*(.6+level*.25),WEAPONS[id].knock);e.burn=Math.max(e.burn,1.4+level*.45+(this.evolved('dragon-slash')?1.2:0));if(this.evolved('dragon-slash'))this.hit(e,WEAPONS[id].damage*.4,0);}}this.impactRing(tip.x,tip.y,95+level*12,0xff985b);}if(this.attackSequence%3===0&&(this.evolved('wide')||this.evolved('spikes'))){this.slash(strike.damage*.4,strike.range,Math.PI*2);this.impactRing(this.x,this.y,strike.range,0xb8abd1);}if(this.evolution.reach>=2)this.windSlash(WEAPONS[id].damage*(.5+this.evolution.reach*.2),tip);if(this.u('wind')){this.windSlash(WEAPONS[id].damage*.6,tip);if(this.evolved('wind')){const a=this.angle;this.angle+=.2;this.windSlash(WEAPONS[id].damage*.6,tip);this.angle=a;}}if(this.evolution.power>=2){for(const e of this.enemies)if(e.active&&Math.hypot(e.x-tip.x,e.y-tip.y)<105+e.r)this.hit(e,WEAPONS[id].damage*.25*this.evolution.power,12);this.impactRing(tip.x,tip.y,105);}}
         if(this.hero==='tank'&&this.blockCharge>=100){this.blockCharge=0;this.slash(WEAPONS[id].damage*2,170,Math.PI*2);}
     }
     activate(dx:number,dy:number){
@@ -692,7 +693,9 @@ export class ArenaScene extends Phaser.Scene {
             this.audio.play('hit');
         }
         if(e){if(this.enemies.some(c=>c.active&&c.type==='commander'&&c.commandTime>0&&Math.hypot(c.x-e.x,c.y-e.y)<220))value*=1.15;e.touched=true;}
+        value *= 1 - this.meta('defense') * .05;
         if(e)a=Math.atan2(e.y-this.y,e.x-this.x);
+        if(this.hero==='ninja'&&this.u('smoke')&&this.time.now>=this.smokeBombReadyAt){const level=this.u('smoke'),radius=145+level*28;this.smokeBombReadyAt=this.time.now+Math.max(4200,9000-level*1500);for(const enemy of this.enemies)if(enemy.active&&Math.hypot(enemy.x-this.x,enemy.y-this.y)<radius)enemy.slow=Math.max(enemy.slow,1.5+level*.5+(this.evolved('smoke')?1:0));if(this.evolved('smoke'))this.rewardShield=Math.max(this.rewardShield,1);this.invuln=Math.max(this.invuln,.35);this.burst(this.x,this.y,0xb69cff,18+level*4);this.impactRing(this.x,this.y,radius,0xb69cff);this.notifyCombat('SMOKE BOMB · ENEMIES DAZED');}
         this.lastCause=e?enemyName(e.type,e.faction):source;
         this.damageFeedback={time:.65,angle:a,value:Math.round(value),label:this.lastCause};
         this.showHpChange(-Math.min(this.hp,value));
@@ -980,7 +983,7 @@ export class ArenaScene extends Phaser.Scene {
             if (e.telegraph > 0) {
                 e.telegraph -= dt;
                 if (e.telegraph <= 0) {
-                    if (e.type === 'spitter')
+                    if ((e.type === 'spitter'||e.type==='bioScreer'))
                         this.shoot(e.x,e.y,Math.atan2(e.targetY-e.y,e.targetX-e.x),e.damage,true,0,false,false,'round',e.faction==='robot'?'Pulse shot':'Spitter');
                     else if(e.type==='rifle'){
                         e.shotKick=.16;this.shoot(e.x,e.y,Math.atan2(e.targetY-e.y,e.targetX-e.x),e.damage,true,0,false,false,'round',e.faction==='robot'?'Pulse shot':'Rifle shot');const shot=this.bullets.find(b=>b.active&&b.hostile&&b.x===e.x&&b.y===e.y);if(shot){shot.vx*=1.5;shot.vy*=1.5;shot.life=3;}this.burst(e.x,e.y,0xb2ac88,4);
@@ -1013,6 +1016,10 @@ export class ArenaScene extends Phaser.Scene {
                         }
                         e.phase++;
                     }
+                    else if(e.type==='abomination'){
+                        this.impactRing(e.targetX,e.targetY,115,0xc56da5);
+                        if(Math.hypot(this.x-e.targetX,this.y-e.targetY)<115)this.hurt(e.damage,e,a+Math.PI);
+                    }
                     else if (d < e.r + 65) {
                         this.hurt(e.damage, e, a + Math.PI);
                         {const p=this.moveOnGround(this.x,this.y,dx/d*25,dy/d*25,17);this.x=p.x;this.y=p.y;}
@@ -1028,7 +1035,7 @@ export class ArenaScene extends Phaser.Scene {
                 const ranged=e.type==='rifle';if(ranged){if(d<180)speed*=-.5;else if(d<330)speed=0;}
                 if(e.attack<=0&&d<(ranged?480:e.type==='spear'?175:130)&&(!ranged||view.contains(e.x,e.y))){e.telegraph=ranged?.9:.8;e.attack=ranged?3.5:e.type==='spear'?2.8:2.5;e.targetX=this.x;e.targetY=this.y;continue;}
             }
-            if (e.type === 'spitter') {
+            if (e.type === 'spitter'||e.type==='bioScreer') {
                 if (d < 210)
                     speed *= -.7;
                 if (d > 220 && d < 310)
@@ -1054,7 +1061,7 @@ export class ArenaScene extends Phaser.Scene {
                 if(e.phase%3===1){for(let i=0;i<5;i++){const side=i%4,f=.2+i*.15;this.reinforcementMarks.push({x:side===0?view.x+20:side===1?view.right-20:view.x+view.width*f,y:side===2?view.y+25:side===3?view.bottom-25:view.y+view.height*f,life:1.5});}}
                 continue;
             }
-            if (e.type === 'brute' && d < 100 && e.attack <= 0) {
+            if ((e.type === 'brute'||e.type==='abomination') && d < (e.type==='abomination'?135:100) && e.attack <= 0) {
                 e.telegraph = .7;
                 e.attack = 2.2;
                 e.targetX = this.x;
@@ -1081,7 +1088,7 @@ export class ArenaScene extends Phaser.Scene {
                         }
                 }
             {const p=separateWrecks(e.x,e.y,e.r,this.mapCars);e.x=p.x;e.y=p.y;}
-            if (d < e.r + 17 && !['brute','cleaver','spear','rifle','shooterBoss','commander'].includes(e.type) && e.attack <= 0) {
+            if (d < e.r + 17 && !['brute','abomination','cleaver','spear','rifle','shooterBoss','commander'].includes(e.type) && e.attack <= 0) {
                 this.hurt(e.damage, e, a + Math.PI,e.faction==='robot'?'Robot strike':'Zombie bite',true);
                 e.attack = .9;
             }
@@ -1244,6 +1251,7 @@ export class ArenaScene extends Phaser.Scene {
                 }
                 continue;
             }
+            if(e.type==='abomination'&&e.telegraph>0){g.fillStyle(0xb65f99,.14);g.fillCircle(e.targetX,e.targetY,115);g.lineStyle(6,0x182129,.9);g.strokeCircle(e.targetX,e.targetY,115);g.lineStyle(3,0xc56da5,.95);g.strokeCircle(e.targetX,e.targetY,115);continue;}
             if (e.telegraph > 0) {
                 g.lineStyle(6,0x182129,.95);g.strokeCircle(e.type==='boss'?e.targetX:e.x,e.type==='boss'?e.targetY:e.y,e.type==='boss'?115:e.type==='brute'?75:28);
                 if(e.type==='boss'&&e.phase%3===2){g.lineStyle(12,0x182129,.8);g.lineBetween(e.x,e.y,e.targetX,e.targetY);g.lineStyle(4,0xbb796f,.95);g.lineBetween(e.x,e.y,e.targetX,e.targetY);}

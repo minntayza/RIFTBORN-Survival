@@ -18,12 +18,12 @@ export const ROBOTS={
  sentinel:{name:'Factory Sentinel',color:'#ff5d65',role:'Boss',cue:'Red crowned armor, four articulated legs and a bright gold reactor.',tip:'Dodge its locked charge lane and ground slams.'}
 } as const;
 export type RobotKind=keyof typeof ROBOTS;
-export const ROBOT_ROLES:Record<EnemyId,RobotKind>={basic:'walker',runner:'scout',spitter:'pulse',rifle:'pulse',armoured:'shield',spear:'shield',brute:'crusher',cleaver:'crusher',elite:'shield',shooterBoss:'pulse',commander:'command',boss:'sentinel'};
+export const ROBOT_ROLES:Record<EnemyId,RobotKind>={abomination:'crusher',bioScreer:'pulse',shadowLurker:'scout',basic:'walker',runner:'scout',spitter:'pulse',rifle:'pulse',armoured:'shield',spear:'shield',brute:'crusher',cleaver:'crusher',elite:'shield',shooterBoss:'pulse',commander:'command',boss:'sentinel'};
 export function enemyName(type:EnemyId,faction:EnemyFaction='zombie'){
  if(faction==='zombie')return ENEMIES[type].name;
  if(type==='elite')return 'Shield Warden';if(type==='shooterBoss')return 'Pulse Overseer';return ROBOTS[ROBOT_ROLES[type]].name;
 }
-export function robotMovementType(type:EnemyId):WalkingZombie{return type==='cleaver'?'brute':type==='spear'?'armoured':type==='shooterBoss'?'spitter':type;}
+export function robotMovementType(type:EnemyId):WalkingZombie{return type==='abomination'?'brute':type==='bioScreer'?'spitter':type==='shadowLurker'?'runner':type==='cleaver'?'brute':type==='spear'?'armoured':type==='shooterBoss'?'spitter':type;}
 type Shape={path:string;fill:string;stroke?:string;width?:number;part?:'body'|'legs'|'leftArm'|'rightArm'};
 const ink='#111e33';
 // Shared angular armor artwork keeps the field guide and animated combat identical.

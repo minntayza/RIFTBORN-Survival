@@ -7,6 +7,6 @@ test('every survivor, weapon and enemy has a complete original vector preview',(
  const expected=Object.keys(HEROES).length+Object.keys(WEAPONS).length+Object.keys(ENEMIES).length;assert.equal(art.length,expected);assert.equal(new Set(art).size,expected);
  for(const source of art){assert.ok(source.startsWith('<svg'));assert.ok(source.endsWith('</svg>'));assert.ok(!/undefined|NaN|https?:\/\//.test(source.replace('http://www.w3.org/2000/svg','')));}
 });
-test('weapon portraits carry descriptive accessible names and local data URIs',()=>{
- for(const id of Object.keys(WEAPONS)){const image=artImage('weapon',id);assert.ok(image.includes(`${WEAPONS[id as WeaponId].name} illustration`));assert.ok(image.includes('data:image/svg+xml,'));}
+test('weapon portraits carry descriptive accessible names and local artwork',()=>{
+ for(const id of Object.keys(WEAPONS)){const image=artImage('weapon',id);assert.ok(image.includes(`${WEAPONS[id as WeaponId].name} illustration`));assert.ok(image.includes('data:image/svg+xml,')||(image.includes('role="img"')&&image.includes('href="/assets/characters/')));}
 });
