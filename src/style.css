@@ -921,3 +921,6 @@ button:disabled{box-shadow:none;filter:saturate(.55)}
 .arena-loading{text-align:center;padding:24px 10px}
 .arena-loading progress{display:block;width:100%;height:14px;margin:24px 0 10px;accent-color:#c5a5ed}
 .arena-loading p,.arena-loading small{color:#cad0d3}
+.guide-design.cute-concept{background:transparent;border-radius:12px;overflow:hidden}
+.concept-badge{display:inline-block;color:#e4c695!important;font-size:10px!important;letter-spacing:.06em;margin:8px 0}
+.enemy-card .concept-badge{display:block}
