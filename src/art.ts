@@ -1,3 +1,5 @@
+import {ninjaWeaponPortrait} from './ninja-attack-art';
+import {cutePortrait} from './cute-trio';
 import type { HeroId, WeaponId, EnemyId } from './config';
 import { HEROES, WEAPONS, ENEMIES } from './config';
 // Original vector illustrations. The same equipment language is used in portraits and arena textures.
@@ -69,8 +71,8 @@ export function enemySvg(id: EnemyId) {
     if(id==='commander')b+=path('M75 85 L151 82 L173 166 L151 215 L80 210 L61 154 Z','#3e4f65')+path('M72 91 L47 84 L43 106 L78 119 M152 86 L181 82 L188 103 L156 115','#aa9766')+path('M90 34 L96 14 L137 14 L151 31 L149 48 L88 48 Z','#526779')+path('M91 42 L152 41','none','#d0b779',7)+path('M191 88 L188 204','none','#9db8bd',8)+circle(191,85,12,'#a8c4ca')+path('M113 113 L126 105 L139 113 L126 130 Z','#b6a16f');
     return svg(b);
 }
-export const heroFigureImage = (id:HeroId) => `<img class="art-image" alt="${HEROES[id].name} illustration" src="data:image/svg+xml,${encodeURIComponent(heroSvg(id,false))}">`;
-export const artImage = (kind: 'hero' | 'weapon' | 'enemy', id: string, cls = '') => `<img class="art-image ${cls}" alt="${kind === 'hero' ? HEROES[id as HeroId].name : kind === 'weapon' ? WEAPONS[id as WeaponId].name : ENEMIES[id as EnemyId].name} illustration" src="data:image/svg+xml,${encodeURIComponent(kind === 'hero' ? heroSvg(id as HeroId) : kind === 'weapon' ? weaponSvg(id as WeaponId) : enemySvg(id as EnemyId))}">`;
+export const heroFigureImage = (id:HeroId) => id==='ninja'?cutePortrait('ninja').replace('<svg ','<svg class="art-image" ') : `<img class="art-image" alt="${HEROES[id].name} illustration" src="data:image/svg+xml,${encodeURIComponent(heroSvg(id,false))}">`;
+export const artImage = (kind: 'hero' | 'weapon' | 'enemy', id: string, cls = '') => kind==='weapon'&&(id==='katana'||id==='dual'||id==='kama')?ninjaWeaponPortrait(id).replace('<svg ',`<svg class="art-image ${cls}" `):kind==='hero'&&id==='ninja'?cutePortrait('ninja').replace('<svg ',`<svg class="art-image ${cls}" `):kind==='enemy'&&id==='basic'?cutePortrait('wanderer').replace('<svg ',`<svg class="art-image ${cls}" `): `<img class="art-image ${cls}" alt="${kind === 'hero' ? HEROES[id as HeroId].name : kind === 'weapon' ? WEAPONS[id as WeaponId].name : ENEMIES[id as EnemyId].name} illustration" src="data:image/svg+xml,${encodeURIComponent(kind === 'hero' ? heroSvg(id as HeroId) : kind === 'weapon' ? weaponSvg(id as WeaponId) : enemySvg(id as EnemyId))}">`;
 // Cached top-down animation frames: canvas is used once at scene creation, never per frame.
 export function actorCanvas(kind: 'hero' | 'enemy', id: HeroId | EnemyId, frame: number) {
     const canvas = document.createElement('canvas');

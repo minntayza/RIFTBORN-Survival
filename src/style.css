@@ -549,3 +549,47 @@ html,body,#game,#hud,#overlay,#touch-controls,
 .landing-screen .menu-actions .guide-button{grid-column:2;grid-row:2}
 .landing-screen .menu-actions .settings-button{grid-column:1 / -1;grid-row:4}
 @media(max-width:700px){.landing-screen .menu-actions .guide-button,.landing-screen .menu-actions .settings-button{grid-column:auto;grid-row:auto}}
+
+/* Quick start: the remembered setup leads directly into a run. */
+.quick-start .landing-copy{top:11%;height:auto;width:49%}
+.quick-start h1{font-size:clamp(42px,5.8vw,78px)}
+.quick-start .loadout{position:relative;inset:auto;width:100%;height:auto;min-height:88px;margin:18px 0 12px;padding:12px;gap:12px;background:#101822e8}
+.quick-start .loadout>div{flex:1;min-width:0}
+.quick-start .loadout small{display:block;white-space:normal}
+.quick-start .loadout-mode-label{margin-top:5px;color:#e0c491}
+.quick-start .loadout-change{min-height:44px;padding:8px 10px;font-size:12px;white-space:normal}
+.quick-start .menu-actions{position:relative;inset:auto;width:100%;display:flex;flex-direction:column;gap:8px}
+.quick-start .menu-actions .primary{width:100%;min-height:58px;font-size:20px}
+.quick-play-hint{color:#cad0c9;line-height:1.5;text-align:center;font-size:12px}
+.home-tools{margin-top:16px;color:#bdc7cb}
+.home-tools summary{cursor:pointer;min-height:44px;padding:12px 0;font-size:13px}
+.home-tools nav{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.home-tools button{min-height:44px;font-size:12px}
+.loadout-equipment-action{margin:12px 0}
+@media(max-width:700px){
+ .quick-start .landing-copy{position:relative;top:auto;width:100%;z-index:3}
+ .quick-start h1{font-size:clamp(44px,13vw,72px)}
+ .quick-start .loadout{min-height:90px;padding:10px;gap:8px}
+ .quick-start .loadout .portrait{width:40px;flex:0 0 40px;height:56px}
+ .quick-start .loadout-change{max-width:90px}
+ .quick-start .hero-art{opacity:.22;pointer-events:none}
+ .quick-start .records{z-index:3;background:#101822df}
+ .quick-start .menu-actions{display:flex}
+}
+@media(min-width:701px){
+ .quick-start .home-tools>summary{display:none}
+ .quick-start .home-tools>nav{display:grid}
+}
+@media(min-width:701px){
+ .landing-panel:has(.quick-start){aspect-ratio:auto}
+ .quick-start{min-height:760px}
+ .quick-start .landing-copy{top:8%}
+ .quick-start h1{font-size:clamp(42px,4.8vw,64px)}
+}
+.quick-start .home-shop{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-top:14px;padding:10px 12px;background:#101822eb;border:1px solid #bba67866;border-radius:10px}
+.home-gold{display:flex;align-items:center;gap:8px;color:#ecd39c;font-size:17px}
+.home-gold small{font-size:10px;letter-spacing:.12em;color:#bec6c9}
+.quick-start .home-shop-button{min-height:44px;padding:10px 18px;background:#34444c;border:1px solid #bba678;color:#f0e2c1;font-size:13px}
+.quick-start .home-tools{margin-top:8px}
+@media(min-width:701px){.quick-start{min-height:820px}}
+.menu-survivor>svg.art-image{width:100%;height:100%;filter:drop-shadow(0 12px 12px #0008)}

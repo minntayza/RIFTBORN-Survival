@@ -1,8 +1,9 @@
+import {ninjaWeaponSwing,ninjaRecovery} from './ninja-arm';
 import type {WeaponId} from './config';
 export type Point={x:number;y:number};
 type Geometry={grip:Point;tip:Point;size:number;duration:number;style:string;color:number};
 export const WEAPON_EFFECTS:Record<WeaponId,Geometry>={
- katana:{grip:{x:-20,y:0},tip:{x:52,y:-9},size:110,duration:.24,style:'clean-cut',color:0xabbcc3},
+ katana:{grip:{x:-20,y:0},tip:{x:52,y:-9},size:110,duration:.3,style:'clean-cut',color:0xabbcc3},
  dual:{grip:{x:-20,y:0},tip:{x:48,y:-9},size:92,duration:.2,style:'cross-cut',color:0xa6a2bb},
  kama:{grip:{x:-19,y:0},tip:{x:42,y:-24},size:105,duration:.27,style:'hook-cut',color:0xadb5b7},
  nodachi:{grip:{x:-21,y:0},tip:{x:55,y:-10},size:145,duration:.4,style:'heavy-cut',color:0xb5bbaa},
@@ -16,22 +17,33 @@ export const WEAPON_EFFECTS:Record<WeaponId,Geometry>={
  hammer:{grip:{x:-31,y:0},tip:{x:34,y:0},size:112,duration:.46,style:'hammer-slam',color:0xa89a82}
 };
 export const isGun=(id:WeaponId)=>['pistols','shotgun','smg'].includes(id);
-export function weaponPose(id:WeaponId,x:number,y:number,aim:number,phase:number,active:boolean,sequence=0,offhand=false,blocking=false,reach=1,arcScale=1){
+export function weaponPose(id:WeaponId,x:number,y:number,aim:number,phase:number,active:boolean,sequence=0,offhand=false,blocking=false,reach=1,arcScale=1,articulated=false){
  const g=WEAPON_EFFECTS[id],t=Math.max(0,Math.min(1,phase)),ease=t*t*(3-2*t),shield=id==='shield'||id==='spiked',gun=isGun(id);
  let rotation=aim,forward=shield?24:7,side=shield?0:(offhand?-13:13);
  if(active){if(shield)forward+=Math.sin(Math.PI*t)*18;else if(gun)forward-=Math.sin(Math.PI*t)*(id==='shotgun'?8:id==='smg'?2:4);else if(id==='hammer'){rotation+=t<.3?-.9*t/.3:-.9+(t-.3)/.7*1.5;forward+=Math.sin(Math.PI*t)*4;}else{const arc=id==='naginata'?2.4:id==='kama'?2.8:id==='nodachi'?2:id==='cursed'?2.1:1.7;const direction=id==='dual'&&((sequence%2===0)!==offhand)?-1:1;rotation+=direction*(arc*arcScale/2-ease*arc*arcScale);}}
  if(blocking&&shield)forward+=5;
- const grip={x:x+Math.cos(aim)*forward-Math.sin(aim)*side,y:y+Math.sin(aim)*forward+Math.cos(aim)*side};
- const local={x:(g.tip.x-g.grip.x)*g.size*reach/128,y:(g.tip.y-g.grip.y)*g.size*reach/128};
+ if(articulated&&!gun&&!shield)rotation=aim+(active?ninjaWeaponSwing(id,t,sequence,offhand)*arcScale:0);
+ const radius=17*(active?ninjaRecovery(t):1);
+ const size=g.size*reach*(articulated?(id==='katana'?.76:id==='dual'?.8:id==='kama'?.82:1):1);
+ const grip=articulated&&!gun&&!shield?{x:x+Math.cos(rotation)*radius-Math.sin(rotation)*(offhand?-6:6),y:y+6+Math.sin(rotation)*radius+Math.cos(rotation)*(offhand?-6:6)}:{x:x+Math.cos(aim)*forward-Math.sin(aim)*side,y:y+Math.sin(aim)*forward+Math.cos(aim)*side};
+ if(articulated&&!gun&&!shield){
+  const flip=Math.cos(aim)<0?-1:1,sx=x+(offhand?-9:8)*flip,sy=y+5;
+  const dx=grip.x-sx,dy=grip.y-sy,d=Math.hypot(dx,dy),bounded=Math.max(1.1,Math.min(26.5,d));
+  if(d!==bounded){grip.x=sx+dx/(d||1)*bounded;grip.y=sy+dy/(d||1)*bounded;}
+ }
+ const tipPoint=articulated&&id==='kama'?{x:-3,y:-43}:g.tip;
+ const local={x:(tipPoint.x-g.grip.x)*size/128,y:(tipPoint.y-g.grip.y)*size/128};
  const tip={x:grip.x+Math.cos(rotation)*local.x-Math.sin(rotation)*local.y,y:grip.y+Math.sin(rotation)*local.x+Math.cos(rotation)*local.y};
- return {grip,tip,rotation,size:g.size*reach,originX:(64+g.grip.x)/128,originY:(64+g.grip.y)/128};
+ const hook=articulated&&id==='kama'?{x:grip.x+Math.cos(rotation)*65*size/128,y:grip.y+Math.sin(rotation)*65*size/128}:undefined;
+ return {grip,tip,rotation,size,hook,originX:(64+g.grip.x)/128,originY:(64+g.grip.y)/128};
 }
 function segmentDistance(p:Point,a:Point,b:Point){const dx=b.x-a.x,dy=b.y-a.y,t=Math.max(0,Math.min(1,((p.x-a.x)*dx+(p.y-a.y)*dy)/(dx*dx+dy*dy||1)));return Math.hypot(p.x-a.x-dx*t,p.y-a.y-dy*t);}
-export function meleeContact(id:WeaponId,x:number,y:number,aim:number,enemy:Point,radius:number,sequence=0,reach=1,arcScale=1){
+export function meleeContact(id:WeaponId,x:number,y:number,aim:number,enemy:Point,radius:number,sequence=0,reach=1,arcScale=1,articulated=false){
  if(isGun(id))return false;
  for(let i=0;i<=16;i++)for(const offhand of id==='dual'?[false,true]:[false]){
- const pose=weaponPose(id,x,y,aim,i/16*.55,true,sequence,offhand,false,reach,arcScale),tip=pose.tip;
- if(id==='hammer'||id==='kama'){if(Math.hypot(enemy.x-tip.x,enemy.y-tip.y)<=radius+(id==='hammer'?14:11))return true;}
+ const pose=weaponPose(id,x,y,aim,i/16*.55,true,sequence,offhand,false,reach,arcScale,articulated),tip=pose.tip;
+ if(articulated&&id==='kama'){if(pose.hook&&(segmentDistance(enemy,pose.grip,pose.hook)<=radius+11||segmentDistance(enemy,pose.hook,tip)<=radius+11))return true;}
+ else if(id==='hammer'||id==='kama'){if(Math.hypot(enemy.x-tip.x,enemy.y-tip.y)<=radius+(id==='hammer'?14:11))return true;}
  else if(id==='shield'||id==='spiked'){const dx=-Math.sin(pose.rotation)*20,dy=Math.cos(pose.rotation)*20;if(segmentDistance(enemy,{x:tip.x-dx,y:tip.y-dy},{x:tip.x+dx,y:tip.y+dy})<=radius+5)return true;}
  else{const start=id==='naginata'?.7:.2;const a={x:pose.grip.x+(tip.x-pose.grip.x)*start,y:pose.grip.y+(tip.y-pose.grip.y)*start};if(segmentDistance(enemy,a,tip)<=radius+4)return true;}
  }return false;

@@ -1,3 +1,6 @@
+import {NINJA_ATTACK_ATLAS,NINJA_WEAPONS_ATLAS,ninjaAttackPart,ninjaSwordCanvas,ninjaWeaponCanvas} from './ninja-attack-art';
+import {ninjaArm} from './ninja-arm';
+import {CUTE_ATLAS,cuteCanvas,cuteArmCanvas} from './cute-trio';
 import {bossAction,type BossAction} from './boss-motion';
 import {ROBOTS,ROBOT_ROLES,robotCanvas,robotMovementType,type EnemyFaction} from './robot-enemies';
 import {advanceZombieRig,isRigZombie,zombieVisualScale,type RigState} from './zombie-rig';
@@ -32,7 +35,7 @@ type EnemyVisual = {
 export class ArenaVisuals {
     veteran(){this.hero.setTint(0xd7c8ac);}
     private decoyImage!:Phaser.GameObjects.Image;
-    showDecoy(hero:HeroId,decoy:{x:number;y:number;angle:number}|undefined){this.decoyImage.setVisible(!!decoy);if(decoy)this.decoyImage.setTexture(`hero-${hero}-0`).setPosition(decoy.x,decoy.y).setRotation(decoy.angle).setTint(0x8d86ae).setAlpha(.45);}
+    showDecoy(hero:HeroId,decoy:{x:number;y:number;angle:number}|undefined){this.decoyImage.setVisible(!!decoy);if(decoy)this.decoyImage.setTexture(hero==='ninja'?'cute-ninja-full':`hero-${hero}-0`).setPosition(decoy.x,decoy.y).setRotation(hero==='ninja'?0:decoy.angle).setTint(0x8d86ae).setAlpha(.45);}
     private shieldFx!:Phaser.GameObjects.Graphics;
     private attackFx!:Phaser.GameObjects.Graphics;
     private tipTrail:{x:number;y:number}[]=[];
@@ -44,6 +47,9 @@ export class ArenaVisuals {
         if(e.reach||e.power||e.tempo){g.lineStyle(2,e.power?0xb99c79:e.reach?0x8caead:0xb1a6c0,.9);g.lineBetween(x-Math.sin(a)*5,y+Math.cos(a)*5,x+Math.sin(a)*5,y-Math.cos(a)*5);g.strokeCircle(x,y,4);}
         if(e.tempo&&swing>0){for(let i=1;i<=2;i++){const aa=a-i*.17;g.lineStyle(2,0xa79fb8,.5-i*.12);g.lineBetween(x,y,x+Math.cos(aa)*32,y+Math.sin(aa)*32);}}
     }
+    private ninjaBones:Phaser.GameObjects.Image[]=[];
+    private ninjaArmFx!:Phaser.GameObjects.Graphics;
+    private cuteArms:Phaser.GameObjects.Image[]=[];
     private hero: Phaser.GameObjects.Image;
     private weapon: Phaser.GameObjects.Image;
     private offhand: Phaser.GameObjects.Image;
@@ -64,6 +70,7 @@ export class ArenaVisuals {
     private lastX = 600;
     private lastY = 380;
     constructor(private scene: Phaser.Scene) {
+        this.ninjaArmFx=scene.add.graphics().setDepth(3.15);
         this.shieldFx=scene.add.graphics().setDepth(.9);
         this.attackFx=scene.add.graphics().setDepth(3.3);
         this.accents=scene.add.graphics().setDepth(3.4);
@@ -92,13 +99,32 @@ export class ArenaVisuals {
         if(!scene.textures.exists('enemy-rifle-hands'))scene.textures.addCanvas('enemy-rifle-hands',rifleHandsCanvas(scene.textures.get(rifleArt.atlas.key).getSourceImage() as HTMLImageElement));
         for (const id of Object.keys(WEAPONS) as WeaponId[])
             if(!scene.textures.exists(`weapon-${id}`))scene.textures.addCanvas(`weapon-${id}`, weaponCanvas(id));
+        const attackSource=scene.textures.get(NINJA_ATTACK_ATLAS.key).getSourceImage() as HTMLImageElement;
+        for(const part of ['upper','forearm','hand'] as const){
+            if(!scene.textures.exists(`ninja-${part}`))scene.textures.addCanvas(`ninja-${part}`,ninjaAttackPart(attackSource,part));
+        }
+        const ninjaWeapons=scene.textures.get(NINJA_WEAPONS_ATLAS.key).getSourceImage() as HTMLImageElement;
+        for(const id of ['dual','kama'] as const)if(!scene.textures.exists(`ninja-${id}`))scene.textures.addCanvas(`ninja-${id}`,ninjaWeaponCanvas(ninjaWeapons,id));
+        if(!scene.textures.exists('ninja-katana'))scene.textures.addCanvas('ninja-katana',ninjaSwordCanvas(attackSource));
+        for(let side=0;side<2;side++)for(const part of ['upper','forearm','hand'] as const)this.ninjaBones.push(scene.add.image(0,0,`ninja-${part}`).setVisible(false).setDepth(part==='hand'?3.21:3.14));
+        const cuteSource=scene.textures.get(CUTE_ATLAS.key).getSourceImage() as HTMLImageElement;
+        for(const id of ['ninja','wanderer','pulse'] as const)for(let f=0;f<=48;f++){
+            const key=`cute-${id}-${f}`;if(scene.textures.exists(key))continue;
+            const c=cuteCanvas(cuteSource,id,f===0?0:(f-1)%24/24,f===0?0:f>24?.4:1,id!=='ninja');
+            scene.textures.addCanvas(key,c);scene.textures.addCanvas(key+'-small',minifiedZombieCanvas(c));
+        }
+        if(!scene.textures.exists('cute-ninja-full'))scene.textures.addCanvas('cute-ninja-full',cuteCanvas(cuteSource,'ninja',0,0,true));
+        for(const part of ['leftArm','rightArm'] as const){
+            const key=`cute-ninja-${part}`;if(!scene.textures.exists(key))scene.textures.addCanvas(key,cuteArmCanvas(cuteSource,part));
+            this.cuteArms.push(scene.add.image(0,0,key).setVisible(false).setDepth(3.2));
+        }
         this.decoyImage=scene.add.image(0,0,'hero-ninja-0').setVisible(false).setDepth(2).setDisplaySize(78,78);
         this.hero = scene.add.image(600, 380, 'hero-ninja-0').setDepth(3).setDisplaySize(78, 78);
         this.weapon = scene.add.image(600, 380, 'weapon-katana').setDepth(3.2);
         this.offhand = scene.add.image(600, 380, 'weapon-katana').setDepth(3.1).setVisible(false);
     }
-    defeat() { this.hero.setRotation(this.hero.rotation + 1.2).setAlpha(.5).setScale(.5); this.weapon.setVisible(false); this.offhand.setVisible(false); }
-    death(e: EnemyVisual, time: number) { const key=e.faction==='robot'?`robot-unit-${e.type}-0`:`enemy-${e.type}-0`;const size=e.r*3.4*zombieVisualScale(e.type,this.scene.cameras.main.zoom);let slot = this.ghosts.find(s => s.expires <= time); if (!slot) {
+    defeat() { this.hero.setRotation(this.hero.rotation + 1.2).setAlpha(.5).setScale(.5); this.weapon.setVisible(false); this.offhand.setVisible(false);this.cuteArms.forEach(arm=>arm.setVisible(false));this.ninjaArmFx.clear();this.ninjaBones.forEach(bone=>bone.setVisible(false)); }
+    death(e: EnemyVisual, time: number) { const key=e.faction==='robot'?(e.type==='spitter'?'cute-pulse-0':`robot-unit-${e.type}-0`):(e.type==='basic'?'cute-wanderer-0':`enemy-${e.type}-0`);const size=e.r*3.4*zombieVisualScale(e.type,this.scene.cameras.main.zoom);let slot = this.ghosts.find(s => s.expires <= time); if (!slot) {
         if (this.ghosts.length >= 24)
             return;
         slot = { image: this.scene.add.image(0, 0, key).setDepth(1), size, expires: 0 };
@@ -108,31 +134,46 @@ export class ArenaVisuals {
         const moved = Math.hypot(x - this.lastX, y - this.lastY) > .2, frame = moved ? 1 + Math.floor(time * 10) % 2 : 0;
         this.lastX = x;
         this.lastY = y;
-        this.hero.setTexture(`hero-${hero}-${frame}`).setPosition(x, y).setRotation(angle).setAlpha(invuln > 0 ? .75 : 1);
-        this.hero.setDisplaySize(78, 78 + Math.sin(time * 3) * .8);
+        this.hero.setTexture(hero==='ninja'?`cute-ninja-${moved?1+Math.floor(time*10)%24:0}`:`hero-${hero}-${frame}`).setPosition(x, y).setRotation(hero==='ninja'?0:angle).setFlipX(hero==='ninja'&&Math.cos(angle)<0).setAlpha(invuln > 0 ? .75 : 1);
+        this.hero.setDisplaySize(78,hero==='ninja'?78:78+Math.sin(time*3)*.8);
         this.hero.clearTint();
         if (invuln > 0 && dash <= 0)
             this.hero.setTint(0xffb1b8);
         const duration=WEAPON_EFFECTS[weapon].duration,progress=Math.max(0,Math.min(1,swing/duration)),phase=1-progress,active=swing>0;
-        const pose=weaponPose(weapon,x,y,angle,phase,active&&(weapon!=='pistols'||sequence%2===0),sequence,false,blocking,reach,arcScale);
-        this.weapon.setTexture(`weapon-${weapon}`).setOrigin(pose.originX,pose.originY).setDisplaySize(pose.size,pose.size).setPosition(pose.grip.x,pose.grip.y).setRotation(pose.rotation).setAlpha(1);
+        const pose=weaponPose(weapon,x,y,angle,phase,active&&(weapon!=='pistols'||sequence%2===0),sequence,false,blocking,reach,arcScale,hero==='ninja');
+        this.weapon.setTexture(hero==='ninja'?`ninja-${weapon}`:`weapon-${weapon}`).setOrigin(pose.originX,pose.originY).setDisplaySize(pose.size,pose.size).setPosition(pose.grip.x,pose.grip.y).setRotation(pose.rotation).setAlpha(1);
         const dual=weapon==='dual'||weapon==='pistols';this.offhand.setVisible(dual);
-        const other=weaponPose(weapon,x,y,angle,phase,active&&(weapon!=='pistols'||sequence%2!==0),sequence,true,false,reach,arcScale);
-        if(dual)this.offhand.setTexture(`weapon-${weapon}`).setOrigin(other.originX,other.originY).setDisplaySize(other.size,other.size).setPosition(other.grip.x,other.grip.y).setRotation(other.rotation);
+        const other=weaponPose(weapon,x,y,angle,phase,active&&(weapon!=='pistols'||sequence%2!==0),sequence,true,false,reach,arcScale,hero==='ninja');
+        if(dual)this.offhand.setTexture(hero==='ninja'?`ninja-${weapon}`:`weapon-${weapon}`).setOrigin(other.originX,other.originY).setDisplaySize(other.size,other.size).setPosition(other.grip.x,other.grip.y).setRotation(other.rotation);
+        this.cuteArms.forEach(arm=>arm.setVisible(false));
+        this.ninjaArmFx.clear();this.ninjaBones.forEach(bone=>bone.setVisible(false));
+        if(hero==='ninja'){
+            const g=this.ninjaArmFx,flip=Math.cos(angle)<0?-1:1;
+            for(let index=0;index<2;index++){
+                const shoulder={x:x+(index===0?8:-9)*flip,y:y+5};
+                const target=index===0?pose.grip:dual?other.grip:{x:x-12*flip,y:y+21};
+                const rig=ninjaArm(shoulder,target,index===0?flip:-flip);
+                const upper=this.ninjaBones[index*3],forearm=this.ninjaBones[index*3+1],hand=this.ninjaBones[index*3+2];
+                const segments=[[upper,rig.shoulder,rig.elbow,10,16],[forearm,rig.elbow,rig.hand,9,17]] as const;
+                for(const [sprite,a,b,width,height] of segments)sprite.setVisible(true).setOrigin(.5,.1).setPosition(a.x,a.y).setDisplaySize(width,height).setRotation(Math.atan2(b.y-a.y,b.x-a.x)-Math.PI/2).setAlpha(this.hero.alpha);
+                hand.setVisible(true).setOrigin(.5,.5).setPosition(rig.hand.x,rig.hand.y).setDisplaySize(10,10).setRotation(index===0?pose.rotation+Math.PI/2:dual?other.rotation+Math.PI/2:0).setAlpha(this.hero.alpha);
+            }
+        }
         this.attackFx.clear();
         if(sequence!==this.lastSequence||!active){this.tipTrail=[];this.secondTrail=[];this.lastSequence=sequence;}
         if(active&&isGun(weapon)&&phase<.6){
             const muzzle=weapon==='pistols'&&sequence%2===1?other:pose,g=this.attackFx,color=WEAPON_EFFECTS[weapon].color,length=weapon==='shotgun'?17:weapon==='smg'?7:10;
             for(const spread of weapon==='shotgun'?[-.5,0,.5]:[-.25,.25]){g.lineStyle(3,0x15222a,.9);g.lineBetween(muzzle.tip.x,muzzle.tip.y,muzzle.tip.x+Math.cos(angle+spread)*length,muzzle.tip.y+Math.sin(angle+spread)*length);g.lineStyle(1.5,color,.8);g.lineBetween(muzzle.tip.x,muzzle.tip.y,muzzle.tip.x+Math.cos(angle+spread)*length,muzzle.tip.y+Math.sin(angle+spread)*length);}
         }
-        if(active&&!isGun(weapon)){
+        if(hero==='ninja'&&(phase<.26||phase>.64)){this.tipTrail=[];this.secondTrail=[];}
+        if(active&&!isGun(weapon)&&(hero!=='ninja'||phase>=.26&&phase<=.64)){
             this.tipTrail.push(pose.tip);if(this.tipTrail.length>12)this.tipTrail.shift();if(weapon==='dual'){this.secondTrail.push(other.tip);if(this.secondTrail.length>10)this.secondTrail.shift();}
             const g=this.attackFx,color=WEAPON_EFFECTS[weapon].color;
-            const stroke=(pts:{x:number;y:number}[],width:number)=>{if(pts.length<2)return;g.lineStyle(width+3,0x111d26,.8);g.strokePoints(pts,false);g.lineStyle(width,color,.75*progress+.15);g.strokePoints(pts,false);};
+            const stroke=(pts:{x:number;y:number}[],width:number)=>{if(pts.length<2)return;if(hero!=='ninja'){g.lineStyle(width+3,0x111d26,.8);g.strokePoints(pts,false);}g.lineStyle(hero==='ninja'?width+1:width,hero==='ninja'?0xdcc1ff:color,hero==='ninja'?.6:.75*progress+.15);g.strokePoints(pts,false);};
             if(weapon==='shield'||weapon==='spiked'){g.lineStyle(3,color,.75);g.lineBetween(pose.tip.x-Math.sin(angle)*16,pose.tip.y+Math.cos(angle)*16,pose.tip.x+Math.sin(angle)*16,pose.tip.y-Math.cos(angle)*16);if(weapon==='spiked')for(let i=-1;i<=1;i++){const px=pose.tip.x-Math.sin(angle)*i*12,py=pose.tip.y+Math.cos(angle)*i*12;g.lineBetween(px,py,px+Math.cos(angle)*8,py+Math.sin(angle)*8);}}
             else if(weapon==='hammer'){stroke(this.tipTrail,5);g.lineStyle(2,color,.6);g.strokeCircle(pose.tip.x,pose.tip.y,8);}
             else if(weapon==='cursed'){stroke(this.tipTrail,4);for(let i=2;i<this.tipTrail.length;i+=3){const p=this.tipTrail[i];g.lineStyle(1,0xb18791,.7);g.lineBetween(p.x-4,p.y-4,p.x+5,p.y+3);}}
-            else if(weapon==='kama'){stroke(this.tipTrail,3);g.lineStyle(2,color,.7);g.beginPath();g.arc(pose.tip.x,pose.tip.y,11,pose.rotation-.5,pose.rotation+2);g.strokePath();}
+            else if(weapon==='kama'){stroke(this.tipTrail,3);if(hero!=='ninja'){g.lineStyle(2,color,.7);g.beginPath();g.arc(pose.tip.x,pose.tip.y,11,pose.rotation-.5,pose.rotation+2);g.strokePath();}}
             else{stroke(this.tipTrail,weapon==='nodachi'?5:weapon==='naginata'?4:2);if(weapon==='dual')stroke(this.secondTrail,2);}
         }
         if (dash > 0 && time - this.lastGhost > .045) {
@@ -143,7 +184,7 @@ export class ArenaVisuals {
                 this.afterimages.push(s);
             }
             s.expires = time + .22;
-            s.image.setTexture(`hero-${hero}-${frame}`).setPosition(x, y).setDisplaySize(78, 78).setRotation(angle).setTint(HEROES[hero].color).setVisible(true);
+            s.image.setTexture(hero==='ninja'?'cute-ninja-full':`hero-${hero}-${frame}`).setPosition(x, y).setDisplaySize(78, 78).setRotation(hero==='ninja'?0:angle).setTint(HEROES[hero].color).setVisible(true);
         }
         for (const s of this.afterimages) {
             const left = s.expires - time;
@@ -191,6 +232,10 @@ export class ArenaVisuals {
             const px=rig&&small?Math.round((e.x-camera.worldView.x)*zoom)/zoom+camera.worldView.x:e.x;
             const py=rig&&small?Math.round((e.y-camera.worldView.y)*zoom)/zoom+camera.worldView.y:e.y;
             sprite.setVisible(true).setTexture(`${robot?'robot-unit-'+e.type:'enemy-'+e.type}-${gait}${rig&&small?'-small':''}`).setPosition(px,py).setDisplaySize(size,size).setRotation(rotation).setFlipX(flip);
+            if(!robot&&e.type==='basic'||robot&&e.type==='spitter'){
+                const cuteFrame=Math.min(48,gait),id=robot?'pulse':'wanderer';
+                sprite.setTexture(`cute-${id}-${cuteFrame}${small?'-small':''}`).setRotation(0);
+            }
             if(e.skillAction&&e.skillAge!==undefined&&e.skillWindup&&e.skillAge<e.skillWindup+.65){
                 const f=Math.min(35,Math.floor(e.skillAge/(e.skillWindup+.65)*35));
                 sprite.setTexture(`skill-${robot?'robot':'zombie'}-${e.type}-${e.skillAction}-${f}${small?'-small':''}`).setRotation(0).setFlipX(x<e.x);

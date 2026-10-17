@@ -1,3 +1,5 @@
+import {NINJA_ATTACK_ATLAS,NINJA_WEAPONS_ATLAS} from './ninja-attack-art';
+import {CUTE_ATLAS} from './cute-trio';
 import {bossAction,type BossAction} from './boss-motion';
 import {bossMarks,type BossMark} from './boss-skills';
 import {spawnFaction,robotStats,robotProtection,enemyFaction,enemyName,ROBOTS,ROBOT_ROLES,type EnemyFaction} from './robot-enemies';
@@ -123,7 +125,7 @@ export class ArenaScene extends Phaser.Scene {
     wreckImages:Phaser.GameObjects.Image[]=[];
     mapCars:Wreck[]=[];
     robotArt:RobotMapArt|undefined;
-    preload(){for(const atlas of ZOMBIE_ATLASES)this.load.image(atlas.key,atlas.url);for(const key of ['robot-factory-ground','robot-garden-ground','robot-factory-props','robot-garden-props'])this.load.image(key,`/assets/maps/${key}.png`);this.load.image('park-ground','/assets/maps/park-cartoon.png');this.load.image('city-asphalt','/assets/maps/city-asphalt-cartoon.png');this.load.image('city-wreck','/assets/maps/wreck-sedan-cartoon.png');}
+    preload(){this.load.image(NINJA_WEAPONS_ATLAS.key,NINJA_WEAPONS_ATLAS.url);this.load.image(NINJA_ATTACK_ATLAS.key,NINJA_ATTACK_ATLAS.url);this.load.image(CUTE_ATLAS.key,CUTE_ATLAS.url);for(const atlas of ZOMBIE_ATLASES)this.load.image(atlas.key,atlas.url);for(const key of ['robot-factory-ground','robot-garden-ground','robot-factory-props','robot-garden-props'])this.load.image(key,`/assets/maps/${key}.png`);this.load.image('park-ground','/assets/maps/park-cartoon.png');this.load.image('city-asphalt','/assets/maps/city-asphalt-cartoon.png');this.load.image('city-wreck','/assets/maps/wreck-sedan-cartoon.png');}
     moveOnGround(x:number,y:number,dx:number,dy:number,r:number){
         if(!this.mapCars.length)return {x:x+dx,y:y+dy};
         // Substeps prevent dash and knockback from crossing a thin chassis.
@@ -623,8 +625,8 @@ export class ArenaScene extends Phaser.Scene {
     }
     resolveStrike(strike:{weapon:WeaponId;damage:number;range:number;arc:number;echo:boolean}){
         const identityReady=this.identityCharge>=100;let connected=false;
-        const pose=weaponPose(strike.weapon,this.x,this.y,this.angle,.55,true,this.attackSequence,false,false,strike.range/WEAPONS[strike.weapon].range,strike.arc/WEAPONS[strike.weapon].arc);
-        for(const e of this.enemies)if(e.active&&meleeContact(strike.weapon,this.x,this.y,this.angle,e,e.r,this.attackSequence,strike.range/WEAPONS[strike.weapon].range,strike.arc/WEAPONS[strike.weapon].arc)){connected=true;this.hit(e,strike.damage,WEAPONS[strike.weapon].knock);}
+        const pose=weaponPose(strike.weapon,this.x,this.y,this.angle,.55,true,this.attackSequence,false,false,strike.range/WEAPONS[strike.weapon].range,strike.arc/WEAPONS[strike.weapon].arc,this.hero==='ninja');
+        for(const e of this.enemies)if(e.active&&meleeContact(strike.weapon,this.x,this.y,this.angle,e,e.r,this.attackSequence,strike.range/WEAPONS[strike.weapon].range,strike.arc/WEAPONS[strike.weapon].arc,this.hero==='ninja')){connected=true;this.hit(e,strike.damage,WEAPONS[strike.weapon].knock);}
         if(!strike.echo&&connected&&identityReady&&this.hero==='ninja'){this.identityCharge=0;this.identityProcs++;this.pendingStrikes.push({...strike,damage:strike.damage*.45,delay:.15,echo:true});}
         if(strike.echo){const ghost=this.add.image(pose.grip.x,pose.grip.y,`weapon-${strike.weapon}`).setOrigin(pose.originX,pose.originY).setDisplaySize(pose.size,pose.size).setRotation(pose.rotation).setTint(0xb6a1d7).setAlpha(.45).setDepth(4);this.tweens.add({targets:ghost,alpha:0,duration:220,onComplete:()=>ghost.destroy()});}
         const g=this.add.graphics().setDepth(4),tip=pose.tip,id=strike.weapon,color=WEAPON_EFFECTS[id].color;
