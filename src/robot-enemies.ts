@@ -14,8 +14,8 @@ export const ROBOTS={
  pulse:{name:'Pulse Shooter',color:'#f176cc',role:'Ranged attacker',cue:'Pink armor and a large blue pulse cannon.',tip:'Sidestep the locked aim line before it fires.'},
  shield:{name:'Shield Unit',color:'#39cbef',role:'Armored defender',cue:'Blue armor and a broad cyan shield.',tip:'Reduces damage to allies within its cyan field by 15%. Eliminate it first; heavy melee helps against its own armor.'},
  crusher:{name:'Crusher',color:'#ff8746',role:'Heavy melee',cue:'Broad red body, small yellow visor, and enormous hazard-striped hammer fists.',tip:'Leave its marked attack area before impact.'},
- command:{name:'Command Unit',color:'#b48aff',role:'Reinforcements',cue:'Purple armor, yellow antenna and raised signal hand.',tip:'Defeat it to stop reinforcements and its support aura.'},
- sentinel:{name:'Factory Sentinel',color:'#ff5d65',role:'Boss',cue:'Red crowned armor, four articulated legs and a bright gold reactor.',tip:'Dodge its locked charge lane and ground slams.'}
+ command:{name:'Command Unit',color:'#b48aff',role:'Reinforcements',cue:'Purple-and-cream armor, yellow antenna, signal remote and pointing hand.',tip:'Defeat it to stop reinforcements and its support aura.'},
+ sentinel:{name:'Factory Sentinel',color:'#ff5d65',role:'Boss',cue:'Red-and-ivory armor, gold reactor crest, bright chest core and two striking gauntlets.',tip:'Dodge its locked charge lane and ground slams.'}
 } as const;
 export type RobotKind=keyof typeof ROBOTS;
 export const ROBOT_ROLES:Record<EnemyId,RobotKind>={abomination:'crusher',bioScreer:'pulse',shadowLurker:'scout',basic:'walker',runner:'scout',spitter:'pulse',rifle:'pulse',armoured:'shield',spear:'shield',brute:'crusher',cleaver:'crusher',elite:'shield',shooterBoss:'pulse',commander:'command',boss:'sentinel'};

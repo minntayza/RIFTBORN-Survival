@@ -1,3 +1,4 @@
+import {LEADER_ATLAS} from './cute-robot-leaders';
 import {ROBOT_ATLAS} from './cute-robots';
 import {rosterSpawn} from './enemy-roster';
 import {COMMAND_ATLAS} from './cute-command';
@@ -135,6 +136,7 @@ export class ArenaScene extends Phaser.Scene {
     onLoadingError?:()=>void;
     preload(){
         const assets=[
+            [LEADER_ATLAS.key,LEADER_ATLAS.url],
             [ROBOT_ATLAS.key,ROBOT_ATLAS.url],
             [COMMAND_ATLAS.key,COMMAND_ATLAS.url],
             [HORDE_ATLAS.key,HORDE_ATLAS.url],[OFFICER_ATLAS.key,OFFICER_ATLAS.url],
