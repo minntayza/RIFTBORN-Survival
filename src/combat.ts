@@ -1,3 +1,5 @@
+import {COMMAND_ATLAS} from './cute-command';
+import {HORDE_ATLAS,OFFICER_ATLAS} from './cute-horde';
 import {decodedImages} from './texture-cache';
 import {NINJA_ATTACK_ATLAS,NINJA_WEAPONS_ATLAS} from './ninja-attack-art';
 import {CUTE_ATLAS} from './cute-trio';
@@ -131,6 +133,8 @@ export class ArenaScene extends Phaser.Scene {
     onLoadingError?:()=>void;
     preload(){
         const assets=[
+            [COMMAND_ATLAS.key,COMMAND_ATLAS.url],
+            [HORDE_ATLAS.key,HORDE_ATLAS.url],[OFFICER_ATLAS.key,OFFICER_ATLAS.url],
             [NINJA_WEAPONS_ATLAS.key,NINJA_WEAPONS_ATLAS.url],[NINJA_ATTACK_ATLAS.key,NINJA_ATTACK_ATLAS.url],[CUTE_ATLAS.key,CUTE_ATLAS.url],
             ...['robot-factory-ground','robot-garden-ground','robot-factory-props','robot-garden-props'].map(key=>[key,`/assets/maps/${key}.png`]),
             ['park-ground','/assets/maps/park-cartoon.png'],['city-asphalt','/assets/maps/city-asphalt-cartoon.png'],['city-wreck','/assets/maps/wreck-sedan-cartoon.png']

@@ -1,0 +1,5 @@
+import {HORDE_ATLAS,OFFICER_ATLAS,HORDE_IDS,hordeCanvas,cuteRifleHandsCanvas,hordeAtlas} from '../src/cute-horde';
+const image=new Image();image.src=HORDE_ATLAS.url;const officers=new Image();officers.src=OFFICER_ATLAS.url;await Promise.all([image.decode(),officers.decode()]);
+const canvases=HORDE_IDS.map(id=>{const section=document.createElement('section'),c=document.createElement('canvas');c.width=c.height=128;section.append(c,Object.assign(document.createElement('p'),{textContent:id==='runner'?'Zombie Dog':id}));document.querySelector('main')!.append(section);return c;});
+let paused=false,t=0,last=performance.now();document.querySelector('#pause')!.addEventListener('click',()=>paused=!paused);
+function tick(now:number){if(!paused)t+=(now-last)/1000;last=now;HORDE_IDS.forEach((id,i)=>{const g=canvases[i].getContext('2d')!;g.clearRect(0,0,128,128);g.drawImage(hordeCanvas(hordeAtlas(id)===OFFICER_ATLAS?officers:image,id,1+Math.floor(t*18)%24),0,0);if(id==='rifle')g.drawImage(cuteRifleHandsCanvas(officers),0,0);});requestAnimationFrame(tick);}requestAnimationFrame(tick);

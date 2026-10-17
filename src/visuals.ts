@@ -1,3 +1,5 @@
+import {COMMAND_ATLAS,commandCanvas} from './cute-command';
+import {OFFICER_ATLAS,hordeAtlas,isCuteHorde,hordeCanvas,cuteRifleHandsCanvas,rifleHandPose} from './cute-horde';
 import {cachedCanvas} from './texture-cache';
 import {NINJA_ATTACK_ATLAS,NINJA_WEAPONS_ATLAS,ninjaAttackPart,ninjaSwordCanvas,ninjaWeaponCanvas} from './ninja-attack-art';
 import {ninjaArm} from './ninja-arm';
@@ -8,7 +10,7 @@ import {advanceZombieRig,isRigZombie,zombieVisualScale,type RigState} from './zo
 import {WALK_FRAMES} from './zombie-walk';
 import {WEAPON_EFFECTS,weaponPose,isGun} from './weapon-effects';
 import Phaser from 'phaser';
-import {zombieWalkCanvases,zombieSpriteLocation,minifiedZombieCanvas,rifleHandsCanvas,zombieBossCanvas} from './zombie-sprites';
+import {zombieWalkCanvases,zombieSpriteLocation,minifiedZombieCanvas,zombieBossCanvas} from './zombie-sprites';
 import { actorCanvas, weaponCanvas } from './art';
 import { HEROES, WEAPONS, ENEMIES, type HeroId, type WeaponId, type EnemyId } from './config';
 type EnemyVisual = {
@@ -78,8 +80,7 @@ export class ArenaVisuals {
         for (const id of Object.keys(HEROES) as HeroId[])
             for (let f = 0; f < 3; f++)
                 if(!scene.textures.exists(`hero-${id}-${f}`))scene.textures.addCanvas(`hero-${id}-${f}`, actorCanvas('hero', id, f));
-        const rifleArt=zombieSpriteLocation('rifle')!;
-        if(!scene.textures.exists('enemy-rifle-hands'))scene.textures.addCanvas('enemy-rifle-hands',rifleHandsCanvas(scene.textures.get(CUTE_ATLAS.key).getSourceImage() as HTMLImageElement));
+        if(!scene.textures.exists('enemy-rifle-hands'))scene.textures.addCanvas('enemy-rifle-hands',cuteRifleHandsCanvas(scene.textures.get(OFFICER_ATLAS.key).getSourceImage() as HTMLImageElement));
         for (const id of Object.keys(WEAPONS) as WeaponId[])
             if(!scene.textures.exists(`weapon-${id}`))scene.textures.addCanvas(`weapon-${id}`, weaponCanvas(id));
         const attackSource=scene.textures.get(NINJA_ATTACK_ATLAS.key).getSourceImage() as HTMLImageElement;
@@ -113,9 +114,12 @@ export class ArenaVisuals {
             if(key.startsWith('robot-unit-')){const type=key.split('-')[2] as EnemyId;return robotCanvas(ROBOT_ROLES[type],frame,undefined,type);}
             if(key.startsWith('skill-')){
                 const [,faction,type,action]=key.split('-');
+                if(faction==='zombie'&&(type==='boss'||type==='commander'))return commandCanvas(textures.get(COMMAND_ATLAS.key).getSourceImage() as HTMLImageElement,type,frame,action as BossAction);
                 return faction==='robot'?robotCanvas(ROBOT_ROLES[type as EnemyId],frame,action as BossAction,type as EnemyId):zombieBossCanvas(type as 'boss'|'commander'|'shooterBoss',action as BossAction,frame);
             }
             const id=key.split('-')[1] as EnemyId;
+            if(id==='boss'||id==='commander')return commandCanvas(textures.get(COMMAND_ATLAS.key).getSourceImage() as HTMLImageElement,id,frame);
+            if(isCuteHorde(id))return hordeCanvas(textures.get(hordeAtlas(id).key).getSourceImage() as HTMLImageElement,id,frame);
             return zombieSpriteLocation(id)?zombieWalkCanvases(textures.get(CUTE_ATLAS.key).getSourceImage() as HTMLImageElement,id)![frame]:actorCanvas('enemy',id,frame);
         });
         textures.addCanvas(key,canvas);
@@ -237,12 +241,13 @@ export class ArenaVisuals {
             if(e.skillAction&&e.skillAge!==undefined&&e.skillWindup&&e.skillAge<e.skillWindup+.65){
                 const f=Math.min(35,Math.floor(e.skillAge/(e.skillWindup+.65)*35));
                 const texture=`skill-${robot?'robot':'zombie'}-${e.type}-${e.skillAction}-${f}${small?'-small':''}`;this.prepareTexture(texture);
-                sprite.setTexture(texture).setRotation(0).setFlipX(x<e.x);
+                sprite.setTexture(texture).setRotation(0).setFlipX(!robot&&(e.type==='boss'||e.type==='commander')?(e.targetX??x)<e.x:x<e.x);
             }
             sprite.setDepth(2+Math.atan((e.y+e.r)/1000)*.1);
             if(e.type==='rifle'&&!robot){
                 let hands=this.rifleHands.get(e);if(!hands){hands=this.scene.add.image(e.x,e.y,'enemy-rifle-hands');this.rifleHands.set(e,hands);}
-                hands.setVisible(true).setPosition(px,py+e.r*.2*visualScale).setRotation(targetAngle).setDisplaySize(size,size).setDepth(sprite.depth+.01);
+                const handPose=rifleHandPose(e.shotKick??0,flip?-1:1);
+                hands.setVisible(true).setPosition(px+(handPose.x-64)*size/128,py).setRotation(handPose.angle).setFlipX(flip).setDisplaySize(size,size).setDepth(sprite.depth+.01);
             }else this.rifleHands.get(e)?.setVisible(false);
             if(e.flash>0&&!rig){sprite.rotation+=Math.sin(e.flash/.12*Math.PI)*.14;sprite.setDisplaySize(size*.96,size*1.04);}
             if(e.telegraph>0&&e.type==='cleaver'&&!robot)sprite.rotation+=(e.telegraph/.8-.5)*1.3;
@@ -254,7 +259,7 @@ export class ArenaVisuals {
                 if(phase!==2){sprite.setDisplaySize(e.r*3.4*(1+p*.06),e.r*3.4*(1-p*.05));sprite.rotation+=Math.sin(p*Math.PI)*.08;}
                 else sprite.setDisplaySize(e.r*3.6,e.r*3.15);
             }
-            if(e.shotKick){const a=targetAngle;sprite.x-=Math.cos(a)*e.shotKick*25;sprite.y-=Math.sin(a)*e.shotKick*25;}
+            if(e.shotKick&&!(e.type==='rifle'&&!robot)){const a=targetAngle;sprite.x-=Math.cos(a)*e.shotKick*25;sprite.y-=Math.sin(a)*e.shotKick*25;}
             sprite.clearTint();
             if (e.flash > 0)
                 rig?sprite.setTint(0xffc8ba):sprite.setTintFill(0xa9b0a5);
