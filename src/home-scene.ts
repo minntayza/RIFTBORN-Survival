@@ -1,3 +1,4 @@
+import {CONNECTED_ARMS,connectedArmCanvas,connectedArmPose,connectedArmVisible} from './connected-arms';
 import {rigidHeroArm,heroArmSprite,shoulderGrip} from './hero-arm';
 import type {HeroId,WeaponId} from './config';
 import {CUTE_ATLAS,cuteCanvas} from './cute-trio';
@@ -20,7 +21,7 @@ export async function startHomeScene(canvas:HTMLCanvasElement,hero:HeroId,weapon
  try{
  const bodyAtlas=hero==='samurai'?SAMURAI_ATLAS:hero==='gunner'?GUNNER_ATLAS:hero==='tank'?TANK_ATLAS:CUTE_ATLAS;
  const weaponAtlas=hero==='samurai'?SAMURAI_WEAPONS_ATLAS:hero==='gunner'?GUNNER_WEAPONS_ATLAS:hero==='tank'?TANK_WEAPONS_ATLAS:weapon==='katana'?NINJA_ATTACK_ATLAS:NINJA_WEAPONS_ATLAS;
- const [bodyImage,weaponImage,armImage]=await Promise.all([load(bodyAtlas.url),load(weaponAtlas.url),load(hero==='ninja'?NINJA_ATTACK_ATLAS.url:bodyAtlas.url)]);
+ const [bodyImage,weaponImage,connectedImage]=await Promise.all([load(bodyAtlas.url),load(weaponAtlas.url),load(CONNECTED_ARMS.url)]);
  if(!canvas.isConnected)return;
  const heroFrame=(i:number)=>cachedFrame(`${hero}:${i}`,()=>hero==='samurai'?samuraiCanvas(bodyImage,i+1):hero==='gunner'?gunnerCanvas(bodyImage,i+1):hero==='tank'?tankCanvas(bodyImage,i+1):cuteCanvas(bodyImage,'ninja',i/24,1,false));
  let trio:HTMLImageElement|undefined;
@@ -28,8 +29,7 @@ export async function startHomeScene(canvas:HTMLCanvasElement,hero:HeroId,weapon
 
  const gun=isGunnerWeapon(weapon),dual=weapon==='dual'||weapon==='pistols';
  const equipment=cachedFrame(`weapon:${weapon}`,()=>isSamuraiWeapon(weapon)?samuraiWeaponCanvas(weaponImage,weapon):isGunnerWeapon(weapon)?gunnerWeaponCanvas(weaponImage,weapon):isTankWeapon(weapon)?tankWeaponCanvas(weaponImage,weapon):weapon==='katana'?ninjaSwordCanvas(weaponImage):ninjaWeaponCanvas(weaponImage,weapon==='dual'?'dual':'kama'));
- const part=(name:'upper'|'forearm'|'hand'|'otherHand')=>hero==='samurai'?samuraiPart(armImage,name):hero==='gunner'?gunnerPart(armImage,name):hero==='tank'?tankPart(armImage,name):ninjaAttackPart(armImage,name==='otherHand'?'hand':name);
- const parts={upper:cachedFrame(`${hero}:upper`,()=>part('upper')),forearm:cachedFrame(`${hero}:forearm`,()=>part('forearm')),hand:cachedFrame(`${hero}:hand`,()=>part('hand')),otherHand:cachedFrame(`${hero}:otherHand`,()=>part('otherHand'))};
+ const arms=[0,1].map(i=>cachedFrame(`connected:${hero}:${i}`,()=>connectedArmCanvas(connectedImage,hero,i)));
  const g=canvas.getContext('2d')!;canvas.width=600;canvas.height=420;
  const reduced=matchMedia('(prefers-reduced-motion: reduce)').matches,start=performance.now();let last=-1;
  const sprite=(im:CanvasImageSource,x:number,y:number,w:number,h:number,rotation=0,ox=.5,oy=.5,flipX=false,flipY=false)=>{g.save();g.translate(x,y);g.rotate(rotation);g.scale(flipX?-1:1,flipY?-1:1);g.drawImage(im,-w*ox,-h*oy,w,h);g.restore();};
@@ -47,11 +47,12 @@ export async function startHomeScene(canvas:HTMLCanvasElement,hero:HeroId,weapon
  if(dual)sprite(equipment,other.grip.x,other.grip.y,other.size,other.size,other.rotation,other.originX,other.originY,false,other.flipY);
  if(hero==='ninja')sprite(equipment,pose.grip.x,pose.grip.y,pose.size,pose.size,pose.rotation,pose.originX,pose.originY,false,pose.flipY);
  const handDraws:{image:HTMLCanvasElement;p:ReturnType<typeof heroArmSprite>}[]=[];
- for(let i=0;i<(hero==='gunner'?0:2);i++){
+ for(let i=0;i<2;i++){
+ if(!connectedArmVisible(hero,i))continue;
  const shoulder={x:i===0?8:-9,y:5},target=i===0?pose.grip:hero==='samurai'||hero==='tank'&&weapon==='hammer'?samuraiSupportHand(pose.grip,pose.rotation):hero==='gunner'&&!dual&&isGunnerWeapon(weapon)?gunnerSupportHand(gunnerWeaponPose(weapon,0,0,0,phase,active)):dual?other.grip:{x:-12,y:21};
  const resting=i===1&&!dual&&hero!=='samurai'&&hero!=='gunner'&&weapon!=='hammer';
- const rig=rigidHeroArm(shoulder,resting?shoulderGrip(shoulder,Math.PI/2,18):target);
- for(const [part,a,b] of [['upper',rig.shoulder,rig.elbow],['forearm',rig.elbow,rig.wrist],['hand',rig.wrist,rig.grip]] as const){const p=heroArmSprite(hero,part,a,b),image=part==='hand'&&i===1?parts.otherHand:parts[part];if(part==='hand'&&!(hero==='tank'&&weapon!=='hammer'))handDraws.push({image,p});else sprite(image,p.x,p.y,p.width,p.height,p.rotation,p.originX,p.originY);}
+ const p=connectedArmPose(hero,i,shoulder,resting?shoulderGrip(shoulder,Math.PI/2,18):target);
+ if(hero==='tank'&&weapon!=='hammer')sprite(arms[i],p.x,p.y,p.width,p.height,p.rotation,p.originX,p.originY);else handDraws.push({image:arms[i],p});
 
  }
  if(hero!=='ninja')sprite(equipment,pose.grip.x,pose.grip.y,pose.size,pose.size,pose.rotation,pose.originX,pose.originY,false,pose.flipY);

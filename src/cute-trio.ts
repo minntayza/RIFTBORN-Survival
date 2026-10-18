@@ -32,7 +32,7 @@ export function cuteCanvas(image:HTMLImageElement,id:CuteCharacter,phase:number,
 export function cuteArmCanvas(image:HTMLImageElement,part:'leftArm'|'rightArm'){
  const [x,y,w,h]=source.ninja[parts.indexOf(part)],c=document.createElement('canvas');c.width=w;c.height=h;c.getContext('2d')!.drawImage(image,x,y,w,h,0,0,w,h);return c;
 }
-export function cutePortrait(id:CuteCharacter){
+export function cutePortrait(id:CuteCharacter,arms=true){
  const title=id==='ninja'?'Ninja':id==='wanderer'?'Wanderer':'Pulse Shooter';
- return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" role="img" aria-label="${title} gameplay illustration">${cutePose(id,0,0).map(p=>{const [x,y,w,h]=source[id][parts.indexOf(p.part)];return `<svg x="${p.x-p.width*p.ox}" y="${p.y-p.height*p.oy}" width="${p.width}" height="${p.height}" viewBox="${x} ${y} ${w} ${h}" preserveAspectRatio="none" overflow="hidden"><image href="${CUTE_ATLAS.url}" width="1619" height="972"/></svg>`;}).join('')}</svg>`;
+ return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" role="img" aria-label="${title} gameplay illustration">${cutePose(id,0,0,arms).map(p=>{const [x,y,w,h]=source[id][parts.indexOf(p.part)];return `<svg x="${p.x-p.width*p.ox}" y="${p.y-p.height*p.oy}" width="${p.width}" height="${p.height}" viewBox="${x} ${y} ${w} ${h}" preserveAspectRatio="none" overflow="hidden"><image href="${CUTE_ATLAS.url}" width="1619" height="972"/></svg>`;}).join('')}</svg>`;
 }

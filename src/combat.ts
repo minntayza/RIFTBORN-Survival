@@ -1,3 +1,4 @@
+import {CONNECTED_ARMS} from './connected-arms';
 import {TANK_WEAPONS_ATLAS} from './tank-weapons';
 import {TANK_ATLAS} from './tank-art';
 import {GUNNER_ATLAS} from './gunner-art';
@@ -143,7 +144,7 @@ export class ArenaScene extends Phaser.Scene {
     onLoadingError?:()=>void;
     preload(){
         const assets=[
-            [TANK_WEAPONS_ATLAS.key,TANK_WEAPONS_ATLAS.url],[TANK_ATLAS.key,TANK_ATLAS.url],[GUNNER_ATLAS.key,GUNNER_ATLAS.url],[GUNNER_WEAPONS_ATLAS.key,GUNNER_WEAPONS_ATLAS.url],
+            [CONNECTED_ARMS.key,CONNECTED_ARMS.url],[TANK_WEAPONS_ATLAS.key,TANK_WEAPONS_ATLAS.url],[TANK_ATLAS.key,TANK_ATLAS.url],[GUNNER_ATLAS.key,GUNNER_ATLAS.url],[GUNNER_WEAPONS_ATLAS.key,GUNNER_WEAPONS_ATLAS.url],
             [SAMURAI_WEAPONS_ATLAS.key,SAMURAI_WEAPONS_ATLAS.url],
             [SAMURAI_ATLAS.key,SAMURAI_ATLAS.url],
             [LEADER_ATLAS.key,LEADER_ATLAS.url],

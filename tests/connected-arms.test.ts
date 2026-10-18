@@ -1,0 +1,10 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import {connectedArmPose,connectedRestPose,connectedHeroPortrait,connectedArmRegion,connectedArmVisible} from '../src/connected-arms';
+import type {HeroId} from '../src/config';
+test('All approved portraits have connected arms beside the hips with downward elbows',()=>{for(const hero of ['ninja','samurai','gunner','tank'] as HeroId[]){const rest=connectedRestPose(hero);assert.ok(rest[0].hand.x>0&&rest[1].hand.x<0);for(const arm of rest)assert.ok(arm.hand.y>arm.shoulder.y);assert.match(connectedHeroPortrait(hero),/hero-connected-arms-v1/);}});
+test('One-piece arm anchors stay on the fixed shoulder and weapon grip',()=>{for(const hero of ['ninja','samurai','gunner','tank'] as HeroId[])for(let side=0;side<2;side++)for(let a=-Math.PI;a<Math.PI;a+=.1){const shoulder={x:side===0?8:-9,y:5},hand={x:shoulder.x+Math.cos(a)*18,y:5+Math.sin(a)*18},p=connectedArmPose(hero,side,shoulder,hand),bx=side===0?.4:.6,by=.88,dx=(bx-p.originX)*p.width,dy=(by-p.originY)*p.height;assert.deepEqual({x:p.x,y:p.y},shoulder);assert.ok(Math.hypot(p.x+Math.cos(p.rotation)*dx-Math.sin(p.rotation)*dy-hand.x,p.y+Math.sin(p.rotation)*dx+Math.cos(p.rotation)*dy-hand.y)<1e-6);}});
+
+test('Screen-right arms use the right-hand illustration, screen-left arms use the left-hand illustration',()=>{for(const hero of ['ninja','samurai','gunner','tank'] as HeroId[]){assert.ok(connectedArmRegion(hero,0)[0]>512);assert.ok(connectedArmRegion(hero,1)[0]<512);for(const f of [-1,1]){const p=connectedArmPose(hero,0,{x:8*f,y:5},{x:20*f,y:17},f);assert.equal(p.flipX,f<0);}}});
+
+test('Armed Gunner and Tank hide only the facing-side arm, while unarmed portraits keep both',()=>{for(const hero of ['gunner','tank'] as HeroId[])for(const facing of [-1,1]){for(let side=0;side<2;side++){const screenX=(side===0?8:-9)*facing;assert.equal(connectedArmVisible(hero,side),facing>0?screenX<0:screenX>0);assert.equal(connectedArmVisible(hero,side,false),true);}}for(const hero of ['ninja','samurai'] as HeroId[])for(let side=0;side<2;side++)assert.equal(connectedArmVisible(hero,side),true);});

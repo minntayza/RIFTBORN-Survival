@@ -1,3 +1,4 @@
+import {CONNECTED_ARMS,connectedArmCanvas,connectedArmPose,connectedArmVisible} from './connected-arms';
 import {rigidHeroArm,heroArmSprite,shoulderGrip} from './hero-arm';
 import {TANK_WEAPONS_ATLAS,TANK_WEAPONS,tankWeaponCanvas} from './tank-weapons';
 import {TANK_ATLAS,tankCanvas,tankPart} from './tank-art';
@@ -93,6 +94,8 @@ export class ArenaVisuals {
         if(!scene.textures.exists('enemy-rifle-hands'))scene.textures.addCanvas('enemy-rifle-hands',cuteRifleHandsCanvas(scene.textures.get(OFFICER_ATLAS.key).getSourceImage() as HTMLImageElement));
         for (const id of Object.keys(WEAPONS) as WeaponId[])
             if(!scene.textures.exists(`weapon-${id}`))scene.textures.addCanvas(`weapon-${id}`, weaponCanvas(id));
+        const connectedSource=scene.textures.get(CONNECTED_ARMS.key).getSourceImage() as HTMLImageElement;
+        for(const hero of Object.keys(HEROES) as HeroId[])for(let i=0;i<2;i++)if(!scene.textures.exists(`connected-${hero}-${i}`))scene.textures.addCanvas(`connected-${hero}-${i}`,connectedArmCanvas(connectedSource,hero,i));
         const tankSource=scene.textures.get(TANK_ATLAS.key).getSourceImage() as HTMLImageElement;
         for(const part of ['upper','forearm','hand','otherHand'] as const)if(!scene.textures.exists(`tank-${part}`))scene.textures.addCanvas(`tank-${part}`,tankPart(tankSource,part));
         if(!scene.textures.exists('cute-tank-full'))scene.textures.addCanvas('cute-tank-full',tankCanvas(tankSource,0,true));
@@ -184,15 +187,16 @@ export class ArenaVisuals {
         if(dual)this.offhand.setTexture(hero==='gunner'?`gunner-${weapon}`:hero==='ninja'?`ninja-${weapon}`:`weapon-${weapon}`).setOrigin(other.originX,other.originY).setDisplaySize(other.size,other.size).setPosition(other.grip.x,other.grip.y).setRotation(other.rotation).setFlipY(other.flipY);
         this.cuteArms.forEach(arm=>arm.setVisible(false));
         this.ninjaArmFx.clear();this.ninjaBones.forEach(bone=>bone.setVisible(false));
-        if(articulatedHero&&hero!=='gunner'){
+        if(articulatedHero){
             const g=this.ninjaArmFx,flip=Math.cos(angle)<0?-1:1;
             for(let index=0;index<2;index++){
+                if(!connectedArmVisible(hero,index))continue;
                 const shoulder={x:x+(index===0?8:-9)*flip,y:y+5};
-                const target=index===0?pose.grip:hero==='samurai'||hero==='tank'&&weapon==='hammer'?samuraiSupportHand(pose.grip,pose.rotation):dual?other.grip:{x:x-12*flip,y:y+21};
-                const resting=index===1&&!dual&&hero!=='samurai'&&weapon!=='hammer';
+                const target=index===0?pose.grip:hero==='samurai'||hero==='tank'&&weapon==='hammer'?samuraiSupportHand(pose.grip,pose.rotation):hero==='gunner'&&!dual&&isGunnerWeapon(weapon)?gunnerSupportHand(gunnerWeaponPose(weapon,x,y,angle,phase,active,false,gunnerState),gunnerState):dual?other.grip:{x:x-12*flip,y:y+21};
+                const resting=index===1&&!dual&&hero!=='samurai'&&hero!=='gunner'&&weapon!=='hammer';
                 const held=resting?shoulderGrip(shoulder,Math.PI/2,18):target;
-                const rig=rigidHeroArm(shoulder,held,flip),prefix=hero;
-                for(const [j,part,a,b] of [[0,'upper',rig.shoulder,rig.elbow],[1,'forearm',rig.elbow,rig.wrist],[2,'hand',rig.wrist,rig.grip]] as const){const p=heroArmSprite(hero,part,a,b);this.ninjaBones[index*3+j].setTexture(`${prefix}-${part==='hand'&&index===1&&hero!=='ninja'?'otherHand':part}`).setVisible(true).setOrigin(p.originX,p.originY).setPosition(p.x,p.y).setDisplaySize(p.width,p.height).setRotation(p.rotation).setDepth(part==='hand'?(hero==='tank'&&weapon!=='hammer'?3.19:3.21):3.14).setAlpha(this.hero.alpha);}
+                const p=connectedArmPose(hero,index,shoulder,held,flip);
+                this.ninjaBones[index*3].setTexture(`connected-${hero}-${index}`).setFlipX(p.flipX).setVisible(true).setOrigin(p.originX,p.originY).setPosition(p.x,p.y).setDisplaySize(p.width,p.height).setRotation(p.rotation).setDepth(hero==='tank'&&weapon!=='hammer'?3.19:3.21).setAlpha(this.hero.alpha);
 
             }
         }
