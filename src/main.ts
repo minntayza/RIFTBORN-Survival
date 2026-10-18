@@ -117,7 +117,7 @@ function levelUpCardPreview(hero:HeroId){
 
 function guide(){
  menuState='guide';const content=guideTab==='cards'?cardEvolutionGuide(save,guideHero):guideTab==='levelups'?levelUpCardPreview(guideHero):guideTab==='weapons'?weaponEvolutionGuide(save,guideWeapon):enemyGallery((['enemies','robots','bosses'].includes(guideTab)?guideTab:'enemies') as GuideSection);
- shell(`${header('Field guide','Meet the horde. Learn their tells. Make your next stand count.')}<nav class="guide-tabs field-main-tabs" aria-label="Enemy collections">${[['enemies','Zombies'],['robots','Robots'],['bosses','Bosses']].map(([id,name])=>button(`${name} <span>${guideEntries(id as GuideSection).length}</span>`,'guide-tab:'+id,id===guideTab?'active':'quiet')).join('')}</nav><details class="field-build-library" ${['cards','levelups','weapons'].includes(guideTab)?'open':''}><summary>Build library <span>Cards &amp; weapon evolutions</span></summary><nav class="guide-tabs field-library-tabs" aria-label="Build collections">${[['cards','Card evolutions'],['levelups','Level-up cards'],['weapons','Weapon evolutions']].map(([id,name])=>button(name,'guide-tab:'+id,id===guideTab?'active':'quiet')).join('')}</nav></details>${guideTab==='cards'||guideTab==='levelups'?`<nav class="guide-filters">${Object.entries(HEROES).map(([id,h])=>button(h.name,'guide-hero:'+id,guideHero===id?'active':'quiet')).join('')}</nav>`:guideTab==='weapons'?`<label class="guide-filter">WEAPON <select data-guide-weapon>${Object.entries(WEAPONS).map(([id,w])=>`<option value="${id}" ${guideWeapon===id?'selected':''}>${w.name} · ${HEROES[w.hero as HeroId].name}</option>`).join('')}</select></label>`:''}<section class="${['cards','levelups','weapons'].includes(guideTab)?'field-build-content':''}">${content}</section><div class="actions">${button('← Back','guide-back','quiet')}</div>`,true);
+ shell(`${header('Field guide','Meet the horde. Learn their tells. Make your next stand count.')}<nav class="guide-tabs field-main-tabs" aria-label="Enemy collections">${[['enemies','Zombies'],['robots','Robots'],['bosses','Bosses']].map(([id,name])=>button(`${name} <span>${guideEntries(id as GuideSection).length}</span>`,'guide-tab:'+id,id===guideTab?'active':'quiet')).join('')}</nav><details class="field-build-library" ${['cards','levelups','weapons'].includes(guideTab)?'open':''}><summary>Build library <span>Cards &amp; weapon evolutions</span></summary><nav class="guide-tabs field-library-tabs" aria-label="Build collections">${[['cards','Card evolutions'],['levelups','Level-up cards'],['weapons','Weapon evolutions']].map(([id,name])=>button(name,'guide-tab:'+id,id===guideTab?'active':'quiet')).join('')}</nav></details>${guideTab==='cards'||guideTab==='levelups'?`<nav class="guide-filters">${Object.entries(HEROES).map(([id,h])=>button(h.name,'guide-hero:'+id,guideHero===id?'active':'quiet')).join('')}</nav>`:guideTab==='weapons'?`<label class="guide-filter">WEAPON <select data-guide-weapon aria-label="Weapon evolution preview">${Object.entries(HEROES).map(([hero,h])=>`<optgroup label="${h.name}">${Object.entries(WEAPONS).filter(([,w])=>w.hero===hero).map(([id,w])=>`<option value="${id}" ${guideWeapon===id?'selected':''}>${w.name}</option>`).join('')}</optgroup>`).join('')}</select></label>`:''}<section class="${['cards','levelups','weapons'].includes(guideTab)?'field-build-content':''}">${content}</section><div class="actions">${button('← Back','guide-back','quiet')}</div>`,true);
  overlay.querySelector('.panel')?.classList.add('field-guide-panel');overlay.querySelectorAll<HTMLButtonElement>('.field-main-tabs button,.field-library-tabs button').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.action===`guide-tab:${guideTab}`)));mountEnemyGallery(overlay);
 }
 function openGuide(tab='enemies'){
@@ -359,3 +359,13 @@ setInterval(() => {
 }, 1500);
 syncAudio();
 menu();
+
+// Native selects emit change, not the button actions used by the guide tabs.
+overlay.addEventListener('change',e=>{
+ const select=e.target;
+ if(!(select instanceof HTMLSelectElement)||!select.hasAttribute('data-guide-weapon')||!Object.hasOwn(WEAPONS,select.value))return;
+ const panel=overlay.querySelector<HTMLElement>('.panel'),scroll=panel?.scrollTop||0;
+ guideWeapon=select.value as WeaponId;guide();
+ const nextPanel=overlay.querySelector<HTMLElement>('.panel');if(nextPanel)nextPanel.scrollTop=scroll;
+ overlay.querySelector<HTMLSelectElement>('[data-guide-weapon]')?.focus({preventScroll:true});
+});

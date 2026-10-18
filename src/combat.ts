@@ -1375,8 +1375,6 @@ export class ArenaScene extends Phaser.Scene {
             g.fillCircle(this.x - 45, this.y - 30, 17);
         }
         if((this.save.mastery[this.hero]?.kills||0)>=500&&this.options.mode!=='daily'){g.lineStyle(2,0xc5ac7c,.85);g.fillStyle(0xc5ac7c,.9);g.fillTriangle(this.x,this.y-36,this.x-5,this.y-28,this.x+5,this.y-28);this.visuals.veteran();}
-        if(this.evolution.power){g.lineStyle(2,0xd99a60,.7);g.beginPath();g.arc(this.x,this.y,30,this.elapsed*4,this.elapsed*4+2);g.strokePath();}
-        if(this.evolution.reach){g.lineStyle(1.5,0xa1c5ed,.7);g.strokePoints([{x:this.x-24,y:this.y+5},{x:this.x-14,y:this.y-8},{x:this.x-20,y:this.y-15}],false);}
         this.visuals.evolutionDetails(this.evolution,this.swing,this.elapsed);
         if(this.dash>0){g.lineStyle(5,color,.5);g.lineBetween(this.x,this.y,this.x-this.dashX*65,this.y-this.dashY*65);}
         if(this.boostSpeed>0){g.lineStyle(3,0x829fa9,.8);for(let i=0;i<3;i++)g.lineBetween(this.x-20-i*8,this.y+10,this.x-28-i*8,this.y+10);}

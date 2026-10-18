@@ -1299,3 +1299,40 @@ button:disabled{box-shadow:none;filter:saturate(.55)}
 .combat-hud.is-touch .combat-passive{bottom:max(136px,calc(env(safe-area-inset-bottom) + 130px));width:132px}.combat-hud.is-touch .combat-resource{bottom:max(8px,env(safe-area-inset-bottom))}
 @media(max-width:500px){.combat-hud .combat-health{min-width:0;left:8px;padding:7px;width:116px}.combat-hud .combat-portrait{display:none}.combat-hud .combat-health>div{width:100%}.combat-hud .combat-hp{font-size:11px}.combat-hud .combat-wave{left:calc(50% + 8px);min-width:72px;padding:7px 5px}.combat-hud .combat-wave b{font-size:11px}.combat-hud .combat-sector{max-width:80px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.combat-hud .combat-pause{right:8px;width:38px;height:40px}.combat-hud .combat-map-view{right:51px;width:38px;height:40px}.combat-hud .combat-boss{top:calc(var(--hud-top) + 66px)}.combat-hud .combat-notice{top:calc(var(--hud-top) + 104px);font-size:9px}.combat-hud.has-boss .combat-notice{top:calc(var(--hud-top) + 114px)}}
 @media(max-width:360px){.combat-hud .combat-health{width:100px}.combat-hud .combat-wave{left:47%;min-width:64px}.combat-hud .combat-wave b{font-size:10px}}
+
+/* Evolution library: let narrow screens scroll vertically, never sideways. */
+.field-guide-panel,.field-build-content,.weapon-evolution-layout,.guide-weapon-copy{min-width:0}
+.field-guide-panel .guide-filter select{min-width:0;width:min(100%,360px);font-size:14px}
+.field-build-content .weapon-evolution-art>img{display:block;width:100%;height:100%;object-fit:contain}
+.field-build-content .guide-weapon-copy,.field-build-content .guide-evolution{overflow-wrap:anywhere}
+@media(max-width:500px){
+ .field-guide-panel .guide-filter{display:flex;flex-direction:column;align-items:stretch;gap:8px;width:100%;margin:18px 0}
+ .field-guide-panel .guide-filter select{width:100%;max-width:100%;min-height:48px;font-size:16px;padding:12px;letter-spacing:0}
+ .field-guide-panel .field-library-tabs{grid-template-columns:1fr;gap:6px}
+ .field-guide-panel .field-library-tabs button{font-size:12px;min-height:44px;width:100%}
+ .field-build-content .guide-grid,.field-build-content .levelup-preview-grid{grid-template-columns:1fr}
+ .field-build-content .guide-weapon{grid-template-columns:70px minmax(0,1fr);gap:12px;padding:12px}
+ .field-build-content .guide-weapon-copy h3{font-size:20px;line-height:1.25}
+ .field-build-content .guide-weapon-copy p{font-size:12px;line-height:1.6}
+ .field-build-content .guide-weapon-copy>small{display:block;font-size:11px;line-height:1.6}
+ .field-build-content .guide-evolution{padding:16px}
+ .field-build-content .weapon-evolution-card h3{font-size:21px}
+ .field-build-content .weapon-evolution-art{height:150px}.field-build-content .weapon-evolution-art.final{height:170px}
+ .field-build-content .evolution-step p{font-size:13px;line-height:1.65}
+ .field-build-content .evolution-card-reference{height:220px}
+ .field-guide-panel>.actions{display:flex;flex-wrap:wrap}.field-guide-panel>.actions button{width:100%;min-height:44px}
+}
+@media(max-width:350px){.field-build-content .guide-weapon{grid-template-columns:1fr}.field-build-content .guide-weapon .weapon-art{width:100%;height:100px}}
+.field-build-content .weapon-evolution-art{display:grid;place-items:center;padding:14px}
+.field-build-content .weapon-evolution-art>svg,.field-build-content .guide-weapon .weapon-art>svg{display:block;width:100%;height:100%;min-height:0;object-fit:contain}
+.field-build-content .weapon-evolution-art>svg{filter:drop-shadow(0 0 7px color-mix(in srgb,var(--evo-color) 45%,transparent))}
+.field-build-content .weapon-evolution-art.final>svg{filter:drop-shadow(0 0 12px color-mix(in srgb,var(--evo-color) 65%,transparent))}
+.awakened-weapon .weapon-element-lines{animation:weapon-element-pulse 1.5s ease-in-out infinite alternate}
+.awakened-weapon .weapon-sparks{animation:weapon-element-pulse .4s steps(2,end) infinite alternate}
+.awakened-weapon .weapon-embers{animation:weapon-ember-rise 1.4s ease-out infinite}
+.awakened-weapon .weapon-echo{filter:sepia(1) saturate(3) hue-rotate(210deg);animation:weapon-echo-drift 2s ease-in-out infinite alternate}
+.awakened-weapon.is-full .weapon-element-lines{stroke-width:4}
+@keyframes weapon-element-pulse{from{opacity:.5}to{opacity:1}}
+@keyframes weapon-ember-rise{from{transform:translateY(4px);opacity:1}to{transform:translateY(-7px);opacity:0}}
+@keyframes weapon-echo-drift{from{transform:translate(3px,-2px);opacity:.2}to{transform:translate(9px,-4px);opacity:.4}}
+@media(prefers-reduced-motion:reduce){.awakened-weapon *{animation:none!important}}

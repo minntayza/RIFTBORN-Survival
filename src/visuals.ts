@@ -1,3 +1,4 @@
+import {awakenWeaponCanvas,type WeaponElement} from './weapon-awakening-art';
 import {CONNECTED_ARMS,connectedArmCanvas,connectedArmPose,connectedArmVisible} from './connected-arms';
 import {rigidHeroArm,heroArmSprite,shoulderGrip} from './hero-arm';
 import {TANK_WEAPONS_ATLAS,TANK_WEAPONS,tankWeaponCanvas} from './tank-weapons';
@@ -56,10 +57,62 @@ export class ArenaVisuals {
     private secondTrail:{x:number;y:number}[]=[];
     private lastSequence=-1;
     private accents!:Phaser.GameObjects.Graphics;
+    private elementalCuts:{points:{x:number;y:number}[];born:number;element:WeaponElement;full:boolean}[]=[];
+    private cutStamp=-1;
+    private awakenedArt=new Map<string,{key:string;points:{u:number;v:number}[]}>();
+    private weaponEchoes:Phaser.GameObjects.Image[]=[];
     evolutionDetails(e:{reach:number;power:number;tempo:number},swing:number,time:number){
-        const g=this.accents;g.clear();const w=this.weapon,x=w.x,y=w.y,a=w.rotation;
-        if(e.reach||e.power||e.tempo){g.lineStyle(2,e.power?0xb99c79:e.reach?0x8caead:0xb1a6c0,.9);g.lineBetween(x-Math.sin(a)*5,y+Math.cos(a)*5,x+Math.sin(a)*5,y-Math.cos(a)*5);g.strokeCircle(x,y,4);}
-        if(e.tempo&&swing>0){for(let i=1;i<=2;i++){const aa=a-i*.17;g.lineStyle(2,0xa79fb8,.5-i*.12);g.lineBetween(x,y,x+Math.cos(aa)*32,y+Math.sin(aa)*32);}}
+        const g=this.accents;g.clear();this.weaponEchoes.forEach(image=>image.setVisible(false));
+        const element:WeaponElement|undefined=e.reach?'reach':e.power?'power':e.tempo?'tempo':undefined;
+        if(!element)return;
+        const full=e[element]>1,color=element==='reach'?0x81dfff:element==='power'?0xffa64c:0xc09aff;
+        if(this.tipTrail.length>1&&time-this.cutStamp>.045){
+            this.cutStamp=time;
+            for(const points of [this.tipTrail,this.secondTrail])if(points.length>1)this.elementalCuts.push({points:points.map(p=>({...p})),born:time,element,full});
+            if(this.elementalCuts.length>10)this.elementalCuts.splice(0,this.elementalCuts.length-10);
+        }
+        this.elementalCuts=this.elementalCuts.filter(c=>time-c.born<.32);
+        for(const cut of this.elementalCuts){
+            const age=(time-cut.born)/.32,fade=1-age,points=cut.points;
+            if(cut.element==='reach'){
+                const jagged=points.map((p,i)=>({x:p.x+(i%2?2:-2)*fade,y:p.y+(i%2?-2:2)*fade}));
+                g.lineStyle(cut.full?5:3,0x399cdd,.25*fade);g.strokePoints(points,false);
+                g.lineStyle(cut.full?2:1.3,0x9eeaff,.9*fade);g.strokePoints(jagged,false);
+                const tip=points[points.length-1];for(let i=0;i<(cut.full?3:2);i++){const angle=cut.born*17+i*2.1;g.lineStyle(1,0xd9ffff,fade);g.lineBetween(tip.x,tip.y,tip.x+Math.cos(angle)*(5+age*10),tip.y+Math.sin(angle)*(5+age*10));}
+            }else if(cut.element==='power'){
+                g.lineStyle(cut.full?7:4,0xff7736,.55*fade);g.strokePoints(points,false);g.lineStyle(1.5,0xffe2a0,.85*fade);g.strokePoints(points,false);
+                for(let i=1;i<points.length;i+=3){const p=points[i],rise=age*13;g.fillStyle(i%2?0xffa548:0xffd378,fade);g.fillTriangle(p.x-2*fade,p.y-rise,p.x+2*fade,p.y-rise,p.x+Math.sin(i+cut.born)*3,p.y-rise-5*fade);}
+            }else if(age>.17){
+                for(let echo=1;echo<=(cut.full?2:1);echo++){
+                    const dx=-echo*(3+age*7),dy=-echo*2;const trail=points.map(p=>({x:p.x+dx,y:p.y+dy}));
+                    g.lineStyle(cut.full?4:2.5,0xb69af5,.45*fade/echo);g.strokePoints(trail,false);g.lineStyle(1,0xf2dcff,.7*fade/echo);g.strokePoints(trail,false);
+                }
+            }
+        }
+        for(const [hand,w] of [this.weapon,this.offhand].entries()){
+            if(!w.visible)continue;
+            const base=w.texture.key,key=`awakened:${base}:${element}:${full?'full':'first'}`;
+            let art=this.awakenedArt.get(key);
+            if(!art){const source=w.texture.getSourceImage() as HTMLCanvasElement;const generated=awakenWeaponCanvas(source,source.width,source.height,element,full);this.scene.textures.addCanvas(key,generated.canvas);art={key,points:generated.points};this.awakenedArt.set(key,art);}
+            const width=w.displayWidth,height=w.displayHeight;w.setTexture(art.key).setDisplaySize(width,height);
+            const point=(u:number,v:number)=>{const dx=((w.flipX?1-u:u)-w.originX)*width,dy=((w.flipY?1-v:v)-w.originY)*height,a=w.rotation;return{x:w.x+Math.cos(a)*dx-Math.sin(a)*dy,y:w.y+Math.sin(a)*dx+Math.cos(a)*dy};};
+            const points=art.points.length?art.points:[{u:.55,v:.45}];
+            // A fixed small budget, shared by every frame, keeps crowded waves inexpensive.
+            const count=full?6:3,beat=Math.floor(time*(element==='reach'?11:5));
+            for(let i=0;i<count;i++){
+                const p=points[(i*Math.max(1,Math.floor(points.length/count))+beat)%points.length],q=point(p.u,p.v);
+                if(element==='reach'){
+                    const next=points[(i*Math.max(1,Math.floor(points.length/count))+beat+1)%points.length],r=point(next.u,next.v);
+                    g.lineStyle(full?1.8:1.2,color,.9);g.beginPath();g.moveTo(q.x,q.y);g.lineTo((q.x+r.x)/2+Math.sin(beat+i)*2,(q.y+r.y)/2+Math.cos(beat+i)*2);g.lineTo(r.x,r.y);g.strokePath();g.fillStyle(0xe1fbff,.9);g.fillCircle(q.x,q.y,full?1.4:1);
+                }else if(element==='power'){
+                    const age=(time*2+i*.19)%1;g.fillStyle(age<.4?0xffdc86:color,1-age);g.fillTriangle(q.x-2,q.y,q.x+2,q.y,q.x+Math.sin(time*6+i)*2,q.y-4-age*(full?9:5));
+                }else{g.fillStyle(color,.45);g.fillCircle(q.x+Math.sin(time*3+i)*3,q.y-2,1.2);}
+            }
+            if(element==='tempo')for(let i=0;i<(full?2:1);i++){
+                const slot=hand*2+i;let echo=this.weaponEchoes[slot];if(!echo){echo=this.scene.add.image(0,0,art.key).setDepth(3.1);this.weaponEchoes[slot]=echo;}
+                const distance=(i+1)*(swing>0?7:3);echo.setTexture(art.key).setOrigin(w.originX,w.originY).setDisplaySize(width,height).setPosition(w.x-Math.cos(w.rotation)*distance,w.y-Math.sin(w.rotation)*distance).setRotation(w.rotation-(swing>0?.12*(i+1):0)).setFlip(w.flipX,w.flipY).setTint(color).setAlpha(.24/(i+1)).setVisible(true);
+            }
+        }
     }
     private ninjaBones:Phaser.GameObjects.Image[]=[];
     private ninjaArmFx!:Phaser.GameObjects.Graphics;
