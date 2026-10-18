@@ -1,3 +1,4 @@
+import {ninjaArm,type ArmPoint} from './ninja-arm';
 /** Heavy anticipation, committed cut, held follow-through and a relaxed return. */
 export function samuraiSwing(weapon:string,phase:number){
  const t=Math.max(0,Math.min(1,phase)),smooth=(v:number)=>v*v*(3-2*v),back=weapon==='naginata'?-1.2:-1.05,cut=weapon==='cursed'?1.15:1.2;
@@ -7,3 +8,6 @@ export function samuraiSupportHand(grip:{x:number;y:number},rotation:number){ret
 
 /** The source Samurai illustration faces left; mirror it for rightward aim. */
 export const samuraiFlipX=(aim:number)=>Math.cos(aim)>=0;
+
+/** Prefer the lower elbow solution so the forearm never folds upward across the face. */
+export function samuraiArm(shoulder:ArmPoint,hand:ArmPoint){const a=ninjaArm(shoulder,hand,1),b=ninjaArm(shoulder,hand,-1);return a.elbow.y>=b.elbow.y?a:b;}

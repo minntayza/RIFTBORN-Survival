@@ -1,3 +1,5 @@
+import {pairedGrip,shoulderGrip} from './hero-arm';
+import {ninjaForwardArm} from './ninja-rig';
 import {isTankWeapon,tankWeaponMetrics} from './tank-weapons';
 import {isSamuraiWeapon,samuraiWeaponMetrics} from './samurai-weapons';
 import {samuraiSwing} from './samurai-motion';
@@ -28,14 +30,18 @@ export function weaponPose(id:WeaponId,x:number,y:number,aim:number,phase:number
  if(blocking&&shield)forward+=5;
  if(articulated==='tank'&&shield){const push=!active?0:t<.26?-4*(t/.26):t<.5?-4+15*(1-Math.pow(1-(t-.26)/.24,3)):11*(1-(t-.5)/.5);forward=18+push-(blocking&&!active?3:0);}
  if(articulated&&!gun&&!shield)rotation=aim+(active?(articulated==='samurai'?samuraiSwing(id,t)*facing:ninjaWeaponSwing(id,t,sequence,offhand)*(articulated==='tank'?facing:1))*arcScale:0);
- const radius=(articulated==='samurai'||articulated==='tank'?16:17)*(active?ninjaRecovery(t):1);
+ const radius=(articulated==='samurai'||articulated==='tank'?16:24)*(active?ninjaRecovery(t):1);
  const size=(articulated==='tank'&&id==='hammer'?94:g.size)*reach*(articulated?(id==='katana'?.76:id==='dual'?.8:id==='kama'?.82:1):1);
- const grip=articulated&&!gun&&!shield?{x:x+Math.cos(rotation)*radius-Math.sin(rotation)*(articulated==='samurai'||articulated==='tank'?5*facing:offhand?-6:6),y:y+6+Math.sin(rotation)*radius+Math.cos(rotation)*(articulated==='samurai'||articulated==='tank'?5*facing:offhand?-6:6)}:{x:x+Math.cos(aim)*forward-Math.sin(aim)*side,y:y+Math.sin(aim)*forward+Math.cos(aim)*side};
- if(articulated&&!gun&&(!shield||articulated==='tank')){
+ let grip=articulated&&!gun&&!shield?{x:x+Math.cos(rotation)*radius-Math.sin(rotation)*(articulated==='samurai'||articulated==='tank'?5*facing:offhand?-6:9),y:y+6+Math.sin(rotation)*radius+Math.cos(rotation)*(articulated==='samurai'||articulated==='tank'?5*facing:offhand?-6:9)}:{x:x+Math.cos(aim)*forward-Math.sin(aim)*side,y:y+Math.sin(aim)*forward+Math.cos(aim)*side};
+ if(articulated===true&&!gun&&!shield){grip=ninjaForwardArm({x:x+(offhand?-9:8)*facing,y:y+5},rotation,facing,offhand).grip;}
+ if(articulated&&articulated!==true&&!gun&&(!shield||articulated==='tank')){
   const flip=Math.cos(aim)<0?-1:1,sx=x+(offhand?-9:8)*flip,sy=y+5;
   const dx=grip.x-sx,dy=grip.y-sy,d=Math.hypot(dx,dy),bounded=Math.max(1.1,Math.min(26.5,d));
   if(d!==bounded){grip.x=sx+dx/(d||1)*bounded;grip.y=sy+dy/(d||1)*bounded;}
  }
+ if(articulated==='samurai'||articulated==='tank'&&id==='hammer'){
+ const offset={x:-Math.cos(rotation)*10.5,y:-Math.sin(rotation)*10.5};grip=pairedGrip({x:x+8*facing,y:y+5},{x:x-9*facing,y:y+5},offset);
+ }else if(articulated==='tank'&&shield){rotation=aim+facing*(active?(t<.26?.25+.4*t/.26:t<.5?.65-.95*(t-.26)/.24:-.3+.55*(t-.5)/.5):.25);grip=shoulderGrip({x:x+8*facing,y:y+5},rotation+.3*facing,18);}
  const samurai=articulated==='samurai'&&isSamuraiWeapon(id)?samuraiWeaponMetrics(id):undefined;
  const tank=articulated==='tank'&&isTankWeapon(id)?tankWeaponMetrics(id):undefined;
  const gripPoint=tank?.grip??samurai?.grip??(articulated==='samurai'?{x:g.grip.x+4,y:g.grip.y}:g.grip);

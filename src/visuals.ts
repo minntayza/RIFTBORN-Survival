@@ -1,3 +1,4 @@
+import {rigidHeroArm,heroArmSprite,shoulderGrip} from './hero-arm';
 import {TANK_WEAPONS_ATLAS,TANK_WEAPONS,tankWeaponCanvas} from './tank-weapons';
 import {TANK_ATLAS,tankCanvas,tankPart} from './tank-art';
 import {GUNNER_ATLAS,gunnerCanvas,gunnerPart} from './gunner-art';
@@ -12,7 +13,6 @@ import {COMMAND_ATLAS,commandCanvas} from './cute-command';
 import {OFFICER_ATLAS,hordeAtlas,isCuteHorde,hordeCanvas,cuteRifleHandsCanvas,rifleHandPose} from './cute-horde';
 import {cachedCanvas} from './texture-cache';
 import {NINJA_ATTACK_ATLAS,NINJA_WEAPONS_ATLAS,ninjaAttackPart,ninjaSwordCanvas,ninjaWeaponCanvas} from './ninja-attack-art';
-import {ninjaArm} from './ninja-arm';
 import {CUTE_ATLAS,cuteCanvas,cuteArmCanvas} from './cute-trio';
 import {bossAction,type BossAction} from './boss-motion';
 import {ROBOTS,ROBOT_ROLES,robotCanvas,robotMovementType,type EnemyFaction} from './robot-enemies';
@@ -100,7 +100,7 @@ export class ArenaVisuals {
         for(const id of TANK_WEAPONS)if(!scene.textures.exists(`tank-${id}`))scene.textures.addCanvas(`tank-${id}`,tankWeaponCanvas(tankWeapons,id));
         const gunnerSource=scene.textures.get(GUNNER_ATLAS.key).getSourceImage() as HTMLImageElement;
         for(const part of ['upper','forearm','hand','otherHand'] as const)if(!scene.textures.exists(`gunner-${part}`))scene.textures.addCanvas(`gunner-${part}`,gunnerPart(gunnerSource,part));
-        if(!scene.textures.exists('cute-gunner-full'))scene.textures.addCanvas('cute-gunner-full',gunnerCanvas(gunnerSource,0,true));
+        if(!scene.textures.exists('cute-gunner-full'))scene.textures.addCanvas('cute-gunner-full',gunnerCanvas(gunnerSource,0,false));
         const guns=scene.textures.get(GUNNER_WEAPONS_ATLAS.key).getSourceImage() as HTMLImageElement;
         for(const id of GUNNER_WEAPONS)if(!scene.textures.exists(`gunner-${id}`))scene.textures.addCanvas(`gunner-${id}`,gunnerWeaponCanvas(guns,id));
         const samuraiWeapons=scene.textures.get(SAMURAI_WEAPONS_ATLAS.key).getSourceImage() as HTMLImageElement;
@@ -184,23 +184,22 @@ export class ArenaVisuals {
         if(dual)this.offhand.setTexture(hero==='gunner'?`gunner-${weapon}`:hero==='ninja'?`ninja-${weapon}`:`weapon-${weapon}`).setOrigin(other.originX,other.originY).setDisplaySize(other.size,other.size).setPosition(other.grip.x,other.grip.y).setRotation(other.rotation).setFlipY(other.flipY);
         this.cuteArms.forEach(arm=>arm.setVisible(false));
         this.ninjaArmFx.clear();this.ninjaBones.forEach(bone=>bone.setVisible(false));
-        if(articulatedHero){
+        if(articulatedHero&&hero!=='gunner'){
             const g=this.ninjaArmFx,flip=Math.cos(angle)<0?-1:1;
             for(let index=0;index<2;index++){
                 const shoulder={x:x+(index===0?8:-9)*flip,y:y+5};
-                const target=index===0?pose.grip:hero==='samurai'||hero==='tank'&&weapon==='hammer'?samuraiSupportHand(pose.grip,pose.rotation):hero==='gunner'&&!dual&&isGunnerWeapon(weapon)?gunnerSupportHand(gunnerWeaponPose(weapon,x,y,angle,phase,active,false,gunnerState),gunnerState):dual?other.grip:{x:x-12*flip,y:y+21};
-                const rig=ninjaArm(shoulder,target,hero==='gunner'?(index===0&&!dual?-flip:flip):index===0?flip:-flip,hero==='gunner'?15:13,hero==='gunner'?16:14);
-                const upper=this.ninjaBones[index*3],forearm=this.ninjaBones[index*3+1],hand=this.ninjaBones[index*3+2];
-                const prefix=hero==='tank'?'tank':hero==='gunner'?'gunner':hero==='samurai'?'samurai':'ninja';upper.setTexture(`${prefix}-upper`);forearm.setTexture(`${prefix}-forearm`);hand.setTexture(`${prefix}-${(hero==='samurai'||hero==='gunner')&&index===1?'otherHand':'hand'}`);
-                const segments=[[upper,rig.shoulder,rig.elbow,10,hero==='gunner'?18:16],[forearm,rig.elbow,rig.hand,9,hero==='gunner'?19:17]] as const;
-                for(const [sprite,a,b,width,height] of segments)sprite.setVisible(true).setOrigin(.5,.1).setPosition(a.x,a.y).setDisplaySize(width,height).setRotation(Math.atan2(b.y-a.y,b.x-a.x)-Math.PI/2).setAlpha(this.hero.alpha);
-                hand.setDepth(hero==='tank'&&weapon!=='hammer'?3.19:3.21).setVisible(true).setOrigin(.5,.5).setPosition(rig.hand.x,rig.hand.y).setDisplaySize(10,10).setRotation(index===0||hero==='samurai'||hero==='gunner'&&!dual?pose.rotation+Math.PI/2:dual?other.rotation+Math.PI/2:0).setAlpha(this.hero.alpha);
+                const target=index===0?pose.grip:hero==='samurai'||hero==='tank'&&weapon==='hammer'?samuraiSupportHand(pose.grip,pose.rotation):dual?other.grip:{x:x-12*flip,y:y+21};
+                const resting=index===1&&!dual&&hero!=='samurai'&&weapon!=='hammer';
+                const held=resting?shoulderGrip(shoulder,Math.PI/2,18):target;
+                const rig=rigidHeroArm(shoulder,held,flip),prefix=hero;
+                for(const [j,part,a,b] of [[0,'upper',rig.shoulder,rig.elbow],[1,'forearm',rig.elbow,rig.wrist],[2,'hand',rig.wrist,rig.grip]] as const){const p=heroArmSprite(hero,part,a,b);this.ninjaBones[index*3+j].setTexture(`${prefix}-${part==='hand'&&index===1&&hero!=='ninja'?'otherHand':part}`).setVisible(true).setOrigin(p.originX,p.originY).setPosition(p.x,p.y).setDisplaySize(p.width,p.height).setRotation(p.rotation).setDepth(part==='hand'?(hero==='tank'&&weapon!=='hammer'?3.19:3.21):3.14).setAlpha(this.hero.alpha);}
+
             }
         }
         if(hero==='gunner'){
             const g=this.ninjaArmFx,face=Math.cos(angle)<0?-1:1;
             if(gunnerState&&gunnerState.overdrive>0){g.fillStyle(0xffdb6b,.3+Math.sin(time*18)*.1);g.fillEllipse(x+5*face,y-21,13,9);g.fillEllipse(x+16*face,y-19,8,8);}
-            const reload=gunnerReload(gunnerState);if(reload!==undefined&&reload>.2&&reload<.8&&weapon!=='pistols'){const hand=this.ninjaBones[5];g.fillStyle(weapon==='shotgun'?0xe4ae53:0x1d252c,1);g.fillRoundedRect(hand.x-(weapon==='shotgun'?2:3),hand.y-1,weapon==='shotgun'?4:6,weapon==='shotgun'?8:10,2);g.lineStyle(1,0xffc554,.8);g.lineBetween(hand.x-2,hand.y+2,hand.x+2,hand.y+2);}
+
         }
         this.attackFx.clear();
         if(sequence!==this.lastSequence||!active){this.tipTrail=[];this.secondTrail=[];this.lastSequence=sequence;}

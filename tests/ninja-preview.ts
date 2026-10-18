@@ -1,0 +1,12 @@
+import Phaser from 'phaser';
+import {ArenaScene} from '../src/combat';
+import {freshSave} from '../src/save';
+import {AudioManager} from '../src/audio';
+import {artImage,heroFigureImage} from '../src/art';
+import {WEAPON_EFFECTS} from '../src/weapon-effects';
+import type {WeaponId} from '../src/config';
+document.querySelector('#shop')!.innerHTML=artImage('hero','ninja')+heroFigureImage('ninja')+'<span>Shop card · hero figure<br>Fixed head and shoulders<br>Corrected shoulder, elbow & wrist joints</span>';
+const scene=new ArenaScene(freshSave(),new AudioManager(),()=>{},()=>{},()=>{});new Phaser.Game({type:Phaser.CANVAS,parent:'game',width:innerWidth,height:innerHeight,scene:[scene],scale:{mode:Phaser.Scale.RESIZE},audio:{noAudio:true}});
+let weapon:WeaponId='katana',remaining=0,walking=true,left=false,scrub:number|undefined,sequence=0,blocking=false;
+document.querySelector<HTMLSelectElement>('#weapon')!.onchange=e=>{weapon=(e.target as HTMLSelectElement).value as WeaponId;remaining=0;scrub=undefined;};document.querySelector('#attack')!.addEventListener('click',()=>{scrub=undefined;remaining=WEAPON_EFFECTS[weapon].duration;sequence++;});document.querySelector('#walk')!.addEventListener('click',()=>walking=!walking);document.querySelector('#face')!.addEventListener('click',()=>left=!left);document.querySelector<HTMLInputElement>('#timeline')!.oninput=e=>{scrub=Number((e.target as HTMLInputElement).value);};
+const ready=setInterval(()=>{if(!scene.visuals)return;clearInterval(ready);scene.paused=true;scene.cameras.main.setZoom(3);let last=performance.now(),age=0;const tick=(now:number)=>{const dt=Math.min(.04,(now-last)/1000);last=now;age+=dt;remaining=Math.max(0,remaining-dt);const x=600+(walking?Math.sin(age*2)*14:0),y=400;scene.x=x;scene.y=y;scene.cameras.main.centerOn(600,360);scene.visuals.render([],'ninja',weapon,x,y,left?Math.PI:0,age,scrub===undefined?remaining:WEAPON_EFFECTS[weapon].duration*(1-scrub),0,0,blocking,0,10,sequence);requestAnimationFrame(tick);};requestAnimationFrame(tick);},50);

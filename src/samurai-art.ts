@@ -1,4 +1,4 @@
-import {ninjaArm} from './ninja-arm';
+import {samuraiArm} from './samurai-motion';
 export const SAMURAI_ATLAS={key:'cute-samurai-parts-v1',url:'/assets/characters/cute-samurai-parts-v1.png'};
 const regions={body:[33,36,494,644],leftLeg:[557,321,211,327],rightLeg:[945,321,211,326],upper:[1215,312,206,285],forearm:[1516,390,151,239],hand:[1747,444,156,198],otherHand:[1985,438,153,197]} as const;
 type Part=keyof typeof regions;
@@ -6,7 +6,7 @@ type Draw={part:Part;x:number;y:number;w:number;h:number;angle:number;ox:number;
 export function samuraiBodyPose(phase:number,strength=1){const step=Math.sin(phase*Math.PI*2)*strength;return {body:{x:64,y:6,w:81,h:96,angle:0},legs:[{x:53,y:93,angle:step*.17},{x:74,y:93,angle:-step*.17}]};}
 function draws(phase:number,strength:number,arms:boolean):Draw[]{
  const p=samuraiBodyPose(phase,strength),out:Draw[]=p.legs.map((leg,i)=>({part:i===0?'leftLeg':'rightLeg',x:leg.x,y:leg.y,w:23,h:29,angle:leg.angle,ox:.5,oy:.08}));out.push({part:'body',x:p.body.x,y:p.body.y,w:p.body.w,h:p.body.h,angle:0,ox:.5,oy:0});
- if(arms){const scale=128/78;for(let i=0;i<2;i++){const shoulder={x:64+(i===0?8:-9)*scale,y:64+5*scale},target={x:64+(i===0?17:-15)*scale,y:64+21*scale};const rig=ninjaArm({x:(shoulder.x-64)/scale,y:5},{x:(target.x-64)/scale,y:21},i===0?1:-1);const elbow={x:64+rig.elbow.x*scale,y:64+rig.elbow.y*scale},hand={x:64+rig.hand.x*scale,y:64+rig.hand.y*scale};for(const [part,a,b,w,h] of [['upper',shoulder,elbow,10,16],['forearm',elbow,hand,9,17]] as const)out.push({part,x:a.x,y:a.y,w:w*scale,h:h*scale,angle:Math.atan2(b.y-a.y,b.x-a.x)-Math.PI/2,ox:.5,oy:.1});out.push({part:i===0?'hand':'otherHand',x:hand.x,y:hand.y,w:10*scale,h:10*scale,angle:0,ox:.5,oy:.5});}}
+ if(arms){const scale=128/78;for(let i=0;i<2;i++){const shoulder={x:64+(i===0?8:-9)*scale,y:64+5*scale},target={x:64+(i===0?17:-15)*scale,y:64+21*scale};const rig=samuraiArm({x:(shoulder.x-64)/scale,y:5},{x:(target.x-64)/scale,y:21});const elbow={x:64+rig.elbow.x*scale,y:64+rig.elbow.y*scale},hand={x:64+rig.hand.x*scale,y:64+rig.hand.y*scale};for(const [part,a,b,w,h] of [['upper',shoulder,elbow,10,16],['forearm',elbow,hand,9,17]] as const)out.push({part,x:a.x,y:a.y,w:w*scale,h:h*scale,angle:Math.atan2(b.y-a.y,b.x-a.x)-Math.PI/2,ox:.5,oy:.1});out.push({part:i===0?'hand':'otherHand',x:hand.x,y:hand.y,w:10*scale,h:10*scale,angle:0,ox:.5,oy:.5});}}
  return out;
 }
 export function samuraiCanvas(image:HTMLImageElement,frame:number,arms=false){const c=document.createElement('canvas');c.width=c.height=128;const g=c.getContext('2d')!;for(const p of draws(frame===0?0:(frame-1)%24/24,frame===0?0:1,arms)){const [x,y,w,h]=regions[p.part];g.save();g.translate(p.x,p.y);g.rotate(p.angle);g.drawImage(image,x,y,w,h,-p.w*p.ox,-p.h*p.oy,p.w,p.h);g.restore();}return c;}

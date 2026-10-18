@@ -1066,3 +1066,7 @@ button:disabled{box-shadow:none;filter:saturate(.55)}
 @media(max-width:700px){
  .landing-screen.home-action{padding:20px 20px 16px}
 }
+.home-survivor-poster{position:absolute;left:20%;top:10%;width:45%;height:68%;display:flex;align-items:center;justify-content:center}
+.home-survivor-poster .art-image{width:100%;height:100%;object-fit:contain}
+.home-showcase canvas:not([data-ready]){visibility:hidden}
+.home-showcase:has(canvas[data-ready]) .home-survivor-poster{display:none}
