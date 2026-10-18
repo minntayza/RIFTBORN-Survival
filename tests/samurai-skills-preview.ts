@@ -1,0 +1,24 @@
+import {combatHud} from '../src/combat-hud';
+import Phaser from 'phaser';
+import '../src/style.css';
+import {ArenaScene} from '../src/combat';
+import {AudioManager} from '../src/audio';
+import {freshSave} from '../src/save';
+import type {WeaponId} from '../src/config';
+const style=document.createElement('style');style.textContent='#studio{position:fixed;z-index:10;left:16px;top:16px;background:#1d2934ed;border:1px solid #716759;border-radius:16px;padding:16px;max-width:590px;color:#f4e3ca}#studio h2{font-size:21px;margin:0 0 12px}#studio label{display:inline-block;margin:0 10px 12px 0;font-size:13px}#studio select{background:#35404a;color:#fff0d6;padding:6px;border:1px solid #81715f;border-radius:7px}#studio button{padding:9px 13px;font-size:12px}#studio p{font-size:13px;line-height:1.5;margin:12px 0}#studio small{font-size:10px;color:#b8bdb9}';document.head.append(style);
+const save=freshSave();save.hero='samurai';save.weapon='nodachi';save.settings.shake=false;
+const audio=new AudioManager();audio.music=false;
+const scene=new ArenaScene(save,audio,()=>{},()=>{},()=>{});
+const field=(id:string)=>document.querySelector<HTMLSelectElement>('#'+id)!;
+const evolved=()=>document.querySelector<HTMLInputElement>('#evolved')!.checked;
+let ready=false,repeat=false,next=0,lastUltimate='';
+const details:Record<string,string>={range:'Long Reach extends only weapon length. Blade width stays fixed at every rank.',bleed:'Ruby blossom seals stay on afflicted enemies, with falling petals while damage ticks.',counter:'The lotus guard closes with the remaining counter window. Try Successful counter to see its golden bloom.',wind:'A mint crescent travels through enemies, carrying leaf-like wind ribbons. Evolution releases two crescents.','dragon-slash':'Every third attack sends a friendly coral fire dragon through the actual forward strike cone.',all:'All five effects share warm highlights while retaining distinct shapes, colors and timing.'};
+function setup(){if(!ready)return;const skill=field('skill').value,rank=Number(field('rank').value);scene.levels={};scene.cardEvolutions={};for(const id of ['range','bleed','counter','wind','dragon-slash'])if(skill===id||skill==='all'){scene.levels[id]=Math.min(rank,id==='wind'?1:id==='counter'?2:3);scene.cardEvolutions[id]=evolved();}scene.weapon=field('weapon').value as WeaponId;scene.x=600;scene.y=380;scene.angle=0;scene.counter=0;scene.dash=0;scene.invuln=0;scene.rewardShield=0;scene.identityCharge=0;scene.attack=999;scene.pendingStrikes=[];scene.bullets.forEach(b=>b.active=false);scene.enemies.forEach(e=>e.active=false);for(let i=0;i<3;i++){scene.spawn('basic');const e=scene.enemies.find(e=>e.active&&e.hp<99999)!;e.x=scene.x+45+i*35;e.y=scene.y+(i-1)*18;e.hp=e.max=99999;e.speed=0;e.damage=0;e.attack=99999;}document.querySelector('#description')!.textContent=details[skill];}
+function play(parry=false){if(!ready)return;audio.unlock();setup();scene.attackSequence=2;const skill=field('skill').value;if(skill==='counter'||parry){scene.ability=0;scene.activate(0,0);if(parry)scene.time.delayedCall(250,()=>scene.hurt(1,undefined,Math.PI,'Practice counter'));}else scene.basicAttack();scene.attack=999;}
+for(const id of ['skill','rank','weapon','evolved'])document.querySelector('#'+id)!.addEventListener('change',setup);
+document.querySelector('#play')!.addEventListener('click',()=>play());document.querySelector('#parry')!.addEventListener('click',()=>play(true));document.querySelector('#repeat')!.addEventListener('click',e=>{repeat=!repeat;(e.target as HTMLElement).textContent='Repeat: '+(repeat?'on':'off');});
+scene.onArenaReady=()=>{ready=true;scene.plan=[];scene.waveTime=-10000;scene.touch={enabled:true,x:0,y:0};setup();scene.events.on('postupdate',()=>{const ultimate=combatHud(scene,false).match(/<button class="hud-skill[\s\S]*?<\/button>/)?.[0]||'';if(ultimate!==lastUltimate){document.querySelector('#ultimate-hud')!.innerHTML=ultimate;lastUltimate=ultimate;}document.querySelector('#status')!.textContent=`Blood Oath targets: ${scene.enemies.filter(e=>e.active&&e.bleed>0).length} · Wind blades: ${scene.bullets.filter(b=>b.active&&b.kind==='wind').length} · Counter: ${scene.counter.toFixed(1)}s · Dragon rush: ${scene.dash>0?'active':'idle'}`;scene.attack=999;if(repeat&&scene.time.now>next){next=scene.time.now+2200;play(field('skill').value==='counter');}});};
+const update=scene.update.bind(scene);scene.update=(time,delta)=>update(time,delta*(document.querySelector<HTMLInputElement>('#slow')!.checked?.35:1));
+new Phaser.Game({type:Phaser.CANVAS,parent:'game',width:1100,height:760,scale:{mode:Phaser.Scale.RESIZE},scene:[scene],audio:{noAudio:true}});
+
+document.querySelector('#ultimate-hud')!.addEventListener('click',e=>{if((e.target as Element).closest('[data-hud="ability"]')){audio.unlock();scene.activate(0,0);}});

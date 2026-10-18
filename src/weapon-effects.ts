@@ -46,10 +46,11 @@ export function weaponPose(id:WeaponId,x:number,y:number,aim:number,phase:number
  const tank=articulated==='tank'&&isTankWeapon(id)?tankWeaponMetrics(id):undefined;
  const gripPoint=tank?.grip??samurai?.grip??(articulated==='samurai'?{x:g.grip.x+4,y:g.grip.y}:g.grip);
  const tipPoint=tank?.tip??samurai?.tip??(articulated&&id==='kama'?{x:-3,y:-43}:g.tip);
- const local={x:(tipPoint.x-gripPoint.x)*size/128,y:(tipPoint.y-gripPoint.y)*size/128*samuraiFacing};
+ const thickness=articulated==='samurai'?size/reach:size;
+ const local={x:(tipPoint.x-gripPoint.x)*size/128,y:(tipPoint.y-gripPoint.y)*thickness/128*samuraiFacing};
  const tip={x:grip.x+Math.cos(rotation)*local.x-Math.sin(rotation)*local.y,y:grip.y+Math.sin(rotation)*local.x+Math.cos(rotation)*local.y};
  const hook=articulated&&id==='kama'?{x:grip.x+Math.cos(rotation)*65*size/128,y:grip.y+Math.sin(rotation)*65*size/128}:undefined;
- return {grip,tip,rotation,size,hook,flipY:(articulated==='samurai'||articulated==='tank'&&shield)&&facing<0,originX:(64+gripPoint.x)/128,originY:(64+gripPoint.y)/128};
+ return {grip,tip,rotation,size,thickness,hook,flipY:(articulated==='samurai'||articulated==='tank'&&shield)&&facing<0,originX:(64+gripPoint.x)/128,originY:(64+gripPoint.y)/128};
 }
 function segmentDistance(p:Point,a:Point,b:Point){const dx=b.x-a.x,dy=b.y-a.y,t=Math.max(0,Math.min(1,((p.x-a.x)*dx+(p.y-a.y)*dy)/(dx*dx+dy*dy||1)));return Math.hypot(p.x-a.x-dx*t,p.y-a.y-dy*t);}
 export function meleeContact(id:WeaponId,x:number,y:number,aim:number,enemy:Point,radius:number,sequence=0,reach=1,arcScale=1,articulated:boolean|'samurai'|'tank'=false){

@@ -1,5 +1,6 @@
 import {artImage,heroFigureImage} from './art';
-import {upgradeRole,type Upgrade} from './upgrades';
+import {upgradeRole,UPGRADES,type Upgrade} from './upgrades';
+import {CARD_EVOLUTIONS} from './card-evolutions';
 import type {HeroId,WeaponId} from './config';
 const UPGRADE_ICONS:Record<string,string>={health:'\u2665',speed:'\u2197',crit:'\u2726',magnet:'\u25ce',regen:'\u271a',ward:'\u25c7',fire:'\u2600',orbit:'\u2737',damage:'\u2694',wide:'\u25d4',double:'\u2161',cooldown:'\u27a4',trail:'\u25b0',clone:'\u2667',smoke:'\u25c9','dragon-slash':'\u2668',range:'\u2194',bleed:'\u2022',counter:'\u25c8',wind:'\u224b',magazine:'\u25a3',pierce:'\u2192',ricochet:'\u2311',explosive:'\u2739',reload:'\u21bb',stamina:'\u25a3',block:'\u25d2',reflect:'\u21c4',spikes:'\u2737',rush:'\u25c9',heal:'\u271a'};
 const FULL_CARD_IDS:Partial<Record<HeroId,readonly string[]>>={
@@ -11,8 +12,13 @@ const FULL_CARD_IDS:Partial<Record<HeroId,readonly string[]>>={
 const upgradeIcon=(u:Upgrade)=>UPGRADE_ICONS[u.evolves||u.id]||'\u2726';
 export function upgradeVisual(u:Upgrade,hero:HeroId,weapon:WeaponId){
  const baseId=u.evolves||u.id;
- const referenceArt=!u.evolves&&baseId!=='heal'?`<img class="upgrade-reference-art" src="/assets/level-up-cards/${hero}-${baseId}.webp" alt="" aria-hidden="true">`:'';
- if(referenceArt)return `<div class="upgrade-demo upgrade-reference-demo" role="img" aria-label="${u.name} card artwork">${referenceArt}</div>`;
+ if(!u.evolves&&baseId==='wide')return `<div class="upgrade-demo upgrade-concept-demo" role="img" aria-label="${u.name} effect artwork"><img class="upgrade-reference-art" src="/assets/card-concepts/crescent-cut-v1.png" alt=""/></div>`;
+ if(baseId==='trail')return `<div class="upgrade-demo upgrade-concept-demo" role="img" aria-label="${u.name} Moon Blossom dash artwork"><img class="upgrade-reference-art" src="/assets/card-concepts/moon-blossom-dash.svg" alt=""/></div>`;
+ const concepts:Record<string,[number,number]>={damage:[160,80],health:[590,80],double:[1010,80],orbit:[160,536],speed:[590,536],regen:[1010,536]};
+ if(!u.evolves&&concepts[baseId]){const [x,y]=concepts[baseId];return `<div class="upgrade-demo upgrade-concept-demo" role="img" aria-label="${u.name} effect artwork"><svg viewBox="${x} ${y} 360 320" preserveAspectRatio="xMidYMid slice" style="overflow:hidden" aria-hidden="true"><defs><clipPath id="card-art-${baseId}"><rect x="${x}" y="${y}" width="360" height="320"/></clipPath></defs><image clip-path="url(#card-art-${baseId})" href="/assets/card-concepts/skill-art-v1.webp" width="1536" height="1024" style="max-width:none"/></svg></div>`;}
+ const icons=['crit','magnet','ward','fire','clone','smoke','cooldown','trail','range','bleed','counter','wind','dragon-slash','magazine','pierce','ricochet','explosive','reload','stamina','block','reflect','spikes','rush','heal'];
+ const tile=icons.indexOf(baseId);
+ if(tile>=0){const x=(tile%6)*256+3,y=Math.floor(tile/6)*256+3;return `<div class="upgrade-demo upgrade-concept-demo" role="img" aria-label="${u.name} effect artwork"><svg viewBox="${x} ${y} 250 250" preserveAspectRatio="xMidYMid slice" style="overflow:hidden" aria-hidden="true"><defs><clipPath id="skill-icon-${baseId}"><rect x="${x}" y="${y}" width="250" height="250"/></clipPath></defs><image clip-path="url(#skill-icon-${baseId})" href="/assets/card-concepts/skill-icons-v1.webp" width="1536" height="1024" style="max-width:none"/></svg></div>`;}
  const kind=['health','heal','regen'].includes(baseId)?'heal':['speed','cooldown','trail'].includes(baseId)?'move':['ward','stamina','block','reflect'].includes(baseId)?'guard':['magnet','magazine','reload'].includes(baseId)?'utility':baseId==='orbit'?'orbit':baseId==='fire'?'fire':'attack';
  return `<div class="upgrade-demo upgrade-demo-${kind} effect-${baseId} ${u.evolves?'evolved-card-demo':''}" role="img" aria-label="${u.name} effect demonstration"><span class="upgrade-actor">${artImage('hero',hero)}</span><span class="upgrade-weapon">${artImage('weapon',weapon)}</span><span class="upgrade-zombie">${artImage('enemy','basic')}</span>${['pierce','wind','ricochet','explosive','double','wide','range','fire','reflect','bleed','smoke','dragon-slash'].includes(baseId)?`<svg class="upgrade-motion" viewBox="0 0 120 80" aria-hidden="true"><g fill="none" stroke="currentColor" stroke-width="2.5">${baseId==='ricochet'?'<path d="m28 50 45-25 20 32"/>':baseId==='explosive'||baseId==='fire'?'<circle cx="75" cy="45" r="20"/><circle cx="75" cy="45" r="13"/>':baseId==='wide'||baseId==='range'||baseId==='double'?'<path d="M42 16Q88 40 42 64M48 22Q92 40 48 58"/>':baseId==='bleed'?'<path d="M76 32q-12 16 0 19q12-3 0-19Z"/>':'<path d="M25 43h75m-9-6 9 6-9 6"/>'}</g></svg>`:''}<span class="upgrade-effect">${upgradeIcon(u)}</span><span class="upgrade-health"><i></i></span></div>`;
 }
@@ -51,20 +57,32 @@ function explainedCard(u:Upgrade,index:number,hero:HeroId,weapon:WeaponId,level:
  </button>`;
 }
 export function visualUpgradeCard(u:Upgrade,index:number,_hero:HeroId,_weapon:WeaponId,level:number,_combo='',preview=false){
- if(!preview&&!u.evolves&&EXPLAINED_CARDS[u.id])return explainedCard(u,index,_hero,_weapon,level);
+
  const v=upgradeValues(u,level),role=upgradeRole(u);
  const category=u.evolves?'EVOLUTION':role==='offence'?'DAMAGE':role==='survival'?'SURVIVAL':'TECHNIQUE';
  const maxStars=Number.isFinite(u.max)?u.max:5;
  const stars=Array.from({length:5},(_,i)=>`<span class="${i<level?'filled':''} ${i>=u.max?'locked':''}" aria-hidden="true">\u2605</span>`).join('');
  const tag=preview?'article':'button',action=preview?'':` data-action="upgrade:${index}"`;
  const hasDesignedArt=!u.evolves&&(FULL_CARD_IDS[_hero]||[]).includes(u.id);
- return `<${tag} class="upgrade choice-card ${hasDesignedArt?'levelup-designed-card':''} ${preview?'preview-card':''} ${u.evolves?'evolution-card':''}"${action} aria-label="${preview?'Preview':'Choose'} ${u.name}: ${cardBenefit(u)}. ${v.after}. ${level} of ${maxStars} levels">
+ return `<${tag} class="upgrade choice-card ${hasDesignedArt?'levelup-designed-card':''} ${preview?'preview-card':''} ${u.evolves?'evolution-card':''}" data-card-role="${role}"${action} aria-label="${preview?'Preview':'Choose'} ${u.name}: ${cardBenefit(u)}. ${v.after}. ${level} of ${maxStars} levels">
   <span class="choice-top"><small>${category}</small>${level===0?'<b class="choice-new">NEW</b>':`<kbd>${index+1}</kbd>`}</span>
   <h3>${u.name}</h3>
   ${upgradeVisual(u,_hero,_weapon)}
-  <span class="card-benefit">${cardBenefit(u)}</span>
-  <strong class="choice-value">${v.after}</strong>
+  <span class="card-benefit">${u.evolves?cardBenefit(u):u.description}</span>
+  ${!preview?`<span class="choice-comparison"><span>${v.before}</span><i aria-hidden="true">→</i><strong>${v.after}</strong></span>${_combo?`<span class="choice-combo">✦ ${_combo}</span>`:''}<span class="choice-evolution-progress">${!u.evolves&&Number.isFinite(u.max)?`<span class="reward-progress-pips" aria-hidden="true">${Array.from({length:u.max},(_,i)=>`<i class="${i<level?'earned':i===level?'next':''}"></i>`).join('')}</span>`:''}<span>${evolutionProgress(u,level)}</span></span>`:`<strong class="choice-value">${v.after}</strong>`}
   <span class="choice-level">LV ${level} · ${u.evolves?'EVOLUTION':`MAX ${u.max}`}</span>
   <span class="choice-stars" role="img" aria-label="${level} of ${maxStars} levels">${stars}</span>
  </${tag}>`;
+}
+
+export function evolutionProgress(u:Upgrade,level:number){
+ if(u.evolves)return '✦ Evolution ready';
+ if(!CARD_EVOLUTIONS[u.id])return Number.isFinite(u.max)?`Upgrade ${Math.min(level+1,u.max)} of ${u.max}`:'Instant recovery';
+ const remaining=u.max-level-1,name=CARD_EVOLUTIONS[u.id].name;
+ return remaining===0?`✦ ${name} · eligible from wave 11`:remaining===1?`1 level to ${name} · wave 11+`:`${remaining} levels to ${name} · wave 11+`;
+}
+export function upgradeBuildHint(u:Upgrade,levels:Record<string,number>){
+ const pairs:Record<string,string[]>={double:['wide','damage'],wide:['double','orbit'],orbit:['damage','fire'],fire:['rush','orbit'],pierce:['ricochet','damage'],ricochet:['pierce'],explosive:['reload'],reload:['explosive','magazine'],magazine:['reload'],wind:['bleed','range'],bleed:['wind'],counter:['cooldown'],reflect:['block','stamina'],block:['reflect'],spikes:['stamina'],rush:['fire'],trail:['cooldown','speed'],clone:['double']};
+ const paired=(pairs[u.evolves||u.id]||[]).find(id=>(levels[id]||0)>0&&id!==(u.evolves||u.id));
+ return paired?`Pairs with your ${UPGRADES.find(c=>c.id===paired)!.name}`:'';
 }

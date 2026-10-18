@@ -6,7 +6,7 @@ import {cardEvolutionGuide,weaponEvolutionGuide} from './guide-ui';
 import {CARD_EVOLUTIONS} from './card-evolutions';
 import {HERO_IDENTITIES,EVOLUTION_STAGES,encounterRhythm,deathTip} from './run-design';
 import {heroTechniques,techniqueName,techniqueDemo,MASTERY_PATHS,TRAINING_THRESHOLDS,masteryTraining} from './mastery';
-import {visualUpgradeCard} from './upgrade-ui';
+import {visualUpgradeCard,upgradeBuildHint,upgradeVisual,upgradeValues} from './upgrade-ui';
 import {evolutionPreview} from './evolution-preview';
 import {BUILDS,dailySetup,masteryMilestones,techniqueUnlocked,incomingThreats,edgePosition,type RunMode,type BuildId,type TechniqueId,type RunOptions} from './retention';
 import { evolutionOptions, type EvolutionId } from './progression';
@@ -159,11 +159,30 @@ function waveClear(){
 
  if(scene!.evolutionDue)evolutionMenu();else finishIntermission();
 }
-function renderChoices() { const s = scene!; const title=waveChoice?header(`Wave ${s.stats.wave} survived`,'Recover. Adapt. The next horde is coming.'):`<div class="choice-heading"><b>SKILL CHOICE</b><small>LEVEL ${s.level} · PICK ONE</small></div>`; shell(`${title} ${waveChoice ? `<div class="wave-recap"><span>${s.waveStats.time.toFixed(1)}s <small>CLEAR TIME</small></span><span>${s.waveStats.kills} <small>KILLS</small></span><span>◈ ${s.waveStats.gold} <small>GOLD</small></span><span>${Math.round(s.waveStats.damage)} <small>DAMAGE TAKEN</small></span></div><p class="badges">${s.waveStats.time < 45 ? '✦ QUICK CLEAR · +15% GOLD' : ''} ${s.waveStats.damage === 0 ? '◇ PERFECT CLEAR · +1 REROLL' : ''}</p>` : ''}<div class="cards upgrade-cards">${choices.map((u,i)=>visualUpgradeCard(u,i,s.hero,s.weapon,s.levels[u.id]||0)).join('')}</div><div class="actions"><span class="muted">${button('Evolution guide','guide-cards','quiet')}</span>${button(`↻ Reroll (${s.rerolls} left)`, 'reroll', 'quiet')}</div>`, true); }
-function pick(index: number) {
+function renderChoices() { const s = scene!; const title=waveChoice?header(`Wave ${s.stats.wave} survived`,'Recover. Adapt. The next horde is coming.'):`<div class="choice-heading"><b>SKILL CHOICE</b><small>LEVEL ${s.level} · PICK ONE</small></div>`; shell(`${title} ${waveChoice ? `<div class="wave-recap"><span>${s.waveStats.time.toFixed(1)}s <small>CLEAR TIME</small></span><span>${s.waveStats.kills} <small>KILLS</small></span><span>◈ ${s.waveStats.gold} <small>GOLD</small></span><span>${Math.round(s.waveStats.damage)} <small>DAMAGE TAKEN</small></span></div><p class="badges">${s.waveStats.time < 45 ? '✦ QUICK CLEAR · +15% GOLD' : ''} ${s.waveStats.damage === 0 ? '◇ PERFECT CLEAR · +1 REROLL' : ''}</p>` : ''}<div class="cards upgrade-cards">${choices.map((u,i)=>visualUpgradeCard(u,i,s.hero,s.weapon,s.levels[u.id]||0,upgradeBuildHint(u,s.levels))).join('')}</div><div class="actions"><span class="muted">${button('Evolution guide','guide-cards','quiet')}</span>${button(`↻ Reroll (${s.rerolls} left)`, 'reroll', 'quiet')}</div>`, true); overlay.querySelector('.panel')?.classList.add('levelup-panel');const reroll=overlay.querySelector<HTMLButtonElement>('[data-action=reroll]');if(reroll)reroll.disabled=s.rerolls<=0; }
+function previewUpgrade(index:number){
+ if(menuState!=='choice'||!choices[index])return;
+ const s=scene!,u=choices[index],v=upgradeValues(u,s.levels[u.id]||0);
+ overlay.querySelector('.upgrade-inspect')?.remove();
+ const dialog=document.createElement('dialog');dialog.className='upgrade-inspect';
+ dialog.setAttribute('aria-label',u.name+' details');
+ dialog.innerHTML=`<button class="inspect-close" aria-label="Close skill preview">×</button>${upgradeVisual(u,s.hero,s.weapon)}<h3>${u.name}</h3><p>${u.description}</p><div class="inspect-values"><span>${v.before}</span><b>→ ${v.after}</b></div><button class="inspect-confirm">Choose ${u.name}</button><small>Choose to apply this upgrade and resume combat.</small>`;
+ overlay.append(dialog);
+ const close=()=>{dialog.close();dialog.remove();overlay.querySelector<HTMLButtonElement>(`[data-action="upgrade:${index}"]`)?.focus();};
+ dialog.querySelector('.inspect-close')!.addEventListener('click',close);
+ dialog.addEventListener('cancel',e=>{e.preventDefault();close();});
+ dialog.querySelector('.inspect-confirm')!.addEventListener('click',()=>{dialog.close();dialog.remove();void pick(index);});
+ dialog.showModal();dialog.querySelector<HTMLButtonElement>('.inspect-confirm')?.focus();
+}
+async function pick(index: number) {
     if (menuState !== 'choice' || !choices[index])
         return;
-    scene!.apply(choices[index].id);if(choices[index].evolves)save.archive['card:'+choices[index].evolves]=2;persist();
+    const selectedScene=scene!,selected=choices[index];menuState='selecting';
+    const chosen=overlay.querySelector<HTMLElement>(`[data-action="upgrade:${index}"]`);chosen?.classList.add('card-picked');
+    overlay.querySelectorAll<HTMLButtonElement>('button').forEach(b=>b.disabled=true);
+    if(!matchMedia('(prefers-reduced-motion: reduce)').matches)await new Promise(resolve=>setTimeout(resolve,220));
+    if(scene!==selectedScene||menuState!=='selecting')return;
+    scene!.apply(selected.id);scene!.notifyCombat(`${selected.name} · ${selected.evolves?'EVOLVED':'UPGRADED'}`);if(choices[index].evolves)save.archive['card:'+choices[index].evolves]=2;persist();
     if(waveChoice){
         waveChoice=false;
         if(scene!.ended){scene!.paused=true;results();return;}
@@ -274,7 +293,7 @@ overlay.addEventListener('click', e => {
         shop(b);
     }
     if (a === 'upgrade')
-        pick(Number(b));
+        previewUpgrade(Number(b));
     if (a === 'reroll') {
         if (scene!.rerolls <= 0) {
             toast('No rerolls remaining.');
@@ -321,7 +340,7 @@ overlay.addEventListener('change', e => {
 overlay.addEventListener('change',e=>{const el=e.target as HTMLSelectElement;if(el.dataset.control==='joystickSide')save.settings.joystickSide=el.value==='right'?'right':'left';else if(el.dataset.control==='joystickSize')save.settings.joystickSize=[95,115,135].includes(Number(el.value))?Number(el.value):115;else return;touchControls?.setLayout(save.settings.joystickSide,save.settings.joystickSize);persist();});
 document.addEventListener('keydown', e => {
     if (menuState === 'choice' && ['1', '2', '3'].includes(e.key))
-        pick(Number(e.key) - 1);
+        previewUpgrade(Number(e.key) - 1);
     if (scene && !scene.ended && [' ', 'ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(e.key))
         e.preventDefault();
 });

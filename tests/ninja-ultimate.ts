@@ -1,0 +1,18 @@
+import Phaser from 'phaser';
+import '../src/style.css';
+import {ArenaScene} from '../src/combat';
+import {AudioManager} from '../src/audio';
+import {freshSave} from '../src/save';
+import {combatHud} from '../src/combat-hud';
+const audio=new AudioManager();audio.music=false;
+const scene=new ArenaScene(freshSave(),audio,()=>{},()=>{},()=>{});
+new Phaser.Game({type:Phaser.CANVAS,parent:'game',width:1000,height:700,scale:{mode:Phaser.Scale.RESIZE},scene:[scene],audio:{noAudio:true}});
+const controls=document.createElement('div');controls.style.cssText='position:fixed;left:20px;bottom:20px;z-index:20;display:flex;gap:12px';
+controls.innerHTML='<button id="demo">Preview dash</button><button id="repeat">Auto preview</button><button id="wake">Dash damage: off</button>';document.body.append(controls);
+let repeat=false,next=0,wake=0;
+controls.querySelector('#wake')!.addEventListener('click',()=>{wake=(wake+1)%3;scene.levels.trail=wake?1:0;scene.cardEvolutions.trail=wake===2;controls.querySelector('#wake')!.textContent='Dash damage: '+['off','blossom','evolved'][wake];});
+const dash=()=>{audio.unlock();scene.ability=0;scene.x=600;scene.y=380;scene.activate(1,0);};
+controls.querySelector('#demo')!.addEventListener('click',dash);
+controls.querySelector('#repeat')!.addEventListener('click',()=>{repeat=!repeat;});
+document.querySelector('#hud')!.addEventListener('click',e=>{if((e.target as Element).closest('[data-hud="ability"]')){audio.unlock();scene.activate(1,0);}});
+scene.onArenaReady=()=>{scene.plan=[];scene.waveTime=-10000;scene.events.on('postupdate',()=>{for(const e of scene.enemies)e.active=false;document.querySelector('#hud')!.innerHTML=combatHud(scene,false);if(repeat&&scene.time.now>next){next=scene.time.now+2200;dash();}});};

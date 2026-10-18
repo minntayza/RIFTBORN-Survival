@@ -1336,3 +1336,152 @@ button:disabled{box-shadow:none;filter:saturate(.55)}
 @keyframes weapon-ember-rise{from{transform:translateY(4px);opacity:1}to{transform:translateY(-7px);opacity:0}}
 @keyframes weapon-echo-drift{from{transform:translate(3px,-2px);opacity:.2}to{transform:translate(9px,-4px);opacity:.4}}
 @media(prefers-reduced-motion:reduce){.awakened-weapon *{animation:none!important}}
+
+/* Level-up rewards: compare, choose, and get back into the fight. */
+.panel.levelup-panel{width:calc(100vw - 24px);max-width:1060px;background:#14232df5;border:1px solid #597262;border-radius:18px;padding:26px}
+.levelup-panel .choice-heading{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:4px 0 20px;border-bottom:1px solid #3c5759}.levelup-panel .choice-heading>b{font-size:24px;color:#f0e3bd}.levelup-panel .choice-heading>small{font-size:11px;color:#bad19e}
+.levelup-panel .cards.upgrade-cards{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;max-height:none;overflow:visible;margin:22px 0}
+.levelup-panel .upgrade-cards .choice-card{display:flex;flex-direction:column;min-width:0;min-height:0;height:auto;padding:18px;background:#20353f;border:1px solid #526c70;border-radius:13px;box-shadow:0 5px 0 #0e1c25;overflow:hidden;text-align:left;transition:transform .15s,border-color .15s}
+.levelup-panel .upgrade-cards .choice-card:hover{transform:translateY(-5px);border-color:#c5d69e;background:#294149}.levelup-panel .choice-card:focus-visible{outline:3px solid #e4ca83;outline-offset:3px}
+.levelup-panel .upgrade-cards .choice-card h3{font-size:23px;line-height:1.2;min-height:0;color:#f2e6c9;margin:14px 0}
+.levelup-panel .choice-top{position:static;display:flex;align-items:center;justify-content:space-between;color:#a9d0b8;font-size:10px}.levelup-panel .choice-top small{font-size:10px}.levelup-panel .choice-new{font-size:9px;background:#365047;color:#d3e5b9;border-radius:4px;padding:4px 7px;box-shadow:none}
+.levelup-panel .choice-card .upgrade-demo{display:flex;width:100%;height:155px;min-height:0;background:#172b3344;border:0;box-shadow:none;border-radius:9px;margin:0 0 14px;position:relative}.levelup-panel .choice-card .upgrade-reference-art{width:100%;height:100%;object-fit:contain;border:0;box-shadow:none}
+.levelup-panel .choice-card .card-benefit{font-size:14px;line-height:1.5;color:#d3dfd3;min-height:42px;display:block}
+.choice-comparison{display:flex;align-items:center;justify-content:space-between;gap:7px;padding:13px 0;border-top:1px solid #48605f;border-bottom:1px solid #48605f;margin:14px 0 10px;font-size:11px;line-height:1.4}.choice-comparison>span{color:#9db4b4}.choice-comparison>i{font-style:normal;color:#b1c398}.choice-comparison>strong{color:#f0d48e;font-size:14px;text-align:right}
+.choice-combo{display:block;font-size:11px;line-height:1.5;color:#aedcc5;margin:3px 0 10px}.choice-evolution-progress{display:block;font-size:10px;line-height:1.6;color:#b6c8a6;margin:0 0 14px}
+.levelup-panel .choice-level{position:static;color:#8faaa9;font-size:9px;margin-top:auto}.levelup-panel .choice-stars{display:none}.levelup-panel .actions{justify-content:space-between}.levelup-panel .actions button{font-size:12px;min-height:44px;background:#203740;border:1px solid #4b6666;border-radius:9px;box-shadow:none;color:#bdcec7}.levelup-panel .actions button:disabled{opacity:.45}
+.levelup-panel .choice-card.card-picked{animation:card-pick-reward .22s ease-in forwards;border-color:#f6d686;background:#3d5140;box-shadow:0 0 25px #d9cf8a55}.levelup-panel:has(.card-picked) .choice-card:not(.card-picked){opacity:.35;transform:scale(.97)}
+@keyframes card-pick-reward{to{transform:translateY(-12px) scale(1.04);filter:brightness(1.18)}}
+@media(max-width:650px){.panel.levelup-panel{padding:18px 14px;max-height:calc(100dvh - 16px)}.levelup-panel .choice-heading>b{font-size:20px}.levelup-panel .cards.upgrade-cards{grid-template-columns:1fr;gap:12px;margin:16px 0}.levelup-panel .upgrade-cards .choice-card{display:grid;grid-template-columns:88px minmax(0,1fr);gap:6px 12px;padding:14px}.levelup-panel .choice-card .choice-top{grid-column:2;grid-row:1}.levelup-panel .upgrade-cards .choice-card h3{grid-column:2;grid-row:2;font-size:19px;margin:0}.levelup-panel .choice-card .upgrade-demo{grid-column:1;grid-row:1/5;height:100px;margin:0;align-self:center}.levelup-panel .choice-card .card-benefit{grid-column:2;font-size:12px;min-height:0}.levelup-panel .choice-comparison{grid-column:1/-1;margin:5px 0 2px;padding:9px 0}.levelup-panel .choice-combo,.levelup-panel .choice-evolution-progress,.levelup-panel .choice-level{grid-column:1/-1;margin:0}.levelup-panel .choice-comparison>strong{font-size:14px}.levelup-panel .actions{gap:8px;flex-wrap:wrap}}
+@media(prefers-reduced-motion:reduce){.levelup-panel .choice-card,.levelup-panel .choice-card.card-picked{animation:none;transition:none}}
+.levelup-panel .choice-heading{background:transparent;box-shadow:none;border-radius:0;color:#f0e3bd}
+.levelup-panel .choice-comparison>strong{position:static;display:block;margin:0;background:transparent;box-shadow:none;padding:0;white-space:normal}
+.levelup-panel .choice-comparison>span{display:block;min-width:0}.levelup-panel .choice-comparison>i{flex:none}
+
+/* Three collectible choices, including on phones: art, name, evolution path. */
+.levelup-panel .choice-card .choice-top,.levelup-panel .choice-card .card-benefit,.levelup-panel .choice-card .choice-comparison,.levelup-panel .choice-card .choice-combo,.levelup-panel .choice-card .choice-level,.levelup-panel .choice-card .choice-stars{display:none}
+.levelup-panel .cards.upgrade-cards{grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;align-items:stretch}
+.levelup-panel .upgrade-cards .choice-card{display:flex;flex-direction:column;gap:0;padding:12px;background:linear-gradient(160deg,#29454b,#1b2e3a);border:1px solid #718a83;border-radius:15px;box-shadow:0 5px 0 #0b1923, inset 0 1px 0 #d7e6b81a;min-height:0;overflow:hidden}
+.levelup-panel .upgrade-cards .choice-card h3{order:1;text-align:center;font-size:22px;line-height:1.2;margin:16px 2px 14px;min-height:52px;display:flex;align-items:center;justify-content:center}
+.levelup-panel .choice-card .upgrade-demo{order:0;display:flex;width:100%;height:195px;align-self:stretch;margin:0;border-radius:10px;background:radial-gradient(ellipse at center,#8aaf8c18,transparent 75%);overflow:hidden}
+.levelup-panel .choice-card .upgrade-reference-art{object-fit:contain;width:100%;height:100%;border-radius:10px}
+.levelup-panel .choice-card .choice-evolution-progress{order:2;margin:auto 0 0;padding:12px 6px 4px;border-top:1px solid #5f7d704d;min-height:54px;font-size:11px;line-height:1.5;text-align:center;color:#c7d6ad}
+.levelup-panel .choice-card.evolution-card{border-color:#e3c16d;background:linear-gradient(160deg,#514a32,#253b3e)}
+.levelup-panel .choice-card:hover{box-shadow:0 7px 0 #0b1923,0 0 20px #bbd19a22}
+@media(max-width:650px){
+ .panel.levelup-panel{width:calc(100vw - 12px);padding:18px 9px;border-radius:14px}
+ .levelup-panel .choice-heading{padding:0 3px 14px}.levelup-panel .choice-heading>b{font-size:18px}.levelup-panel .choice-heading>small{font-size:9px}
+ .levelup-panel .cards.upgrade-cards{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px;margin:18px 0 22px;overflow:visible}
+ .levelup-panel .upgrade-cards .choice-card{display:flex;flex-direction:column;padding:7px 5px 10px;border-radius:11px;gap:0;min-width:0;min-height:0;overflow-wrap:normal}
+ .levelup-panel .choice-card .upgrade-demo{height:clamp(100px,28vw,165px);margin:0;border-radius:7px;grid-column:auto;grid-row:auto}
+ .levelup-panel .upgrade-cards .choice-card h3{font-size:clamp(12px,3.5vw,18px);line-height:1.25;min-height:45px;margin:11px 0 8px;grid-column:auto;grid-row:auto;word-break:normal;overflow-wrap:break-word;letter-spacing:-.25px}
+ .levelup-panel .choice-card .choice-evolution-progress{font-size:clamp(9px,2.4vw,11px);line-height:1.5;padding:10px 2px 0;min-height:62px;grid-column:auto;grid-row:auto;overflow-wrap:break-word}
+ .levelup-panel .actions{display:flex;justify-content:space-between;gap:6px}.levelup-panel .actions button{font-size:10px;padding:10px 9px;min-height:44px}
+}
+.levelup-panel.panel:before{display:none}
+
+/* Skill Choice: a compact, tactile reward deck. */
+.levelup-panel .choice-card{--reward:#c4a4f1}
+.levelup-panel .choice-card[data-card-role=offence]{--reward:#ef9d86}
+.levelup-panel .choice-card[data-card-role=survival]{--reward:#afd594}
+.levelup-panel .choice-card.evolution-card{--reward:#efce7c}
+.levelup-panel .upgrade-cards .choice-card{position:relative;border:1px solid color-mix(in srgb,var(--reward) 65%,#324451);border-bottom:4px solid color-mix(in srgb,var(--reward) 35%,#172530);border-radius:16px;padding:8px 8px 16px;background:#20323d;box-shadow:0 6px 0 #0c1922,0 10px 22px #0003,inset 0 0 0 3px #ffffff04;transform-origin:50% 95%;animation:reward-card-arrive .28s ease-out both}
+.levelup-panel .choice-card:nth-child(2){animation-delay:.055s}.levelup-panel .choice-card:nth-child(3){animation-delay:.11s}
+.levelup-panel .choice-card .upgrade-demo{height:215px;margin:0;background:#172a33;border:1px solid #789d9022;border-radius:11px;overflow:hidden;isolation:isolate}
+.levelup-panel .choice-card .upgrade-demo:after{content:'';position:absolute;inset:0;border:1px solid color-mix(in srgb,var(--reward) 40%,transparent);border-radius:inherit;pointer-events:none;box-shadow:inset 0 -15px 20px #14252a44}
+.levelup-panel .choice-card .upgrade-reference-art{border-radius:9px;transition:transform .2s;filter:saturate(1.14) contrast(1.04)}
+.levelup-panel .upgrade-cards .choice-card h3{position:relative;color:#f5ecda;font-size:23px;line-height:1.15;text-shadow:0 2px 1px #0b1925;margin:16px 5px 14px;min-height:54px;letter-spacing:-.5px}
+.levelup-panel .choice-card .choice-evolution-progress{display:flex;flex-direction:column;align-items:center;justify-content:flex-start;gap:10px;margin-top:auto;padding:12px 5px 0;border-top:1px solid #79988a22;color:#b9cac1;min-height:77px;font-size:11px}
+.reward-progress-pips{display:flex;justify-content:center;gap:5px;width:100%;max-width:150px}
+.reward-progress-pips i{display:block;flex:1;height:5px;border-radius:5px;background:#0e202b;border:1px solid #5a766b66}
+.reward-progress-pips .earned{background:var(--reward);border-color:var(--reward)}
+.reward-progress-pips .next{background:var(--reward);opacity:.6;animation:reward-next-pip 1.6s ease-in-out infinite}
+.levelup-panel .choice-card:hover,.levelup-panel .choice-card:focus-visible{background:#29414a;border-color:var(--reward);transform:translateY(-6px);box-shadow:0 8px 0 #0b1923,0 0 22px color-mix(in srgb,var(--reward) 18%,transparent)}
+.levelup-panel .choice-card:hover .upgrade-reference-art{transform:scale(1.035)}
+.levelup-panel .choice-card:active{transform:translateY(2px) scale(.98);box-shadow:0 2px 0 #0b1923}
+.levelup-panel .choice-card.card-picked{animation:reward-card-chosen .22s ease-out forwards!important;animation-delay:0s!important;border-color:#f6e2a3;background:#3e5141}
+@keyframes reward-card-arrive{from{opacity:0;transform:translateY(16px) scale(.96)}to{opacity:1;transform:translateY(0) scale(1)}}
+@keyframes reward-next-pip{50%{opacity:1}}
+@keyframes reward-card-chosen{to{transform:translateY(-10px) scale(1.04);filter:brightness(1.2);box-shadow:0 0 30px #f0d48d55}}
+@media(max-width:650px){
+ .levelup-panel .cards.upgrade-cards{gap:7px;margin:18px 0 24px}
+ .levelup-panel .upgrade-cards .choice-card{border-radius:12px;padding:5px 4px 12px;border-bottom-width:3px;box-shadow:0 4px 0 #0c1922,0 7px 13px #0003}
+ .levelup-panel .choice-card .upgrade-demo{height:clamp(105px,30vw,175px);border-radius:8px}
+ .levelup-panel .upgrade-cards .choice-card h3{font-size:clamp(12px,3.6vw,19px);min-height:44px;margin:12px 0 10px;letter-spacing:-.25px}
+ .levelup-panel .choice-card .choice-evolution-progress{font-size:clamp(9px,2.4vw,11px);min-height:80px;gap:9px;padding:10px 2px 0;line-height:1.45}
+ .reward-progress-pips{gap:3px}.reward-progress-pips i{height:4px}
+}
+@media(prefers-reduced-motion:reduce){.levelup-panel .choice-card,.reward-progress-pips .next,.levelup-panel .choice-card.card-picked{animation:none!important}.levelup-panel .choice-card .upgrade-reference-art{transition:none}}
+.levelup-panel .choice-heading:before,.levelup-panel .choice-heading:after{display:none!important}
+.levelup-panel .choice-heading{border:0;border-bottom:1px solid #3c5759;box-shadow:none;background:transparent}
+@media(max-width:650px){.levelup-panel .choice-card .upgrade-reference-art{object-fit:cover;object-position:center}}
+/* One-line effect first, with a deliberate, accessible confirmation preview. */
+.levelup-panel .choice-card .card-benefit{display:block;order:2;font-size:12px;text-align:center;line-height:1.5;color:#cad9cf;min-height:38px;margin:0 3px 12px}
+.levelup-panel .choice-card .choice-evolution-progress{order:3}
+.upgrade-concept-demo>svg{display:block;width:100%;height:100%;border-radius:inherit}
+.upgrade-inspect{position:fixed;width:min(420px,calc(100vw - 24px));max-height:calc(100dvh - 24px);overflow-y:auto;background:#1b3039;border:1px solid #8fa982;border-radius:16px;padding:24px;color:#e9ecdb;box-shadow:0 20px 80px #0008}
+.upgrade-inspect::backdrop{background:#07121bd9;backdrop-filter:blur(4px)}
+.upgrade-inspect .upgrade-demo{height:200px;background:#142730;margin:16px 0;border-radius:12px;overflow:hidden}.upgrade-inspect .upgrade-reference-art{width:100%;height:100%;object-fit:contain}
+.upgrade-inspect h3{font-size:25px;color:#f1e3bf;margin:16px 0 12px}.upgrade-inspect p{font-size:15px;line-height:1.7;color:#c6d8cd}
+.inspect-close{position:absolute;right:10px;top:10px;width:36px;height:36px;padding:0;background:#263e45;border:1px solid #50665e;border-radius:50%;z-index:2}
+.inspect-values{display:flex;justify-content:space-between;gap:14px;font-size:13px;margin:18px 0;padding:14px 0;border-top:1px solid #476057;border-bottom:1px solid #476057;color:#abc0b6}.inspect-values b{color:#efd28c}
+.inspect-confirm{width:100%;min-height:48px;background:#e4c577;border-color:#eed99b;color:#24372f;border-radius:9px;box-shadow:none;font-size:14px}
+.upgrade-inspect>small{display:block;font-size:11px;text-align:center;line-height:1.5;color:#99b2ad;margin-top:12px}
+@media(max-width:650px){.levelup-panel .choice-card .card-benefit{display:block;grid-column:auto;font-size:clamp(9px,2.5vw,12px);line-height:1.4;min-height:54px;margin:0 1px 9px}.levelup-panel .choice-card .upgrade-concept-demo{height:clamp(105px,30vw,175px)}}
+/* Single, square artwork window. No neighboring sprite cells or legacy labels. */
+.levelup-panel .upgrade-cards .choice-card .choice-level{display:none!important}
+.levelup-panel .upgrade-cards .choice-card{height:auto!important;min-height:0!important;padding:8px 8px 14px!important;justify-content:flex-start}
+.levelup-panel .upgrade-cards .choice-card .upgrade-demo{width:100%!important;height:auto!important;aspect-ratio:1!important;flex:none!important;margin:0!important;overflow:hidden!important;display:block!important;border:0!important;border-radius:10px!important}
+.upgrade-concept-demo>svg{overflow:hidden!important;display:block;max-width:100%;width:100%!important;height:100%!important}
+.levelup-panel .upgrade-cards .choice-card h3{min-height:0!important;flex:none!important;margin:14px 0 8px!important;font-size:21px;line-height:1.2}
+.levelup-panel .upgrade-cards .choice-card .card-benefit{min-height:0!important;margin:0 0 12px!important;font-size:12px;line-height:1.45;font-weight:500}
+.levelup-panel .upgrade-cards .choice-card .choice-evolution-progress{margin-top:auto!important;min-height:0!important;padding:12px 2px 0!important;font-size:10px;line-height:1.5;gap:8px}
+@media(max-width:650px){.levelup-panel .upgrade-cards .choice-card{padding:5px 4px 10px!important}.levelup-panel .upgrade-cards .choice-card h3{font-size:clamp(12px,3.5vw,18px);margin:11px 0 7px!important}.levelup-panel .upgrade-cards .choice-card .card-benefit{font-size:clamp(9px,2.5vw,12px)}.levelup-panel .upgrade-cards .choice-card .choice-evolution-progress{font-size:9px}}
+/* Keep skill choices together as one three-card row on every phone width. */
+@media(max-width:700px){
+ .levelup-panel.panel{width:calc(100vw - 12px)!important;padding:16px 8px!important;max-width:none}
+ .levelup-panel .cards.upgrade-cards{display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr))!important;gap:6px!important;width:100%;max-width:100%;overflow:visible;align-items:stretch}
+ .levelup-panel .cards.upgrade-cards>.choice-card{width:100%!important;min-width:0!important;max-width:100%!important;grid-column:auto!important;margin:0!important}
+ .levelup-panel .upgrade-cards .choice-card h3{font-size:clamp(11px,3.4vw,17px)!important;overflow-wrap:break-word}
+ .levelup-panel .upgrade-cards .choice-card .card-benefit{font-size:clamp(9px,2.45vw,11px)!important;overflow-wrap:break-word}
+ .levelup-panel .upgrade-cards .choice-card .choice-evolution-progress{font-size:clamp(8px,2.2vw,10px)!important;overflow-wrap:break-word}
+}
+/* Field Guide reference cards adapt independently from the three combat choices. */
+.field-guide-panel .levelup-preview{min-width:0;width:100%}
+.field-guide-panel .levelup-preview .levelup-preview-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));width:100%;max-height:none;overflow:visible;gap:16px}
+.field-guide-panel .levelup-preview-grid .preview-card{min-width:0;width:100%;height:auto;overflow:hidden;display:flex;flex-direction:column;padding:14px;white-space:normal;overflow-wrap:break-word}
+.field-guide-panel .levelup-preview-grid .preview-card h3{font-size:19px;line-height:1.25;min-height:0;margin:12px 0}
+.field-guide-panel .levelup-preview-grid .preview-card .upgrade-demo{display:block;width:100%;height:auto!important;aspect-ratio:1;min-height:0;margin:0 0 12px;overflow:hidden;border-radius:9px;flex:none}
+.field-guide-panel .levelup-preview-grid .preview-card .upgrade-demo>svg{width:100%;height:100%;display:block;overflow:hidden}
+.field-guide-panel .levelup-preview-grid .preview-card .upgrade-reference-art{width:100%;height:100%;object-fit:contain}
+.field-guide-panel .levelup-preview-grid .preview-card .card-benefit{font-size:13px;line-height:1.55;min-height:0;display:block;margin-bottom:10px}
+.field-guide-panel .levelup-preview-grid .preview-card .choice-value{position:static;display:block;font-size:13px;margin-top:auto;white-space:normal}
+.field-guide-panel .levelup-preview-grid .preview-card .choice-level{position:static;font-size:10px;line-height:1.5;white-space:normal}
+@media(max-width:700px){
+ .field-guide-panel .levelup-preview .levelup-preview-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+ .field-guide-panel .levelup-preview-grid .preview-card{padding:10px}
+ .field-guide-panel .levelup-preview-grid .preview-card h3{font-size:16px;margin:9px 0}
+ .field-guide-panel .levelup-preview-grid .preview-card .card-benefit{font-size:12px}
+ .field-guide-panel .levelup-preview-intro b{font-size:16px;line-height:1.4}
+}
+@media(max-width:350px){.field-guide-panel .levelup-preview .levelup-preview-grid{grid-template-columns:1fr}}
+@media(min-width:701px){.field-guide-panel .levelup-preview .levelup-preview-grid{grid-template-columns:repeat(3,minmax(0,1fr))}}
+@media(max-width:350px){.field-guide-panel .levelup-preview .levelup-preview-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:7px}.field-guide-panel .levelup-preview-grid .preview-card{padding:8px}.field-guide-panel .levelup-preview-grid .preview-card h3{font-size:14px}.field-guide-panel .levelup-preview-grid .preview-card .card-benefit{font-size:11px}}
+
+/* Moon Blossom: Ninja's signature dash, shared by desktop and touch controls. */
+.combat-hud .hud-skill:is(.ninja-ultimate,.samurai-ultimate,.gunner-ultimate),#touch-controls .touch-ability:is(.ninja-ultimate,.samurai-ultimate,.gunner-ultimate){border:2px solid #bda0e9!important;border-radius:32%;color:#f7e5ff;background:conic-gradient(from -90deg,#f4c8ed var(--cooldown-progress),#342b4e 0)!important}
+.combat-hud .hud-skill:is(.ninja-ultimate,.samurai-ultimate,.gunner-ultimate):before,#touch-controls .touch-ability:is(.ninja-ultimate,.samurai-ultimate,.gunner-ultimate):before{border-radius:30%;background:radial-gradient(circle at 35% 25%,#614780,#29223f)!important}
+:is(.ninja-ultimate,.samurai-ultimate,.gunner-ultimate)>span>svg,:is(.ninja-ultimate,.samurai-ultimate,.gunner-ultimate) .ability-symbol>svg{display:block;width:45px;height:45px;margin:auto;filter:drop-shadow(0 2px 2px #18112788)}
+.combat-hud .hud-skill:is(.ninja-ultimate,.samurai-ultimate,.gunner-ultimate)>small{font-size:7px;letter-spacing:.3px}:is(.ninja-ultimate,.samurai-ultimate,.gunner-ultimate) b{font-size:11px;color:#ffe7b5}
+.combat-hud .hud-skill:is(.ninja-ultimate,.samurai-ultimate,.gunner-ultimate).ready,#touch-controls .touch-ability:is(.ninja-ultimate,.samurai-ultimate,.gunner-ultimate).ready{box-shadow:0 0 0 4px #d5abe822,0 0 19px #d6a8f344!important;border-color:#ffe1ae!important}
+:is(.ninja-ultimate,.samurai-ultimate,.gunner-ultimate).ready svg{animation:moon-ready 2s ease-in-out infinite}:is(.ninja-ultimate,.samurai-ultimate,.gunner-ultimate).skill-active svg{filter:drop-shadow(0 0 7px #ffd5f4);transform:rotate(-12deg)}
+@keyframes moon-ready{50%{transform:translateY(-3px) rotate(-5deg)}}
+@media(prefers-reduced-motion:reduce){:is(.ninja-ultimate,.samurai-ultimate,.gunner-ultimate).ready svg{animation:none}}
+
+.combat-hud .hud-skill.samurai-ultimate,#touch-controls .touch-ability.samurai-ultimate{border-color:#efb993!important;background:conic-gradient(from -90deg,#ffe2a6 var(--cooldown-progress),#49303e 0)!important}
+.combat-hud .hud-skill.samurai-ultimate:before,#touch-controls .touch-ability.samurai-ultimate:before{background:radial-gradient(circle at 35% 25%,#855b61,#38283c)!important}
+.combat-hud .hud-skill.samurai-ultimate.ready,#touch-controls .touch-ability.samurai-ultimate.ready{box-shadow:0 0 0 4px #f4c5a522,0 0 19px #ffd8a344!important}
+
+.combat-hud .hud-skill.gunner-ultimate,#touch-controls .touch-ability.gunner-ultimate{border-color:#f4ce89!important;background:conic-gradient(from -90deg,#ffe5a6 var(--cooldown-progress),#4c3542 0)!important}
+.combat-hud .hud-skill.gunner-ultimate:before,#touch-controls .touch-ability.gunner-ultimate:before{background:radial-gradient(circle at 35% 25%,#86664d,#392b40)!important}
+.combat-hud .hud-skill.gunner-ultimate.ready,#touch-controls .touch-ability.gunner-ultimate.ready{box-shadow:0 0 0 4px #ffe3a522,0 0 19px #ffe0a344!important}
