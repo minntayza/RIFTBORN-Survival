@@ -1,6 +1,6 @@
 import type {EnemyId} from './config';
-export const HORDE_ATLAS={key:'cute-horde-parts-v1',url:'/assets/characters/cute-horde-parts-v1.png'};
-export const OFFICER_ATLAS={key:'cute-elite-rifle-parts-v1',url:'/assets/characters/cute-elite-rifle-parts-v1.png'};
+export const HORDE_ATLAS={key:'cute-horde-parts-v1',url:'/assets/characters/cute-horde-parts-v1.webp'};
+export const OFFICER_ATLAS={key:'cute-elite-rifle-parts-v1',url:'/assets/characters/cute-elite-rifle-parts-v1.webp'};
 export const HORDE_IDS=['spitter','armoured','brute','runner','elite','rifle'] as const;
 export type HordeId=typeof HORDE_IDS[number];
 type Rect=readonly [number,number,number,number];

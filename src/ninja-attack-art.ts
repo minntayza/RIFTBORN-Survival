@@ -1,4 +1,4 @@
-export const NINJA_ATTACK_ATLAS={key:'ninja-attack-parts-v1',url:'/assets/characters/ninja-attack-parts-v1.png'};
+export const NINJA_ATTACK_ATLAS={key:'ninja-attack-parts-v1',url:'/assets/characters/ninja-attack-parts-v1.webp'};
 const regions={upper:[155,283,252,345],forearm:[715,282,202,357],hand:[1210,346,305,325],sword:[1809,32,172,660]} as const;
 export function ninjaAttackPart(image:HTMLImageElement,part:keyof typeof regions){
  const [x,y,w,h]=regions[part],c=document.createElement('canvas');c.width=w;c.height=h;
@@ -9,7 +9,7 @@ export function ninjaSwordCanvas(image:HTMLImageElement){
  g.translate(44,64);g.rotate(Math.PI/2);
  const [x,y,w,h]=regions.sword;g.drawImage(image,x,y,w,h,-11,-76,23,90);return c;
 }
-export const NINJA_WEAPONS_ATLAS={key:'ninja-weapons-v1',url:'/assets/characters/ninja-weapons-v1.png'};
+export const NINJA_WEAPONS_ATLAS={key:'ninja-weapons-v1',url:'/assets/characters/ninja-weapons-v1.webp'};
 export function ninjaWeaponCanvas(image:HTMLImageElement,id:'dual'|'kama'){
  const c=document.createElement('canvas');c.width=c.height=128;const g=c.getContext('2d')!;
  g.translate(id==='kama'?45:44,64);g.rotate(Math.PI/2);

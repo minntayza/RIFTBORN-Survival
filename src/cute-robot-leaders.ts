@@ -1,5 +1,5 @@
 import type {BossAction} from './boss-motion';
-export const LEADER_ATLAS={key:'cute-robot-leader-parts-v1',url:'/assets/characters/cute-robot-leader-parts-v1.png'};
+export const LEADER_ATLAS={key:'cute-robot-leader-parts-v1',url:'/assets/characters/cute-robot-leader-parts-v1.webp'};
 export type RobotLeader='command'|'sentinel';
 type Part='body'|'leftUpper'|'leftFore'|'rightUpper'|'rightFore'|'leftLeg'|'rightLeg';
 type Rect=readonly [number,number,number,number];

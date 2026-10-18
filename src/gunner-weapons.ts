@@ -1,4 +1,4 @@
-export const GUNNER_WEAPONS_ATLAS={key:'gunner-weapons-v1',url:'/assets/characters/gunner-weapons-v1.png'};
+export const GUNNER_WEAPONS_ATLAS={key:'gunner-weapons-v1',url:'/assets/characters/gunner-weapons-v1.webp'};
 export const GUNNER_WEAPONS=['pistols','shotgun','smg'] as const;
 export type GunnerWeapon=typeof GUNNER_WEAPONS[number];
 export const isGunnerWeapon=(id:string):id is GunnerWeapon=>(GUNNER_WEAPONS as readonly string[]).includes(id);

@@ -1,5 +1,5 @@
 import type {BossAction} from './boss-motion';
-export const COMMAND_ATLAS={key:'cute-command-parts-v1',url:'/assets/characters/cute-command-parts-v1.png'};
+export const COMMAND_ATLAS={key:'cute-command-parts-v1',url:'/assets/characters/cute-command-parts-v1.webp'};
 export type CommandId='commander'|'boss';
 type Part='body'|'leftUpper'|'leftFore'|'rightUpper'|'rightFore'|'leftLeg'|'rightLeg';
 type Rect=readonly [number,number,number,number];

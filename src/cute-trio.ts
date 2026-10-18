@@ -1,6 +1,6 @@
 export type CuteCharacter='ninja'|'wanderer'|'pulse';
 export type CutePart='body'|'leftArm'|'rightArm'|'leftLeg'|'rightLeg';
-export const CUTE_ATLAS={key:'cute-trio-parts-v1',url:'/assets/characters/cute-trio-parts-v1.png'};
+export const CUTE_ATLAS={key:'cute-trio-parts-v1',url:'/assets/characters/cute-trio-parts-v1.webp'};
 const source:Record<CuteCharacter,readonly (readonly [number,number,number,number])[]>={
  ninja:[[47,12,339,316],[457,92,129,212],[727,94,133,210],[1006,59,197,238],[1392,58,187,245]],
  wanderer:[[70,328,225,295],[428,379,201,220],[692,381,176,221],[1010,379,174,231],[1390,380,189,231]],

@@ -1,4 +1,4 @@
-export const SAMURAI_WEAPONS_ATLAS={key:'samurai-weapons-v1',url:'/assets/characters/samurai-weapons-v1.png'};
+export const SAMURAI_WEAPONS_ATLAS={key:'samurai-weapons-v1',url:'/assets/characters/samurai-weapons-v1.webp'};
 export const SAMURAI_WEAPONS=['nodachi','cursed','naginata'] as const;
 export type SamuraiWeapon=typeof SAMURAI_WEAPONS[number];
 export const isSamuraiWeapon=(id:string):id is SamuraiWeapon=>(SAMURAI_WEAPONS as readonly string[]).includes(id);

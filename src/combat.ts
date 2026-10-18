@@ -473,9 +473,9 @@ export class ArenaScene extends Phaser.Scene {
             this.particle(x, y, color, 50 + Math.random() * 130);
     }
     number(x: number, y: number, value: number, crit = false) {
-        const nearby=this.stats.wave<=10?this.numbers.find(n=>n.life>.35&&Math.hypot(n.text.x-(x-8),n.text.y-(y-20))<28):undefined;
+        const nearby=this.numbers.find(n=>n.life>.35&&Math.hypot(n.text.x-(x-8),n.text.y-(y-20))<32);
         if(nearby){nearby.text.setText(String(Number(nearby.text.text)+Math.round(value)));if(crit)nearby.text.setColor('#ffd87d');return;}
-        if(this.stats.wave<=10&&this.numbers.filter(n=>n.life>0).length>=18)return;
+        if(this.numbers.filter(n=>n.life>0).length>=(crit?20:14))return;
         let n = this.numbers.find(n => n.life <= 0);
         if (!n) {
             if (this.numbers.length > 45)

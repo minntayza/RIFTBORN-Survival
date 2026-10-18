@@ -1,4 +1,4 @@
-export const TANK_WEAPONS_ATLAS={key:'tank-weapons-v1',url:'/assets/characters/tank-weapons-v1.png'};
+export const TANK_WEAPONS_ATLAS={key:'tank-weapons-v1',url:'/assets/characters/tank-weapons-v1.webp'};
 export const TANK_WEAPONS=['shield','spiked','hammer'] as const;
 export type TankWeapon=typeof TANK_WEAPONS[number];
 export const isTankWeapon=(id:string):id is TankWeapon=>(TANK_WEAPONS as readonly string[]).includes(id);

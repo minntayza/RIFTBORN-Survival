@@ -4,7 +4,7 @@ import {cutePortrait} from './cute-trio';
 import {samuraiPortrait} from './samurai-art';
 import {gunnerPortrait} from './gunner-art';
 import {tankPortrait} from './tank-art';
-export const CONNECTED_ARMS={key:'hero-connected-arms-v1',url:'/assets/characters/hero-connected-arms-v1.png'};
+export const CONNECTED_ARMS={key:'hero-connected-arms-v1',url:'/assets/characters/hero-connected-arms-v1.webp'};
 const regions={ninja:[[233,25,148,335],[644,25,147,335]],samurai:[[242,486,156,258],[626,486,156,258]],gunner:[[245,895,142,212],[637,895,142,212]],tank:[[236,1268,160,235],[629,1268,160,235]]} as const;
 export function connectedArmRegion(hero:HeroId,side:number){return regions[hero][side===0?1:0];}
 export function connectedArmPose(hero:HeroId,side:number,shoulder:ArmPoint,hand:ArmPoint,facing=1){const r=connectedArmRegion(hero,side),ax=.5,ay=hero==='ninja'?.12:.04,bx=side===0?.4:.6,by=.88,dx=(bx-ax)*r[2]*facing,dy=(by-ay)*r[3],scale=Math.hypot(hand.x-shoulder.x,hand.y-shoulder.y)/Math.hypot(dx,dy);return {x:shoulder.x,y:shoulder.y,width:r[2]*scale,height:r[3]*scale,originX:ax,originY:ay,flipX:facing<0,rotation:Math.atan2(hand.y-shoulder.y,hand.x-shoulder.x)-Math.atan2(dy,dx)};}

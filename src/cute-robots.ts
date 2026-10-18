@@ -1,6 +1,6 @@
 import type {RobotKind} from './robot-enemies';
 import type {EnemyId} from './config';
-export const ROBOT_ATLAS={key:'cute-robot-parts-v1',url:'/assets/characters/cute-robot-parts-v1.png'};
+export const ROBOT_ATLAS={key:'cute-robot-parts-v1',url:'/assets/characters/cute-robot-parts-v1.webp'};
 export const CUTE_ROBOTS=['walker','scout','shield','crusher'] as const;
 export type CuteRobot=typeof CUTE_ROBOTS[number];
 export const isCuteRobot=(kind:RobotKind):kind is CuteRobot=>(CUTE_ROBOTS as readonly string[]).includes(kind);

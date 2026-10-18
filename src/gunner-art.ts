@@ -1,5 +1,5 @@
 import {ninjaArm} from './ninja-arm';
-export const GUNNER_ATLAS={key:'cute-gunner-parts-v1',url:'/assets/characters/cute-gunner-parts-v1.png'};
+export const GUNNER_ATLAS={key:'cute-gunner-parts-v1',url:'/assets/characters/cute-gunner-parts-v1.webp'};
 const regions={body:[29,25,494,637],leftLeg:[511,323,287,350],rightLeg:[904,322,286,351],upper:[1225,353,153,304],forearm:[1458,369,181,295],hand:[1723,432,172,231],otherHand:[1991,432,170,231]} as const;
 type Part=keyof typeof regions;
 type Draw={part:Part;x:number;y:number;w:number;h:number;angle:number;ox:number;oy:number};

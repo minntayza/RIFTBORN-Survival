@@ -1,5 +1,5 @@
 import {rigidHeroArm,heroArmSprite} from './hero-arm';
-export const TANK_ATLAS={key:'cute-tank-parts-v1',url:'/assets/characters/cute-tank-parts-v1.png'};
+export const TANK_ATLAS={key:'cute-tank-parts-v1',url:'/assets/characters/cute-tank-parts-v1.webp'};
 const regions={body:[18,31,555,646],leftLeg:[578,341,234,342],rightLeg:[863,341,235,342],upper:[1145,400,176,206],forearm:[1372,347,178,317],hand:[1582,414,232,250],otherHand:[1582,414,232,250],shield:[1815,162,339,516]} as const;
 type Part=keyof typeof regions;
 type Draw={part:Part;x:number;y:number;w:number;h:number;angle:number;ox:number;oy:number};

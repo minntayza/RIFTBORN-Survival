@@ -1,5 +1,5 @@
 import {samuraiArm} from './samurai-motion';
-export const SAMURAI_ATLAS={key:'cute-samurai-parts-v1',url:'/assets/characters/cute-samurai-parts-v1.png'};
+export const SAMURAI_ATLAS={key:'cute-samurai-parts-v1',url:'/assets/characters/cute-samurai-parts-v1.webp'};
 const regions={body:[33,36,494,644],leftLeg:[557,321,211,327],rightLeg:[945,321,211,326],upper:[1215,312,206,285],forearm:[1516,390,151,239],hand:[1747,444,156,198],otherHand:[1985,438,153,197]} as const;
 type Part=keyof typeof regions;
 type Draw={part:Part;x:number;y:number;w:number;h:number;angle:number;ox:number;oy:number};
