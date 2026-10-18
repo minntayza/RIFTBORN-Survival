@@ -1,0 +1,6 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import {GUIDE_ENTRIES,guideEntries,guideRatings,guideEntryArt,enemyGallery} from '../src/field-guide';
+test('Guide collections cover the existing roster exactly once',()=>{const all=['enemies','robots','bosses'].flatMap(s=>guideEntries(s as 'enemies'|'robots'|'bosses'));assert.equal(all.length,16);assert.equal(new Set(all.map(e=>e.key)).size,all.length);assert.equal(all.length,GUIDE_ENTRIES.length);assert.ok(guideEntries('bosses').every(e=>e.leader||e.boss));assert.ok(guideEntries('robots').every(e=>e.faction==='robot'&&!e.boss&&!e.leader));});
+test('Every gallery entry has existing art, useful counterplay and bounded ratings',()=>{for(const e of GUIDE_ENTRIES){assert.match(guideEntryArt(e),/<svg/);assert.ok(e.tip.length>20);for(const rating of Object.values(guideRatings(e)))assert.ok(rating>=1&&rating<=5);}});
+test('Cards open detail views without invented discovery or progress claims',()=>{for(const section of ['enemies','robots','bosses'] as const){const html=enemyGallery(section);assert.equal((html.match(/data-enemy=/g)||[]).length,guideEntries(section).length);assert.match(html,/<dialog/);assert.match(html,/aria-label="Inspect/);assert.doesNotMatch(html,/discovered|NEW DESIGN/);}});

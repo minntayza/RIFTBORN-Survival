@@ -28,7 +28,7 @@ import {assistedAim,escapeDirection,routedSpawn,buildSynergies,COMBAT_CACHE_KILL
 import {HERO_IDENTITIES,encounterRhythm,weaponMilestone} from './run-design';
 import {CARD_EVOLUTIONS} from './card-evolutions';
 import {WEAPON_EFFECTS,weaponPose,meleeContact,isGun} from './weapon-effects';
-import {heroTechniques} from './mastery';
+import {heroTechniques,masteryTraining} from './mastery';
 import { seededRandom, techniqueUnlocked, masteryMilestones, earnedWaveGold, type RunOptions } from './retention';
 import {UPGRADES} from './upgrades';
 import { rollReward, waveEvent, type RewardId, type EvolutionId } from './progression';
@@ -268,7 +268,7 @@ export class ArenaScene extends Phaser.Scene {
     landmark:{kind:'cache'|'beacon'|'patrol';x:number;y:number;progress:number;done:boolean;guards:Enemy[]}|undefined;
     get recovery(){return this.waveTime>=12&&this.waveTime<15||this.waveTime>=26&&this.waveTime<29;}
 
-    meta(id:string){return this.options.mode==='daily'?0:(this.save.permanent[id]||0);}
+    meta(id:string){return this.options.mode==='daily'?0:masteryTraining(this.masteryKills,id,this.save.permanent[id]||0);}
     objectiveComplete(label:string){this.objectives++;this.waveObjectives++;this.master('objectives',1);this.banner(label,0xd8ba85);}
     cardEvolutions:Record<string,boolean>={};
     pendingEchoes:{delay:number;x:number;y:number;angle:number;damage:number}[]=[];

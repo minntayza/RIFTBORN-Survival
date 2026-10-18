@@ -22,8 +22,8 @@ export function cutePose(id:CuteCharacter,phase:number,strength=1,arms=true):Cut
  {part:'rightArm',x:76,y:65,width:id==='pulse'?38:27,height:id==='pulse'?40:35,angle:0,ox:id==='pulse'?.15:.7,oy:.06});}
  return poses;
 }
-export function cuteCanvas(image:HTMLImageElement,id:CuteCharacter,phase:number,strength=1,arms=true){
- const c=document.createElement('canvas');c.width=c.height=128;const g=c.getContext('2d')!;
+export function cuteCanvas(image:HTMLImageElement,id:CuteCharacter,phase:number,strength=1,arms=true,resolution=128,padding=0){
+ const c=document.createElement('canvas');c.width=c.height=resolution;const g=c.getContext('2d')!;g.scale(resolution/(128+padding*2),resolution/(128+padding*2));g.translate(padding,padding);
  for(const pose of cutePose(id,phase,strength,arms)){
  const [x,y,w,h]=source[id][parts.indexOf(pose.part)];g.save();g.translate(pose.x,pose.y);g.rotate(pose.angle);
  g.drawImage(image,x,y,w,h,-pose.width*pose.ox,-pose.height*pose.oy,pose.width,pose.height);g.restore();

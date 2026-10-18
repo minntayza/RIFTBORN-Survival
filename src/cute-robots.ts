@@ -37,10 +37,10 @@ function bodyClip(kind:CuteRobot,w:number,h:number){
  if(kind==='crusher')return `M${left} 4H${left+34}V0H${left+79}V4H${right}V${h}H${left}Z`;
  return '';
 }
-export function cuteRobotCanvas(image:HTMLImageElement,kind:CuteRobot,frame:number,skill=false,type:EnemyId='brute'){
+export function cuteRobotCanvas(image:HTMLImageElement,kind:CuteRobot,frame:number,skill=false,type:EnemyId='brute',resolution=128,padding=0){
  const windup=crusherWindup(type),age=frame/35*(windup+.65),active=kind==='crusher'&&skill?{age,windup}:undefined;
  const phase=frame===0?0:(frame-1)%24/24,strength=skill||frame===0?0:frame>24?.4:1;
- const c=document.createElement('canvas');c.width=c.height=128;const g=c.getContext('2d')!;
+ const c=document.createElement('canvas');c.width=c.height=resolution;const g=c.getContext('2d')!;g.scale(resolution/(128+padding*2),resolution/(128+padding*2));g.translate(padding,padding);
  for(const p of draws(kind,phase,strength,active)){const [x,y,w,h]=p.rect;g.save();g.translate(p.x,p.y);g.rotate(p.angle);if(p.body&&bodyClip(kind,p.w,p.h))g.clip(new Path2D(bodyClip(kind,p.w,p.h)));g.drawImage(image,x,y,w,h,-p.w*p.ox,-p.h*p.oy,p.w,p.h);g.restore();}
  if(active&&age>=windup&&age<windup+.35){const t=(age-windup)/.35;g.save();g.globalAlpha=1-t;g.strokeStyle='#ffe3a1';g.lineWidth=2;for(const x of [24,104]){g.beginPath();g.ellipse(x,109,4+t*14,2+t*4,0,0,Math.PI*2);g.stroke();for(let i=0;i<3;i++){g.beginPath();g.moveTo(x-7+i*7,104-t*12);g.lineTo(x-5+i*7,100-t*15);g.stroke();}}g.restore();}
  return c;

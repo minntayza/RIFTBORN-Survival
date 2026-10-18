@@ -1070,3 +1070,213 @@ button:disabled{box-shadow:none;filter:saturate(.55)}
 .home-survivor-poster .art-image{width:100%;height:100%;object-fit:contain}
 .home-showcase canvas:not([data-ready]){visibility:hidden}
 .home-showcase:has(canvas[data-ready]) .home-survivor-poster{display:none}
+
+/* Field Guide: browse creatures first, inspect the details on demand. */
+.panel.field-guide-panel{max-width:1120px;width:calc(100vw - 40px);padding:28px 32px;background:#14232d;border:1px solid #3b5059;border-radius:18px;color:#e8eee6}
+.field-guide-panel>.eyebrow{color:#93b3aa;font-size:10px}
+.field-guide-panel>h2{font-size:34px;margin:14px 0 8px;color:#f3e8ce}
+.field-guide-panel>.muted{font-size:13px;color:#a2b7b7}
+.field-guide-panel .field-main-tabs{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin:24px 0 12px}
+.field-guide-panel .field-main-tabs button{display:flex;align-items:center;justify-content:center;gap:12px;min-width:0;min-height:50px;border:1px solid #3b5159;border-radius:10px;background:#1c303a;color:#b6c8c5;font-size:14px;box-shadow:none}
+.field-guide-panel .field-main-tabs button span{font-size:11px;padding:3px 7px;background:#ffffff0b;border-radius:6px;color:#91b7aa}
+.field-guide-panel .field-main-tabs button.active{border-color:#a5c19b;background:#344b42;color:#eef1d9}
+.field-build-library{margin:0 0 26px;padding:0 2px;border-bottom:1px solid #30454e}
+.field-build-library summary{cursor:pointer;min-height:42px;padding:12px 0;font-size:12px;color:#baccc5}
+.field-build-library summary span{margin-left:10px;font-size:11px;color:#7e9c9f}
+.field-build-library .guide-tabs{margin:0 0 14px;gap:6px}
+.field-build-library .guide-tabs button{min-width:0;min-height:40px;font-size:11px;box-shadow:none}
+.field-book{--field-accent:#b7d58e}
+.field-book.field-robots{--field-accent:#8bd9df}.field-book.field-bosses{--field-accent:#e7c481}
+.field-intro{display:flex;align-items:center;justify-content:space-between;gap:20px;margin:18px 0 24px}
+.field-intro small{font-size:9px;letter-spacing:.18em;color:var(--field-accent)}
+.field-intro h3{font-size:24px;letter-spacing:-.5px;margin:8px 0;color:#eff0e2}
+.field-intro p{max-width:600px;color:#9eb5b6;font-size:13px;line-height:1.6}
+.field-count{flex:none;font-size:11px;color:#9eb5b6;padding:7px 11px;border:1px solid #3b5159;border-radius:20px}
+.field-gallery{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px}
+.field-creature{min-width:0;padding:0;overflow:hidden;border:1px solid #354d57;border-radius:14px;background:#1b3039;text-align:left;color:#f0ece0;box-shadow:0 5px 14px #0002;transition:transform .16s,border-color .16s}
+.field-creature:hover{background:#203b42;border-color:var(--field-accent);transform:translateY(-4px)}
+.field-card-art{height:190px;padding:12px 20px 0;display:flex;align-items:center;justify-content:center;background:radial-gradient(ellipse at 50% 90%,#688c6633,transparent 70%)}
+.field-card-art>svg{width:100%;height:100%;object-fit:contain;filter:drop-shadow(0 8px 5px #0002)}
+.field-card-copy{padding:18px}
+.field-role{display:block;font-size:10px;color:var(--field-accent);line-height:1.4;letter-spacing:.03em;min-height:14px}
+.field-creature h3{margin:7px 0 20px;font-size:20px;letter-spacing:-.4px;line-height:1.2}
+.field-card-footer{display:flex;justify-content:space-between;align-items:center;gap:8px;border-top:1px solid #344e56;padding-top:12px;font-size:10px;color:#91aaa9}
+.field-card-footer>span:last-child{color:#e0d7b9;font-size:11px}
+.field-detail{width:min(900px,calc(100vw - 32px));max-height:calc(100dvh - 32px);padding:0;border:1px solid #5a7275;border-radius:18px;background:#172b35;color:#e9eee5;box-shadow:0 30px 90px #0009;overflow-y:auto}
+.field-detail::backdrop{background:#060f19cc;backdrop-filter:blur(5px)}
+.field-detail-top{display:flex;align-items:center;justify-content:space-between;padding:16px 24px;border-bottom:1px solid #3a515a;gap:12px}
+.field-detail-top>span{font-size:10px;color:#a4c9b7;letter-spacing:.12em}
+.field-close{width:42px;height:42px;padding:0;border:1px solid #48616b;border-radius:50%;background:#243b45;color:#e5e8dd}
+.field-detail-grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:20px;padding:24px}
+.field-stage{position:relative;align-self:start;min-width:0;aspect-ratio:1/1.1;border-radius:14px;background:radial-gradient(ellipse at 50% 65%,#668d7340,#14262f 75%);overflow:hidden}
+.field-stage canvas{display:block;width:100%;height:auto;position:relative;z-index:1}
+.field-stage canvas:not([data-ready]){visibility:hidden}
+.field-preview-fallback{position:absolute;inset:0 8% 12%;display:flex;align-items:center;justify-content:center}
+.field-preview-fallback>svg{width:100%;height:100%}
+.field-stage:has(canvas[data-ready]) .field-preview-fallback{display:none}
+.field-stage-label{position:absolute;bottom:18px;left:10px;right:10px;text-align:center;font-size:9px;letter-spacing:.13em;color:#a2bdb3}
+.field-facts>small{font-size:11px;color:#a2cbb8}
+.field-facts h2{font-size:30px;line-height:1.1;letter-spacing:-.8px;margin:9px 0 14px;color:#f6ead1}
+.field-facts>p{color:#a9bfbd;font-size:13px;line-height:1.65;margin:0 0 20px}
+.field-ratings{display:grid;gap:11px;padding:16px 0;border-top:1px solid #39545b;border-bottom:1px solid #39545b;margin-bottom:20px}
+.field-ratings>div{display:flex;align-items:center;justify-content:space-between;font-size:12px;color:#c4d5cd}
+.field-pips{display:flex;gap:5px}.field-pips i{width:21px;height:6px;border-radius:3px;background:#3b515a}.field-pips .filled{background:#bdd296}
+.field-tip{border-left:3px solid #b4cc90;background:#203b3a;padding:14px 16px;border-radius:0 8px 8px 0}
+.field-tip small,.field-skills>small{font-size:9px;letter-spacing:.12em;color:#c6d7a6}
+.field-tip p{font-size:13px;line-height:1.65;margin-top:8px;color:#e0e5d4}
+.field-skills{margin-top:22px}.field-skills>div{display:flex;flex-wrap:wrap;gap:6px;margin:10px 0}
+.field-skills button{min-height:42px;padding:10px 12px;font-size:11px;background:#344740;color:#ead9b7;border:1px solid #6b7053;border-radius:7px}
+.field-skills button[aria-pressed=true]{background:#d9bb73;color:#25322c;border-color:#ebd49a}
+.field-skill-tip{font-size:12px;color:#b6c9bf;line-height:1.6;min-height:54px}
+@media(max-width:700px){
+ .panel.field-guide-panel{width:calc(100vw - 16px);max-height:calc(100dvh - 16px);padding:20px 16px;border-radius:12px}
+ .field-guide-panel>h2{font-size:28px}
+ .field-guide-panel .field-main-tabs{gap:6px;margin-top:20px}.field-guide-panel .field-main-tabs button{font-size:12px;gap:6px;min-height:46px;padding:10px 6px;flex:auto}
+ .field-build-library summary span{display:none}
+ .field-intro{align-items:flex-start;gap:10px;flex-direction:column;margin:16px 0 18px}.field-intro h3{font-size:21px}.field-intro p{font-size:12px}.field-count{font-size:10px}
+ .field-gallery{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+ .field-card-art{height:140px;padding:8px 6px 0}.field-card-copy{padding:12px}
+ .field-creature h3{font-size:16px;margin-bottom:14px}.field-role{font-size:9px;min-height:25px}
+ .field-card-footer{font-size:8px;align-items:flex-start;flex-direction:column;gap:6px}.field-card-footer>span:last-child{font-size:10px}
+ .field-detail{width:calc(100vw - 20px);max-height:calc(100dvh - 20px);border-radius:14px}
+ .field-detail-top{padding:12px 16px}.field-detail-top>span{font-size:9px}
+ .field-detail-grid{grid-template-columns:1fr;padding:16px;gap:18px}
+ .field-stage{width:100%;max-width:280px;aspect-ratio:1;justify-self:center}.field-stage-label{bottom:8px}
+ .field-facts h2{font-size:27px}.field-facts>p{font-size:12px}.field-tip p{font-size:12px}
+}
+@media(prefers-reduced-motion:reduce){.field-creature{transition:none}.field-creature:hover{transform:none}}
+
+/* Build reference shares the creature collection's quiet, readable surfaces. */
+.field-guide-panel .field-build-library{border:1px solid #3b5159;border-radius:12px;padding:0 14px;background:#192d36;margin-bottom:20px}
+.field-guide-panel .field-build-library summary{font-size:13px;color:#e5e7d4;padding:15px 0}
+.field-guide-panel .field-library-tabs{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.field-guide-panel .field-library-tabs button,.field-guide-panel .guide-filters button{background:#203740;border:1px solid #3f5960;color:#b8ceca;border-radius:9px;box-shadow:none;min-height:44px}
+.field-guide-panel .field-library-tabs button.active,.field-guide-panel .guide-filters button.active{background:#344b42;border-color:#a5c19b;color:#eef1d9}
+.field-guide-panel .guide-filters{gap:8px;margin:20px 0}
+.field-guide-panel .guide-filters button{font-size:12px;padding:10px 16px}
+.field-guide-panel .guide-filter{font-size:10px;letter-spacing:.1em;color:#a4c6b9;flex-wrap:wrap}
+.field-guide-panel .guide-filter select{background:#1b3039;border-color:#3f5960;color:#e8eee6;min-height:44px}
+.field-build-content{--field-accent:#c1d79c}
+.field-build-content .guide-grid,.field-build-content .levelup-preview-grid{grid-template-columns:repeat(3,minmax(0,1fr));gap:16px;align-items:stretch;margin:20px 0;max-height:none;overflow:visible}
+.field-build-content .guide-evolution,.field-build-content .preview-card{background:#1b3039;border:1px solid #354d57;border-radius:14px;padding:18px;box-shadow:0 5px 14px #0002;color:#e8eee6;min-width:0;height:auto}
+.field-build-content .guide-evolution h3,.field-build-content .preview-card h3{color:#f0ece0;font-size:20px;line-height:1.25;margin:8px 0 12px;letter-spacing:-.4px}
+.field-build-content .guide-evolution p{color:#adc3bf;font-size:13px;line-height:1.65}
+.field-build-content .archive-state{font-size:9px!important;letter-spacing:.04em;color:#bad1b2!important;margin:0 0 12px}
+.field-build-content .build-source{font-size:11px;color:#94b3b1}
+.field-build-content .evolution-card-reference{display:block;width:100%;height:220px;object-fit:contain;margin:14px 0;border-radius:9px}
+.build-requirements{display:flex;flex-wrap:wrap;gap:7px;margin:16px 0 10px}
+.build-requirements span{font-size:9px;color:#e5d3a3;border:1px solid #62705a;border-radius:6px;padding:6px 8px;background:#34423a}
+.field-build-content .guide-evolution>small:last-child{color:#91aaa9}
+.field-build-content .weapon-evolution-layout{grid-template-columns:1fr}
+.field-build-content .guide-weapon{position:static;display:grid;grid-template-columns:110px minmax(0,1fr);gap:20px;align-items:center;background:#20363d;border:1px solid #3d5860;border-radius:12px;padding:18px}
+.field-build-content .guide-weapon .weapon-art{height:110px;margin:0;background:radial-gradient(ellipse,#45635b55,transparent);border:0}
+.field-build-content .guide-weapon-copy h3{color:#f0ece0}.field-build-content .guide-weapon-copy p{max-width:650px;color:#adc3bf}
+.field-build-content .weapon-evolution-card{border-top:3px solid var(--evo-color)}
+.field-build-content .weapon-evolution-card h3,.field-build-content .weapon-evolution-card .archive-state{text-align:left}
+.field-build-content .weapon-evolution-art{height:130px;background:radial-gradient(ellipse,#47635a33,transparent);border-color:#3b535b;box-shadow:none}
+.field-build-content .weapon-evolution-art.final{height:150px}
+.field-build-content .evolution-step{border-color:#39545b;padding-top:14px;margin-top:14px}
+.field-build-content .evolution-step b{font-size:10px;line-height:1.5}.field-build-content .evolution-step p{font-size:12px;line-height:1.6}
+.field-build-content .levelup-preview-intro{background:transparent;border:0;padding:0;margin:22px 0}
+.field-build-content .levelup-preview-intro b{font-size:18px;font-weight:700;color:#eff0e2;letter-spacing:0}
+.field-build-content .levelup-preview-intro p{font-size:13px;color:#9eb5b6;max-width:680px}
+.field-build-content .preview-card:hover{transform:none;background:#1b3039;border-color:#354d57;box-shadow:0 5px 14px #0002}
+.field-build-content .preview-card .choice-new,.field-build-content .preview-card .choice-stars{display:none}
+.field-build-content .preview-card .choice-top{color:#b7d58e;font-size:10px}
+.field-build-content .preview-card .card-benefit{color:#adc3bf;font-size:13px;line-height:1.6;min-height:42px}
+.field-build-content .preview-card .choice-value{color:#e7d09a;font-size:14px;margin-top:12px}
+.field-build-content .preview-card .choice-level{font-size:10px;color:#91aaa9;border-top:1px solid #344e56;padding-top:12px;margin-top:12px}
+.field-build-content .preview-card .upgrade-demo{height:180px;background:transparent;border:0}
+@media(max-width:700px){
+ .field-guide-panel .field-library-tabs{gap:5px}.field-guide-panel .field-library-tabs button{font-size:10px;padding:8px 5px;white-space:normal}
+ .field-guide-panel .guide-filters{display:grid;grid-template-columns:repeat(2,minmax(0,1fr))}.field-guide-panel .guide-filters button{padding:9px;font-size:11px}
+ .field-build-content .guide-grid,.field-build-content .levelup-preview-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+ .field-build-content .guide-evolution,.field-build-content .preview-card{padding:12px}
+ .field-build-content .guide-evolution h3,.field-build-content .preview-card h3{font-size:16px}
+ .field-build-content .evolution-card-reference{height:165px}.field-build-content .preview-card .upgrade-demo{height:135px}
+ .field-build-content .preview-card .card-benefit{font-size:11px;min-height:0}.field-build-content .preview-card .choice-value{font-size:12px}
+ .field-build-content .weapon-evolution-layout>.guide-grid{grid-template-columns:1fr}
+ .field-build-content .guide-weapon{grid-template-columns:70px minmax(0,1fr);padding:12px;gap:12px}
+ .field-build-content .guide-weapon .weapon-art{height:90px}.field-build-content .guide-weapon-copy h3{font-size:19px}
+}
+.field-guide-panel .field-build-content .levelup-preview-grid .preview-card{background:#1b3039;border:1px solid #354d57;box-shadow:0 5px 14px #0002;overflow:hidden}
+.field-guide-panel .field-build-content .levelup-preview-grid .preview-card .upgrade-reference-demo{height:180px;background:transparent;border:0;box-shadow:none}
+.field-guide-panel .field-build-content .levelup-preview-grid .preview-card .upgrade-reference-art{width:100%;height:100%;object-fit:contain;border:0;box-shadow:none}
+.field-build-content .levelup-preview-intro b{font-family:inherit;font-size:18px;font-weight:700}
+@media(max-width:700px){.field-guide-panel .field-build-content .levelup-preview-grid .preview-card .upgrade-reference-demo{height:135px}}
+
+/* Settings: comfortable controls on the same surfaces as the field guide. */
+.panel.preferences-panel{width:calc(100vw - 32px);max-width:980px;background:#14232d;border:1px solid #3b5059;border-radius:18px;color:#e8eee6;padding:30px}
+.preferences-panel>h2{font-size:34px;color:#f3e8ce;margin:18px 0 8px;letter-spacing:-1px}
+.preferences-panel>.muted{color:#a2b7b7;font-size:14px}
+.preferences-panel>.eyebrow{color:#93b3aa;font-size:10px}
+.preferences-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px;margin:28px 0}
+.preference-group{min-width:0;background:#1b3039;border:1px solid #354d57;border-radius:14px;padding:20px}
+.preference-heading{display:flex;align-items:center;gap:13px;margin-bottom:12px}
+.preference-heading>span{width:40px;height:40px;border-radius:12px;display:grid;place-items:center;background:#344b42;color:#d8dca6;font-size:24px}
+.preference-heading small{color:#a9c7b3;font-size:9px;letter-spacing:.12em}
+.preference-heading h3{color:#f0ece0;font-size:19px;margin:5px 0;letter-spacing:-.3px}
+.preferences-panel .preference-row{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:20px 0;border-bottom:1px solid #344e56;cursor:pointer}
+.preference-copy{min-width:0;display:block}
+.preference-copy b{display:block;font-size:14px;color:#e4eadd;font-weight:650}
+.preference-copy small{display:block;margin-top:7px;font-size:12px;line-height:1.6;color:#9eb5b6}
+.preferences-panel .preference-switch{appearance:none;-webkit-appearance:none;flex:none;width:48px;height:28px;margin:0;border:1px solid #627780;border-radius:20px;background:#344951;position:relative;cursor:pointer;transition:background .15s}
+.preference-switch:before{content:'';position:absolute;width:20px;height:20px;left:3px;top:3px;background:#a9bbbe;border-radius:50%;transition:transform .15s}
+.preferences-panel .preference-switch:checked{background:#9fbe8b;border-color:#bdd5a3}
+.preference-switch:checked:before{background:#20372e;transform:translateX(20px)}
+.preferences-panel :is(input,select,button,summary):focus-visible{outline:3px solid #e5c77b;outline-offset:4px}
+.preferences-panel select{flex:none;width:116px;max-width:40%;min-height:44px;border:1px solid #48626a;background:#243b45;color:#edf0df;border-radius:8px;padding:10px;font:inherit;font-size:12px}
+.preference-note{color:#8da9a9;font-size:11px;line-height:1.6;margin-top:14px}
+.preferences-footer{display:flex;align-items:center;justify-content:space-between;gap:18px;padding:4px 0 22px}
+.preferences-footer>span{font-size:12px;color:#bbd49f}.preferences-footer small{display:block;font-size:11px;color:#8ea8aa;margin:7px 0 0 16px}
+.preferences-footer button{background:#e4c577;color:#24312d;border:1px solid #eed69a;border-radius:9px;box-shadow:none;min-height:46px;font-size:13px}
+.preferences-reset{border-top:1px solid #344e56;color:#9eb5b6;padding-top:16px;font-size:12px}
+.preferences-reset summary{cursor:pointer;padding:7px 0}.preferences-reset>div{display:flex;align-items:center;justify-content:space-between;gap:16px;padding-top:14px}.preferences-reset p{font-size:12px;line-height:1.6;color:#9eb5b6}.preferences-reset button{font-size:11px;background:#392e35;border:1px solid #77535c;color:#e4b8ba;box-shadow:none;border-radius:8px}
+@media(max-width:700px){.panel.preferences-panel{width:calc(100vw - 16px);max-height:calc(100dvh - 16px);padding:22px 16px;border-radius:12px}.preferences-panel>h2{font-size:28px}.preferences-grid{grid-template-columns:1fr;gap:14px;margin:22px 0}.preference-group{padding:18px}.preferences-footer{align-items:stretch;flex-direction:column}.preferences-footer button{width:100%}.preferences-reset>div{align-items:flex-start;flex-direction:column}}
+@media(prefers-reduced-motion:reduce){.preferences-panel .preference-switch,.preference-switch:before{transition:none}}
+
+/* Armoury: shared collection theme, with art and item actions in focus. */
+.panel.armoury-panel{width:calc(100vw - 32px);max-width:1180px;padding:30px;background:#14232d;border:1px solid #3b5059;border-radius:18px;color:#e8eee6}
+.armoury-panel>.eyebrow{font-size:10px;color:#93b3aa}.armoury-panel>h2{font-size:34px;color:#f3e8ce;letter-spacing:-1px;margin:18px 0 8px}.armoury-panel>.muted{font-size:14px;color:#a2b7b7}
+.armoury-panel .shop-top{display:flex;flex-direction:column;align-items:stretch;gap:18px;margin:24px 0}
+.armoury-panel .shop-top>.coin{align-self:flex-end;background:#263b38;color:#e6cf96;border:1px solid #536351;border-radius:9px;padding:10px 14px;font-size:14px}
+.armoury-panel .shop-top nav{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;width:100%}
+.armoury-panel .shop-top nav button{min-width:0;min-height:48px;background:#1c303a;border:1px solid #3b5159;border-radius:9px;box-shadow:none;color:#b6c8c5;font-size:13px;padding:10px}
+.armoury-panel .shop-top nav button.active{background:#344b42;border-color:#a5c19b;color:#eef1d9}
+.armoury-panel .shop-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px;align-items:stretch}
+.armoury-panel .shop-item{display:flex;flex-direction:column;min-width:0;padding:20px;border:1px solid #354d57;border-radius:14px;background:#1b3039;box-shadow:0 5px 14px #0002;overflow:hidden;position:relative}
+.armoury-panel .shop-item h3{color:#f0ece0;font-size:22px;letter-spacing:-.4px;margin:12px 0 10px}
+.armoury-panel .shop-item p{color:#adc3bf;font-size:13px;line-height:1.65}
+.armoury-panel .shop-item>small{display:block;color:#98b2b1;font-size:11px;line-height:1.8;margin-bottom:18px}
+.armoury-panel .shop-item>button{margin-top:auto;min-height:44px;border:1px solid #61755d;border-radius:9px;background:#344b42;color:#e4e9d4;box-shadow:none;font-size:12px;width:100%;white-space:normal}
+.armoury-panel .shop-item>button.primary{background:#e4c577;border-color:#eed69a;color:#24312d}
+.armoury-panel .shop-item>button:disabled{opacity:.5;cursor:not-allowed}
+.armoury-panel .shop-item-state{font-size:9px;letter-spacing:.08em;color:#b5ce9b}
+.armoury-panel .survivor-shop-item .card-icon{height:190px;width:100%;display:grid;place-items:center;margin:12px 0 0;background:radial-gradient(ellipse at 50% 85%,#608c6633,transparent 70%)}
+.armoury-panel .survivor-shop-item .card-icon>svg{height:100%;width:100%;object-fit:contain}
+.armoury-panel .shop-selected,.armoury-panel .weapon-equipped{border-color:#9cb68d}
+.shop-current-label{margin-top:auto;min-height:44px;display:grid;place-items:center;border:1px solid #5e765a;border-radius:9px;background:#2a423b;color:#c8ddb1;font-size:12px}
+.armoury-panel .weapon-shop-item .weapon-art{height:180px;background:radial-gradient(ellipse,#567e6a33,transparent);border:0;border-radius:10px;margin:0;box-shadow:none}
+.armoury-panel .weapon-art-halo{display:none}.armoury-panel .weapon-shop-item .weapon-art img{object-fit:contain}
+.armoury-panel .weapon-tag,.armoury-panel .weapon-equipped-tag{background:#263c3e;border:1px solid #48635e;color:#d4dfc9;font-size:9px;box-shadow:none}
+.armoury-panel .weapon-shop-copy{padding:18px 0}.armoury-panel .weapon-class{color:#a2cbb8;font-size:9px;letter-spacing:.08em}.armoury-panel .weapon-owner{font-size:9px;color:#94aeaa;border-color:#344e56}
+.armoury-panel .weapon-owned{margin-top:auto;background:#2a423b;color:#c8ddb1;border:1px solid #5e765a;border-radius:9px;min-height:44px;display:grid;place-items:center;font-size:11px}
+.armoury-panel .permanent-intro{grid-column:1/-1;background:#20363d;border:1px solid #3d5860;border-radius:12px;box-shadow:none;padding:18px}.armoury-panel .permanent-intro h3{color:#f0ece0}.armoury-panel .permanent-intro p{color:#adc3bf}
+.armoury-panel .permanent-card .permanent-emblem{background:radial-gradient(ellipse,color-mix(in srgb,var(--upgrade-color) 15%,transparent),transparent);box-shadow:none;border:0}
+.armoury-panel .permanent-card .permanent-new{display:none}.armoury-panel .permanent-top{font-size:10px}.armoury-panel .level-badge{background:#263d40;border-color:#476059;color:#bacfaa}.armoury-panel .upgrade-benefit{background:#233b40;border-color:#3d585b;box-shadow:none}.armoury-panel .upgrade-cap{color:#94aeaa;font-size:10px}
+.armoury-panel .shop-empty{grid-column:1/-1;text-align:center;padding:50px 24px;background:#1b3039;border:1px dashed #47615e;border-radius:14px}.shop-empty>span{font-size:40px;color:#d8c182}.shop-empty h3{color:#f0ece0;font-size:22px}.shop-empty p{max-width:440px;margin:14px auto 0;color:#9eb5b6;font-size:13px;line-height:1.7}
+.armoury-panel>.actions{border-top:1px solid #344e56;margin-top:26px;padding-top:20px;gap:10px}.armoury-panel>.actions button{border-radius:9px;background:#203740;border:1px solid #3f5960;color:#becfc6;box-shadow:none;font-size:12px;min-height:44px}.armoury-panel>.actions button.primary{background:#e4c577;color:#24312d;border-color:#eed69a}
+.armoury-panel :is(button,summary):focus-visible{outline:3px solid #e5c77b;outline-offset:3px}
+@media(max-width:700px){.panel.armoury-panel{width:calc(100vw - 16px);max-height:calc(100dvh - 16px);padding:22px 16px;border-radius:12px}.armoury-panel>h2{font-size:28px}.armoury-panel .shop-top nav{grid-template-columns:repeat(2,minmax(0,1fr));gap:6px}.armoury-panel .shop-top nav button{font-size:12px;min-height:44px}.armoury-panel .shop-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.armoury-panel .shop-item{padding:12px}.armoury-panel .shop-item h3{font-size:18px}.armoury-panel .shop-item p{font-size:12px}.armoury-panel .shop-item>small{font-size:10px}.armoury-panel .survivor-shop-item .card-icon,.armoury-panel .weapon-shop-item .weapon-art{height:150px}.armoury-panel .shop-item>button{font-size:11px;padding:10px 6px}.armoury-panel .permanent-intro{flex-wrap:wrap}.armoury-panel .training-total{margin-left:0}.armoury-panel>.actions{display:flex;flex-wrap:wrap}.armoury-panel>.actions button{flex:1}.armoury-panel>.actions button.primary{flex-basis:100%}}
+@media(max-width:380px){.armoury-panel .shop-grid{grid-template-columns:1fr}}
+
+.panel.mastery-tree-panel{width:calc(100vw - 24px);max-width:1120px;background:#14232d;border:1px solid #3b5059;border-radius:18px;padding:28px;color:#e8eee6}
+.mastery-tree-panel>h2{color:#f3e8ce;font-size:32px;margin:18px 0 8px}.mastery-tree-panel>.muted,.tree-explainer{font-size:13px;line-height:1.7;color:#9eb5b6}.mastery-tree-panel>.eyebrow{color:#93b3aa;font-size:10px}
+.tree-root{display:flex;align-items:center;justify-content:center;gap:20px;background:#20363d;border:1px solid #527065;border-radius:14px;padding:20px;margin:24px auto 16px;max-width:480px}.tree-root .portrait{width:80px;height:100px;flex:none}.tree-root h3{font-size:21px;color:#f0ece0;margin:8px 0}.tree-root small{font-size:9px;color:#bed59e;letter-spacing:.1em}.tree-root p{font-size:12px;color:#a9c0b9;margin-bottom:12px}.tree-root .bar i{background:#c5d69d}
+.mastery-tree{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:22px;margin:26px 0;position:relative;border-top:2px solid #50665a;padding-top:24px}
+.mastery-branch{min-width:0;position:relative}.mastery-branch:before{content:'';position:absolute;left:50%;top:-24px;height:24px;width:2px;background:#50665a}.mastery-branch>header{text-align:center;margin-bottom:18px}.mastery-branch>header small{font-size:9px;color:#b7cc9e;letter-spacing:.12em}.mastery-branch>header h3{font-size:19px;margin:7px;color:#e4e5d1}
+.tree-key,.tree-bonus{position:relative;background:#1b3039;border:1px solid #3b5159;border-radius:12px;padding:18px}.tree-key{min-height:410px;display:flex;flex-direction:column}.tree-key>small{font-size:9px;color:#9eb5b6;line-height:1.6}.tree-key h3{font-size:21px;color:#f0ece0;margin:12px 0}.tree-key p{font-size:13px;line-height:1.65;color:#b4c9c1;margin-bottom:12px}.tree-key .technique-demo{height:130px;margin:16px 0;background:#233c4033;border-color:#3d575b}.tree-key button{margin-top:auto;min-height:44px;border:1px solid #718366;background:#344b42;border-radius:8px;color:#e6e9ce;font-size:12px;box-shadow:none}.tree-key button:disabled{background:#25363e;color:#8da4a6;border-color:#3d5159}.tree-key.equipped{border-color:#e3c97f;background:#293c38}.tree-key.equipped button{background:#e4c577;color:#24312d}
+.tree-training{display:flex;flex-direction:column;gap:20px;padding-top:20px}.tree-bonus:before{content:'';position:absolute;left:50%;top:-21px;height:20px;width:2px;background:#42594f}.tree-node-dot{display:grid;place-items:center;position:absolute;top:-10px;left:calc(50% - 11px);width:22px;height:22px;background:#253b43;border:1px solid #576e63;border-radius:50%;color:#8da4a6;font-size:11px}.earned>.tree-node-dot{background:#a9c38e;color:#20362d;border-color:#c5d6aa}.tree-bonus{padding:20px 14px 14px}.tree-bonus small{font-size:9px;color:#859fa3}.tree-bonus h4{font-size:14px;color:#a4bab8;margin:8px 0}.tree-bonus p{font-size:12px;line-height:1.5;color:#8ba5a8}.tree-bonus.earned{border-color:#68805e;background:#253c38}.tree-bonus.earned h4{color:#e7e8d5}.tree-bonus.earned small{color:#bcd69d}.tree-bonus.earned p{color:#afc5b8}
+.tree-veteran{border:1px solid #48615b;border-radius:12px;padding:18px;text-align:center;color:#b9c6ba}.tree-veteran.earned{border-color:#d5ba73;color:#ead69f}.tree-veteran p{font-size:12px;line-height:1.6;margin-top:10px;color:#9eb5b6}.mastery-tree-panel>.actions{margin-top:24px}.mastery-tree-panel>.actions button{border-radius:9px;box-shadow:none;min-height:44px;font-size:12px}
+.armoury-panel .shop-top nav{grid-template-columns:repeat(3,minmax(0,1fr))}
+@media(max-width:700px){.panel.mastery-tree-panel{padding:20px 14px;max-height:calc(100dvh - 16px)}.mastery-tree-panel>h2{font-size:27px}.mastery-tree{gap:12px;grid-template-columns:1fr;border:0;padding-top:0}.mastery-branch:before{display:none}.mastery-branch{border:1px solid #3b5159;border-radius:14px;padding:18px 12px;background:#172b32}.tree-key{min-height:0}.tree-key button{margin-top:18px}.tree-training{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}.tree-bonus:before{display:none}.tree-root{padding:14px;gap:12px}.tree-root h3{font-size:19px}.armoury-panel .shop-top nav{grid-template-columns:repeat(3,minmax(0,1fr))}}

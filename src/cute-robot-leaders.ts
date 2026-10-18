@@ -29,9 +29,9 @@ function draws(kind:RobotLeader,phase=0,strength=0,skill?:{action:BossAction;age
  out.push({part:'body',x:p.body.x,y:p.body.y,w:p.body.w,h:p.body.h,angle:0,ox:.5,oy:0});
  p.arms.forEach((arm,i)=>out.push({part:i===0?'leftFore':'rightFore',x:arm.elbow.x,y:arm.elbow.y,w:kind==='sentinel'?27:23,h:kind==='sentinel'?32:28,angle:arm.fore,ox:kind==='command'?.1:.5,oy:kind==='command'?.6:.08,orient:kind==='command'?Math.PI/2:0}));return out;
 }
-export function leaderCanvas(image:HTMLImageElement,kind:RobotLeader,frame:number,action?:BossAction){
+export function leaderCanvas(image:HTMLImageElement,kind:RobotLeader,frame:number,action?:BossAction,resolution=128,padding=0){
  const skill=action?{action,age:frame/35*1.8,windup:1.15}:undefined,phase=frame===0?0:(frame-1)%24/24,strength=action||frame===0?0:frame>24?.4:1;
- const c=document.createElement('canvas');c.width=c.height=128;const g=c.getContext('2d')!;
+ const c=document.createElement('canvas');c.width=c.height=resolution;const g=c.getContext('2d')!;g.scale(resolution/(128+padding*2),resolution/(128+padding*2));g.translate(padding,padding);
  for(const p of draws(kind,phase,strength,skill)){const [x,y,w,h]=source[kind][parts.indexOf(p.part)];g.save();g.translate(p.x,p.y);g.rotate(p.angle+(p.orient??0));g.drawImage(image,x,y,w,h,-p.w*p.ox,-p.h*p.oy,p.w,p.h);g.restore();}
  if(skill){const after=skill.age-skill.windup,p=skill.age/skill.windup;
   if(p>.55&&p<1&&kind==='sentinel'){g.save();g.globalAlpha=.18+Math.sin(p*22)*.08;g.fillStyle='#ffed97';g.beginPath();g.arc(64,73,8,0,Math.PI*2);g.fill();g.restore();}

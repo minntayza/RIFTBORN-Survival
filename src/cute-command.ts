@@ -61,10 +61,10 @@ function skillEffects(g:CanvasRenderingContext2D,id:CommandId,skill:{action:Boss
   g.beginPath();g.ellipse(64,112,14+after*65,4+after*15,0,0,Math.PI*2);g.stroke();g.restore();
  }
 }
-export function commandCanvas(image:HTMLImageElement,id:CommandId,frame:number,action?:BossAction){
+export function commandCanvas(image:HTMLImageElement,id:CommandId,frame:number,action?:BossAction,resolution=128,padding=0){
  const active=action?{action,age:frame/35*1.8,windup:1.15}:undefined;
  const phase=frame===0||frame>48?0:(frame-1)%24/24,strength=active||frame===0||frame>48?0:frame>24?.4:1;
- const c=document.createElement('canvas');c.width=c.height=128;const g=c.getContext('2d')!;
+ const c=document.createElement('canvas');c.width=c.height=resolution;const g=c.getContext('2d')!;g.scale(resolution/(128+padding*2),resolution/(128+padding*2));g.translate(padding,padding);
  for(const p of commandDraws(id,phase,strength,active)){
   const [x,y,w,h]=frames[id][parts.indexOf(p.part)];g.save();g.translate(p.x,p.y);g.rotate(p.angle+(p.orient??0));g.drawImage(image,x,y,w,h,-p.w*p.ox,-p.h*p.oy,p.w,p.h);g.restore();
  }

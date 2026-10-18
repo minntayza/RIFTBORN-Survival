@@ -20,9 +20,9 @@ export function hordePose(id:HordeId,phase:number,strength=1){
  return {body:{x:64,y:dog?54:51,w:dog?111:id==='brute'?112:88,h:dog?75:91,angle:0},legs:legs.map((p,i)=>({...p,angle:step*(dog?(i===0||i===3?1:-1):i===0?1:-1)*(dog?.27:id==='brute'?.13:.2),lift:Math.max(0,step*(i%2?-1:1))*-2}))};
 }
 /** One immutable upper-body cutout is composited over independently pivoted legs. */
-export function hordeCanvas(image:HTMLImageElement,id:HordeId,frame:number){
+export function hordeCanvas(image:HTMLImageElement,id:HordeId,frame:number,resolution=128,padding=0){
  const phase=frame===0||frame>48?0:(frame-1)%24/24,strength=frame===0||frame>48?0:frame>24?.4:1;
- const pose=hordePose(id,phase,strength),c=document.createElement('canvas');c.width=c.height=128;const g=c.getContext('2d')!;
+ const pose=hordePose(id,phase,strength),c=document.createElement('canvas');c.width=c.height=resolution;const g=c.getContext('2d')!;g.scale(resolution/(128+padding*2),resolution/(128+padding*2));g.translate(padding,padding);
  for(const [i,p] of pose.legs.entries()){
   const [x,y,w,h]=frames[id][i+1];g.save();g.translate(p.x,p.y+p.lift);g.rotate(p.angle);g.drawImage(image,x,y,w,h,-p.w/2,-3,p.w,p.h);g.restore();
  }
