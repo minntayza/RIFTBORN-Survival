@@ -65,6 +65,10 @@ export class TankSkillEffects{
      if(!reduced){g.fillStyle(color,fade*.65);g.fillRoundedRect(px-4,py-3-Math.sin(age*Math.PI/.55)*8,8,6,2);this.star(e.x+Math.cos(a)*r*.72,e.y+Math.sin(a)*r*.72,3,0xffe5b6,fade*.8);}
     }
     if(e.level>1){g.lineStyle(1.5,0xffe4b5,fade*.5);g.strokeEllipse(e.x,e.y,r*1.45,r*1.45);}
+    if(e.kind==='slam'&&!reduced)for(let i=0;i<5;i++){
+     const a=i*Math.PI*2/5,orbit=18+age*35,px=e.x+Math.cos(a)*orbit,py=e.y-18+Math.sin(a)*orbit-age*10;
+     this.diamond(px,py,3.5,0xc8eed6,fade*.8);
+    }
     this.star(e.x,e.y-42,11,0xffdfaa,fade);g.fillStyle(0x82626c,fade);g.fillCircle(e.x-3,e.y-44,1.2);g.fillCircle(e.x+3,e.y-44,1.2);g.lineStyle(1,0x82626c,fade);g.beginPath();g.arc(e.x,e.y-39,2.5,0,Math.PI);g.strokePath();
    }
   }

@@ -1469,14 +1469,14 @@ button:disabled{box-shadow:none;filter:saturate(.55)}
 @media(max-width:350px){.field-guide-panel .levelup-preview .levelup-preview-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:7px}.field-guide-panel .levelup-preview-grid .preview-card{padding:8px}.field-guide-panel .levelup-preview-grid .preview-card h3{font-size:14px}.field-guide-panel .levelup-preview-grid .preview-card .card-benefit{font-size:11px}}
 
 /* Moon Blossom: Ninja's signature dash, shared by desktop and touch controls. */
-.combat-hud .hud-skill:is(.ninja-ultimate,.samurai-ultimate,.gunner-ultimate),#touch-controls .touch-ability:is(.ninja-ultimate,.samurai-ultimate,.gunner-ultimate){border:2px solid #bda0e9!important;border-radius:32%;color:#f7e5ff;background:conic-gradient(from -90deg,#f4c8ed var(--cooldown-progress),#342b4e 0)!important}
-.combat-hud .hud-skill:is(.ninja-ultimate,.samurai-ultimate,.gunner-ultimate):before,#touch-controls .touch-ability:is(.ninja-ultimate,.samurai-ultimate,.gunner-ultimate):before{border-radius:30%;background:radial-gradient(circle at 35% 25%,#614780,#29223f)!important}
-:is(.ninja-ultimate,.samurai-ultimate,.gunner-ultimate)>span>svg,:is(.ninja-ultimate,.samurai-ultimate,.gunner-ultimate) .ability-symbol>svg{display:block;width:45px;height:45px;margin:auto;filter:drop-shadow(0 2px 2px #18112788)}
-.combat-hud .hud-skill:is(.ninja-ultimate,.samurai-ultimate,.gunner-ultimate)>small{font-size:7px;letter-spacing:.3px}:is(.ninja-ultimate,.samurai-ultimate,.gunner-ultimate) b{font-size:11px;color:#ffe7b5}
-.combat-hud .hud-skill:is(.ninja-ultimate,.samurai-ultimate,.gunner-ultimate).ready,#touch-controls .touch-ability:is(.ninja-ultimate,.samurai-ultimate,.gunner-ultimate).ready{box-shadow:0 0 0 4px #d5abe822,0 0 19px #d6a8f344!important;border-color:#ffe1ae!important}
-:is(.ninja-ultimate,.samurai-ultimate,.gunner-ultimate).ready svg{animation:moon-ready 2s ease-in-out infinite}:is(.ninja-ultimate,.samurai-ultimate,.gunner-ultimate).skill-active svg{filter:drop-shadow(0 0 7px #ffd5f4);transform:rotate(-12deg)}
+.combat-hud .hud-skill:is(.ninja-ultimate,.samurai-ultimate,.gunner-ultimate,.tank-ultimate),#touch-controls .touch-ability:is(.ninja-ultimate,.samurai-ultimate,.gunner-ultimate,.tank-ultimate){border:2px solid #bda0e9!important;border-radius:32%;color:#f7e5ff;background:conic-gradient(from -90deg,#f4c8ed var(--cooldown-progress),#342b4e 0)!important}
+.combat-hud .hud-skill:is(.ninja-ultimate,.samurai-ultimate,.gunner-ultimate,.tank-ultimate):before,#touch-controls .touch-ability:is(.ninja-ultimate,.samurai-ultimate,.gunner-ultimate,.tank-ultimate):before{border-radius:30%;background:radial-gradient(circle at 35% 25%,#614780,#29223f)!important}
+:is(.ninja-ultimate,.samurai-ultimate,.gunner-ultimate,.tank-ultimate)>span>svg,:is(.ninja-ultimate,.samurai-ultimate,.gunner-ultimate,.tank-ultimate) .ability-symbol>svg{display:block;width:45px;height:45px;margin:auto;filter:drop-shadow(0 2px 2px #18112788)}
+.combat-hud .hud-skill:is(.ninja-ultimate,.samurai-ultimate,.gunner-ultimate,.tank-ultimate)>small{font-size:7px;letter-spacing:.3px}:is(.ninja-ultimate,.samurai-ultimate,.gunner-ultimate,.tank-ultimate) b{font-size:11px;color:#ffe7b5}
+.combat-hud .hud-skill:is(.ninja-ultimate,.samurai-ultimate,.gunner-ultimate,.tank-ultimate).ready,#touch-controls .touch-ability:is(.ninja-ultimate,.samurai-ultimate,.gunner-ultimate,.tank-ultimate).ready{box-shadow:0 0 0 4px #d5abe822,0 0 19px #d6a8f344!important;border-color:#ffe1ae!important}
+:is(.ninja-ultimate,.samurai-ultimate,.gunner-ultimate,.tank-ultimate).ready svg{animation:moon-ready 2s ease-in-out infinite}:is(.ninja-ultimate,.samurai-ultimate,.gunner-ultimate,.tank-ultimate).skill-active svg{filter:drop-shadow(0 0 7px #ffd5f4);transform:rotate(-12deg)}
 @keyframes moon-ready{50%{transform:translateY(-3px) rotate(-5deg)}}
-@media(prefers-reduced-motion:reduce){:is(.ninja-ultimate,.samurai-ultimate,.gunner-ultimate).ready svg{animation:none}}
+@media(prefers-reduced-motion:reduce){:is(.ninja-ultimate,.samurai-ultimate,.gunner-ultimate,.tank-ultimate).ready svg{animation:none}}
 
 .combat-hud .hud-skill.samurai-ultimate,#touch-controls .touch-ability.samurai-ultimate{border-color:#efb993!important;background:conic-gradient(from -90deg,#ffe2a6 var(--cooldown-progress),#49303e 0)!important}
 .combat-hud .hud-skill.samurai-ultimate:before,#touch-controls .touch-ability.samurai-ultimate:before{background:radial-gradient(circle at 35% 25%,#855b61,#38283c)!important}
@@ -1485,3 +1485,44 @@ button:disabled{box-shadow:none;filter:saturate(.55)}
 .combat-hud .hud-skill.gunner-ultimate,#touch-controls .touch-ability.gunner-ultimate{border-color:#f4ce89!important;background:conic-gradient(from -90deg,#ffe5a6 var(--cooldown-progress),#4c3542 0)!important}
 .combat-hud .hud-skill.gunner-ultimate:before,#touch-controls .touch-ability.gunner-ultimate:before{background:radial-gradient(circle at 35% 25%,#86664d,#392b40)!important}
 .combat-hud .hud-skill.gunner-ultimate.ready,#touch-controls .touch-ability.gunner-ultimate.ready{box-shadow:0 0 0 4px #ffe3a522,0 0 19px #ffe0a344!important}
+
+.combat-hud .hud-skill.tank-ultimate,#touch-controls .touch-ability.tank-ultimate{border-color:#b4e5d0!important;background:conic-gradient(from -90deg,#d8efb8 var(--cooldown-progress),#304647 0)!important}
+.combat-hud .hud-skill.tank-ultimate:before,#touch-controls .touch-ability.tank-ultimate:before{background:radial-gradient(circle at 35% 25%,#527d76,#263b42)!important}
+.combat-hud .hud-skill.tank-ultimate.ready,#touch-controls .touch-ability.tank-ultimate.ready{box-shadow:0 0 0 4px #c8ebba22,0 0 19px #b9eacf44!important}
+
+/* Compact loadout: choices first, details on demand, persistent Play action. */
+.panel.survivor-select-panel.loadout-compact{width:min(780px,calc(100vw - 24px))!important;height:auto!important;aspect-ratio:auto;max-height:calc(100dvh - 24px);padding:20px;overflow-y:auto;scrollbar-gutter:stable;background:#15212b}
+.loadout-compact h2{font-size:28px!important;font-style:normal;letter-spacing:-.8px;margin:8px 0 4px;color:#f1eee1!important;background:none!important;-webkit-text-fill-color:currentColor}
+.loadout-compact>.muted{font-size:12px;margin:0 0 14px!important}
+.loadout-compact .eyebrow{font-size:9px;letter-spacing:1.4px}
+.loadout-compact .loadout-mode{padding:10px 12px;gap:12px;margin-bottom:12px;flex-wrap:nowrap}
+.loadout-compact .loadout-mode>div{min-width:0;flex:1;display:grid;gap:4px}
+.loadout-compact .loadout-mode small{display:block;flex:none;padding:0;background:none;clip-path:none;color:#afbbb6;font-size:9px;letter-spacing:.6px}
+.loadout-compact .loadout-mode span{font-size:12px;letter-spacing:.2px;font-weight:750}
+.loadout-compact .loadout-mode button{flex:none;white-space:nowrap;letter-spacing:0;text-transform:none}
+.loadout-summary{display:grid;grid-template-columns:125px minmax(0,1fr);gap:8px 18px;padding:12px 16px;border:1px solid #40544e;border-radius:12px;background:#1b2b32}
+.loadout-portrait{height:146px;align-self:center;background:radial-gradient(ellipse at 50% 70%,color-mix(in srgb,var(--survivor-color) 18%,transparent),transparent 70%)}
+.loadout-portrait img{width:100%;height:100%;object-fit:contain}
+.loadout-fields{min-width:0;display:grid;align-content:center;gap:10px}
+.loadout-field{display:flex;align-items:center;justify-content:space-between;gap:12px;padding-bottom:10px;border-bottom:1px solid #40514e}
+.loadout-field small,.loadout-ability>small:first-child{display:block;margin-bottom:4px;font-size:9px;font-weight:750;letter-spacing:1px;color:#a3b9ad}
+.loadout-field h3{margin:0;font-size:21px;line-height:1.1;text-transform:none;font-style:normal}
+.loadout-field b{display:block;font-size:15px}
+.loadout-field button{padding:8px 12px;min-height:36px;font-size:12px;background:#2d423f;border-color:#60766a;border-radius:7px}
+.loadout-ability{display:flex;align-items:center;flex-wrap:wrap;gap:5px 8px;color:#dfddcd;font-size:12px}
+.loadout-ability>small:first-child{margin:0}.loadout-ability>small:last-child{color:#a6b6b0;font-size:11px}
+.loadout-stats{grid-column:1/-1;display:flex;justify-content:center;gap:26px;padding-top:10px;border-top:1px solid #40514e;font-size:10px;color:#a6b6ad}
+.loadout-stats b{margin-left:5px;font-size:13px;color:#e8d5a5}
+.loadout-details{margin:10px 0 14px;border-bottom:1px solid #35474a;padding-bottom:10px;color:#b7c7bd;font-size:12px}
+.loadout-details summary{cursor:pointer;min-height:28px;padding:6px 0;color:#c3d3c9}
+.loadout-details p{margin:8px 0;line-height:1.5}.loadout-details small{font-size:10px;color:#9aafa5}
+.loadout-compact .starting-builds .build-cards{margin:0;gap:8px;grid-template-columns:repeat(3,minmax(0,1fr))}
+.loadout-compact .starting-builds .build-cards .upgrade{min-height:76px;padding:10px;height:auto}
+.loadout-compact .starting-builds .build-cards h3{font-size:13px;padding-right:0;margin-bottom:5px}
+.loadout-compact .starting-builds .build-cards p{font-size:11px;line-height:1.4}
+.loadout-compact .starting-builds .build-cards .upgrade>small,.loadout-compact .starting-builds .upgrade.selected:after{display:none}
+.loadout-compact .loadout-build-note{font-size:12px;line-height:1.5;color:#a9beb2;margin:0}
+.loadout-compact>.actions{position:sticky;bottom:-20px;margin:14px -20px -20px;padding:12px 20px;display:flex;justify-content:space-between;gap:12px;background:#15212bf5;border-top:1px solid #3c4d4c;z-index:2}
+.loadout-compact>.actions .primary{min-width:150px;text-transform:none;font-size:15px;padding:11px 24px}
+@media(max-width:480px){.panel.survivor-select-panel.loadout-compact{padding:14px;width:calc(100vw - 16px)!important;max-height:calc(100dvh - 16px)}.loadout-compact .eyebrow span{display:none}.loadout-summary{grid-template-columns:86px minmax(0,1fr);gap:8px 10px;padding:10px}.loadout-portrait{height:132px}.loadout-field h3{font-size:19px}.loadout-field b{font-size:13px}.loadout-field button{padding:8px;font-size:11px}.loadout-ability{font-size:11px}.loadout-compact .loadout-mode span{font-size:11px}.loadout-compact .loadout-mode button{padding:8px}.loadout-compact .starting-builds .build-cards{gap:6px}.loadout-compact .starting-builds .build-cards .upgrade{padding:9px;min-height:80px}.loadout-compact .starting-builds .build-cards h3{font-size:12px}.loadout-compact .starting-builds .build-cards p{font-size:10px}.loadout-compact>.actions{bottom:-14px;margin:12px -14px -14px;padding:12px 14px}.loadout-compact>.actions .primary{min-width:130px;flex:none}}
+@media(max-width:480px){.loadout-compact .loadout-field button,.loadout-compact .loadout-mode button{min-height:44px}.loadout-compact .loadout-mode small{order:0}}
