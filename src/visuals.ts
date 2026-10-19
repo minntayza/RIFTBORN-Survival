@@ -1,3 +1,6 @@
+import {gunnerSkinArm} from './gunner-cosmetics';
+import {imageSourceUrl} from './texture-cache';
+import {NINJA_SKIN_KEY,ninjaSkinWeaponCanvas,ninjaSkinCanvas,ninjaSkinArm} from './ninja-cosmetics';
 import {TankSkillEffects} from './tank-skill-fx';
 import {GunnerSkillEffects} from './gunner-skill-fx';
 import {SamuraiSkillEffects} from './samurai-skill-fx';
@@ -10,7 +13,7 @@ import {GUNNER_ATLAS,gunnerCanvas,gunnerPart} from './gunner-art';
 import {GUNNER_WEAPONS_ATLAS,GUNNER_WEAPONS,isGunnerWeapon,gunnerWeaponCanvas} from './gunner-weapons';
 import {gunnerWeaponPose,gunnerSupportHand,gunnerReload,type GunnerState} from './gunner-motion';
 import {SAMURAI_WEAPONS_ATLAS,SAMURAI_WEAPONS,samuraiWeaponCanvas} from './samurai-weapons';
-import {SAMURAI_ATLAS,samuraiCanvas,samuraiPart} from './samurai-art';
+import {SAMURAI_ATLAS,samuraiCanvas,samuraiPart,samuraiSkinArm} from './samurai-art';
 import {samuraiSupportHand,samuraiFlipX} from './samurai-motion';
 import {LEADER_ATLAS,leaderCanvas} from './cute-robot-leaders';
 import {ROBOT_ATLAS,isCuteRobot,cuteRobotCanvas} from './cute-robots';
@@ -60,6 +63,7 @@ export class ArenaVisuals {
     private samuraiEffects?:SamuraiSkillEffects;
     get samuraiSkills(){return this.samuraiEffects??=new SamuraiSkillEffects(this.scene);}
 
+    applyCosmetics(character:number,weapon:number,flashing:boolean){if(!flashing)this.hero.setTint(character);for(const arm of this.ninjaBones)if(arm.visible)arm.setTint(character);this.weapon.setTint(weapon);this.offhand.setTint(weapon);}
     veteran(){this.hero.setTint(0xd7c8ac);}
     private decoyImage!:Phaser.GameObjects.Image;
     showDecoy(hero:HeroId,decoy:{x:number;y:number;angle:number}|undefined){this.decoyImage.setVisible(!!decoy);if(decoy)this.decoyImage.setTexture(hero==='ninja'?'cute-ninja-full':`hero-${hero}-0`).setPosition(decoy.x,decoy.y).setRotation(hero==='ninja'?0:decoy.angle).setTint(0x8d86ae).setAlpha(.45);}
@@ -356,7 +360,7 @@ export class ArenaVisuals {
     private lastGhost = 0;
     private lastX = 600;
     private lastY = 380;
-    constructor(private scene: Phaser.Scene) {
+    constructor(private scene: Phaser.Scene,skin=false,ninjaSkin=false,gunnerSkin=false) {
         this.ninjaArmFx=scene.add.graphics().setDepth(3.15);
         this.shieldFx=scene.add.graphics().setDepth(.9);
         this.attackFx=scene.add.graphics().setDepth(3.3);
@@ -368,7 +372,7 @@ export class ArenaVisuals {
         for (const id of Object.keys(WEAPONS) as WeaponId[])
             if(!scene.textures.exists(`weapon-${id}`))scene.textures.addCanvas(`weapon-${id}`, weaponCanvas(id));
         const connectedSource=scene.textures.get(CONNECTED_ARMS.key).getSourceImage() as HTMLImageElement;
-        for(const hero of Object.keys(HEROES) as HeroId[])for(let i=0;i<2;i++)if(!scene.textures.exists(`connected-${hero}-${i}`))scene.textures.addCanvas(`connected-${hero}-${i}`,connectedArmCanvas(connectedSource,hero,i));
+        for(const hero of Object.keys(HEROES) as HeroId[])for(let i=0;i<2;i++)if(!scene.textures.exists(`connected-${hero}-${i}`))scene.textures.addCanvas(`connected-${hero}-${i}`,skin&&hero==='samurai'?samuraiSkinArm(scene.textures.get(SAMURAI_ATLAS.key).getSourceImage() as HTMLImageElement,i):ninjaSkin&&hero==='ninja'?ninjaSkinArm(scene.textures.get(NINJA_SKIN_KEY).getSourceImage() as HTMLImageElement,i):gunnerSkin&&hero==='gunner'?gunnerSkinArm(scene.textures.get(GUNNER_ATLAS.key).getSourceImage() as HTMLImageElement,i):connectedArmCanvas(connectedSource,hero,i));
         const tankSource=scene.textures.get(TANK_ATLAS.key).getSourceImage() as HTMLImageElement;
         for(const part of ['upper','forearm','hand','otherHand'] as const)if(!scene.textures.exists(`tank-${part}`))scene.textures.addCanvas(`tank-${part}`,tankPart(tankSource,part));
         if(!scene.textures.exists('cute-tank-full'))scene.textures.addCanvas('cute-tank-full',tankCanvas(tankSource,0,true));
@@ -389,11 +393,12 @@ export class ArenaVisuals {
             if(!scene.textures.exists(`ninja-${part}`))scene.textures.addCanvas(`ninja-${part}`,ninjaAttackPart(attackSource,part));
         }
         const ninjaWeapons=scene.textures.get(NINJA_WEAPONS_ATLAS.key).getSourceImage() as HTMLImageElement;
-        for(const id of ['dual','kama'] as const)if(!scene.textures.exists(`ninja-${id}`))scene.textures.addCanvas(`ninja-${id}`,ninjaWeaponCanvas(ninjaWeapons,id));
-        if(!scene.textures.exists('ninja-katana'))scene.textures.addCanvas('ninja-katana',ninjaSwordCanvas(attackSource));
+        const ninjaWeaponSkin=scene.textures.exists('ninja-cosmetic-weapons')?scene.textures.get('ninja-cosmetic-weapons').getSourceImage() as HTMLImageElement:undefined;
+        for(const id of ['dual','kama'] as const)if(!scene.textures.exists(`ninja-${id}`))scene.textures.addCanvas(`ninja-${id}`,ninjaWeaponSkin?ninjaSkinWeaponCanvas(ninjaWeaponSkin,id):ninjaWeaponCanvas(ninjaWeapons,id));
+        if(!scene.textures.exists('ninja-katana'))scene.textures.addCanvas('ninja-katana',ninjaWeaponSkin?ninjaSkinWeaponCanvas(ninjaWeaponSkin,'katana'):ninjaSwordCanvas(attackSource));
         for(let side=0;side<2;side++)for(const part of ['upper','forearm','hand'] as const)this.ninjaBones.push(scene.add.image(0,0,`ninja-${part}`).setVisible(false).setDepth(part==='hand'?3.21:3.14));
         const cuteSource=scene.textures.get(CUTE_ATLAS.key).getSourceImage() as HTMLImageElement;
-        if(!scene.textures.exists('cute-ninja-full'))scene.textures.addCanvas('cute-ninja-full',cuteCanvas(cuteSource,'ninja',0,0,true));
+        if(!scene.textures.exists('cute-ninja-full'))scene.textures.addCanvas('cute-ninja-full',ninjaSkin?ninjaSkinCanvas(scene.textures.get(NINJA_SKIN_KEY).getSourceImage() as HTMLImageElement,0,true):cuteCanvas(cuteSource,'ninja',0,0,true));
         for(const part of ['leftArm','rightArm'] as const){
             const key=`cute-ninja-${part}`;if(!scene.textures.exists(key))scene.textures.addCanvas(key,cuteArmCanvas(cuteSource,part));
             this.cuteArms.push(scene.add.image(0,0,key).setVisible(false).setDepth(3.2));
@@ -405,11 +410,14 @@ export class ArenaVisuals {
     }
     prepareTexture(key:string){
         const textures=this.scene.textures;if(textures.exists(key))return;
-        const canvas=cachedCanvas(key,()=>{
+        const sourceKey=key.startsWith('cute-gunner-')?GUNNER_ATLAS.key:key.startsWith('cute-samurai-')?SAMURAI_ATLAS.key:key.startsWith('cute-ninja-')?(textures.exists(NINJA_SKIN_KEY)?NINJA_SKIN_KEY:CUTE_ATLAS.key):undefined;
+        const cacheKey=sourceKey?`${key}:${imageSourceUrl(textures.get(sourceKey).getSourceImage() as HTMLImageElement)}`:key;
+        const canvas=cachedCanvas(cacheKey,()=>{
             if(key.endsWith('-small')){const full=key.slice(0,-6);this.prepareTexture(full);return minifiedZombieCanvas(textures.get(full).getSourceImage() as HTMLCanvasElement);}
             const frame=Number(key.slice(key.lastIndexOf('-')+1));
             if(key.startsWith('cute-tank-'))return tankCanvas(textures.get(TANK_ATLAS.key).getSourceImage() as HTMLImageElement,frame);
             if(key.startsWith('cute-gunner-'))return gunnerCanvas(textures.get(GUNNER_ATLAS.key).getSourceImage() as HTMLImageElement,frame);
+            if(key.startsWith('cute-ninja-')&&textures.exists(NINJA_SKIN_KEY))return ninjaSkinCanvas(textures.get(NINJA_SKIN_KEY).getSourceImage() as HTMLImageElement,frame);
             if(key.startsWith('cute-samurai-'))return samuraiCanvas(textures.get(SAMURAI_ATLAS.key).getSourceImage() as HTMLImageElement,frame);
             if(key.startsWith('cute-')){
                 const id=key.split('-')[1] as 'ninja'|'wanderer'|'pulse';

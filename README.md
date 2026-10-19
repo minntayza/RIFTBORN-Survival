@@ -40,14 +40,14 @@ Mobile aim assistance helps target nearby enemies while retreating and can be di
 
 ## Features
 
-- **Four survivors:** Ninja, Samurai, Gunner, and Shield Tank, each with a distinct ability, passive mechanic, and mastery techniques.
+- **Four survivors:** Ninja, Samurai, Gunner, and Shield Tank, each with a distinct ability, passive mechanic, and personal records.
 - **Twelve weapons:** Katana, Dual Blades, Kama, Nodachi, Cursed Blade, Naginata, Twin Pistols, Shotgun, SMG, Round Shield, Spiked Shield, and War Hammer.
 - **Run modes:** Endless, a ten-wave Last Stand mission, and a seeded daily challenge with local personal-best records.
 - **Open-world movement:** scrolling terrain, optional supply wrecks, XP beacons, elite patrols, and desert terrain with sandstorms after wave ten.
 - **Enemies:** ordinary hordes, armed zombies, elites, Siege Gunner and Horde Commander mini-bosses, and the Zombie General.
 - **Readable combat:** attack warnings, off-screen threat indicators, damage direction, weapon-specific impacts, and a compact mobile HUD.
 - **Wave pacing:** alternating encounter intensity, staggered packs, crowd-pressure limits, and short recovery periods.
-- **Progression:** XP upgrade choices, permanent purchases, character mastery, and browser-local records.
+- **Progression:** XP upgrade choices, permanent purchases, and browser-local records.
 
 ### Evolutions
 
@@ -110,8 +110,8 @@ src/
   upgrades.ts         Upgrade selection and eligibility
   card-evolutions.ts  Card evolution definitions
   progression.ts      Weapon evolution options and encounter events
-  retention.ts        Run modes, daily seeds, mastery, and threat indicators
-  mastery.ts          Hero technique descriptions and demonstrations
+  retention.ts        Run modes, daily seeds, and threat indicators
+  mastery.ts          Legacy save compatibility helpers
   save.ts             Save validation and purchases
   art.ts              Original vector art and gameplay texture generation
   visuals.ts          Gameplay actors, equipment, and animation

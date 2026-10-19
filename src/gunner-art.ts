@@ -1,3 +1,5 @@
+import {imageSourceUrl} from './texture-cache';
+import {gunnerSkinCanvas} from './gunner-cosmetics';
 import {ninjaArm} from './ninja-arm';
 export const GUNNER_ATLAS={key:'cute-gunner-parts-v1',url:'/assets/characters/cute-gunner-parts-v1.webp'};
 const regions={body:[29,25,494,637],leftLeg:[511,323,287,350],rightLeg:[904,322,286,351],upper:[1225,353,153,304],forearm:[1458,369,181,295],hand:[1723,432,172,231],otherHand:[1991,432,170,231]} as const;
@@ -10,6 +12,6 @@ function draws(phase:number,strength:number,arms:boolean):Draw[]{
  return out;
 }
 function gunnerClip(w:number,h:number){return `M${-w/2} 0H${w/2}V68H${w/2-7}V${h}H${-w/2}Z`;}
-export function gunnerCanvas(image:HTMLImageElement,frame:number,arms=false){const c=document.createElement('canvas');c.width=c.height=128;const g=c.getContext('2d')!;for(const p of draws(frame===0?0:(frame-1)%24/24,frame===0?0:1,arms)){const [x,y,w,h]=regions[p.part];g.save();g.translate(p.x,p.y);g.rotate(p.angle);if(p.part==='body')g.clip(new Path2D(gunnerClip(p.w,p.h)));g.drawImage(image,x,y,w,h,-p.w*p.ox,-p.h*p.oy,p.w,p.h);g.restore();}return c;}
+export function gunnerCanvas(image:HTMLImageElement,frame:number,arms=false){if(imageSourceUrl(image).includes('/cosmetics/'))return gunnerSkinCanvas(image,frame,arms);const c=document.createElement('canvas');c.width=c.height=128;const g=c.getContext('2d')!;for(const p of draws(frame===0?0:(frame-1)%24/24,frame===0?0:1,arms)){const [x,y,w,h]=regions[p.part];g.save();g.translate(p.x,p.y);g.rotate(p.angle);if(p.part==='body')g.clip(new Path2D(gunnerClip(p.w,p.h)));g.drawImage(image,x,y,w,h,-p.w*p.ox,-p.h*p.oy,p.w,p.h);g.restore();}return c;}
 export function gunnerPart(image:HTMLImageElement,part:'upper'|'forearm'|'hand'|'otherHand'){const [x,y,w,h]=regions[part],c=document.createElement('canvas');c.width=w;c.height=h;c.getContext('2d')!.drawImage(image,x,y,w,h,0,0,w,h);return c;}
 export function gunnerPortrait(arms=true){return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" role="img" aria-label="Gunner gameplay illustration">${draws(0,0,arms).map(p=>`<g transform="translate(${p.x} ${p.y}) rotate(${p.angle*180/Math.PI})">${p.part==='body'?`<defs><clipPath id="gunner-body"><path d="${gunnerClip(p.w,p.h)}"/></clipPath></defs>`:''}<g ${p.part==='body'?'clip-path="url(#gunner-body)"':''}><svg x="${-p.w*p.ox}" y="${-p.h*p.oy}" width="${p.w}" height="${p.h}" viewBox="${regions[p.part].join(' ')}" preserveAspectRatio="none" overflow="hidden"><image href="${GUNNER_ATLAS.url}" width="2206" height="713"/></svg></g></g>`).join('')}</svg>`;}

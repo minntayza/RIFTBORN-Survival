@@ -1,3 +1,4 @@
+import {COSMETICS} from './cosmetics';
 import type { TechniqueId,RunMode,BuildId } from './retention';
 import { HEROES, WEAPONS, PERMANENT, type HeroId, type WeaponId } from './config';
 export type Save = {
@@ -5,6 +6,8 @@ export type Save = {
     version: 1;
     archive: Record<string,1|2>;
     gold: number;
+    petals:number;
+    cosmetics:{owned:string[];equipped:Record<string,string>};
     heroes: HeroId[];
     weapons: WeaponId[];
     hero: HeroId;
@@ -29,7 +32,7 @@ export type Save = {
     };
 };
 export const defaultMapView = (): 1|2 => typeof matchMedia !== 'undefined' && (matchMedia('(pointer:coarse)').matches || navigator.maxTouchPoints > 0) ? 2 : 1;
-export const freshSave = (): Save => ({ version: 1, runSetup:{mode:'endless',build:'assault'}, archive:{}, gold: 0, heroes: ['ninja'], weapons: ['katana', 'nodachi', 'pistols', 'shield'], hero: 'ninja', weapon: 'katana', permanent: {}, bestWave: 0, bestTime: 0, bestKills: 0, mastery: {}, techniques:{},daily:{},shortWins:0, settings: { sound: true, music: true, shake: true,aimAssist:true,joystickSide:'left',joystickSize:115,mapView:defaultMapView() } });
+export const freshSave = (): Save => ({ version: 1, runSetup:{mode:'endless',build:'assault'}, archive:{}, petals:0, cosmetics:{owned:[],equipped:{}}, gold: 0, heroes: ['ninja'], weapons: ['katana', 'nodachi', 'pistols', 'shield'], hero: 'ninja', weapon: 'katana', permanent: {}, bestWave: 0, bestTime: 0, bestKills: 0, mastery: {}, techniques:{},daily:{},shortWins:0, settings: { sound: true, music: true, shake: true,aimAssist:true,joystickSide:'left',joystickSize:115,mapView:defaultMapView() } });
 const num = (x: unknown, max = 1e9) => typeof x === 'number' && Number.isFinite(x) ? Math.max(0, Math.min(max, Math.floor(x))) : 0;
 export const compatible = (h: HeroId, w: WeaponId) => WEAPONS[w]?.hero === h;
 export function validateSave(raw: unknown): Save { const d = freshSave(); if (!raw || typeof raw !== 'object')
@@ -44,6 +47,9 @@ export function validateSave(raw: unknown): Save { const d = freshSave(); if (!r
     if(r.archive&&typeof r.archive==='object')for(const [k,v] of Object.entries(r.archive))if(/^(card|weapon):[a-z]+(?::[a-z]+)?$/.test(k)&&(v===1||v===2))d.archive[k]=v;
     if(['endless','short','daily'].includes(r.runSetup?.mode||''))d.runSetup.mode=r.runSetup!.mode;
     if(['assault','mobility','guard'].includes(r.runSetup?.build||''))d.runSetup.build=r.runSetup!.build;
+    d.petals=num(r.petals);
+    d.cosmetics.owned=Array.isArray(r.cosmetics?.owned)?Array.from(new Set(r.cosmetics.owned.filter(id=>COSMETICS.some(c=>c.id===id)))):[];
+    if(r.cosmetics?.equipped&&typeof r.cosmetics.equipped==='object')for(const c of COSMETICS)if(d.cosmetics.owned.includes(c.id)&&r.cosmetics.equipped[`${c.kind}:${c.target}`]===c.id)d.cosmetics.equipped[`${c.kind}:${c.target}`]=c.id;
     d.shortWins=num(r.shortWins);
     for(const h of Object.keys(HEROES) as HeroId[]){const t=r.techniques?.[h];if(t==='standard'||t==='swift'||t==='fortified')d.techniques[h]=t;}
     if(r.daily&&typeof r.daily==='object')for(const [date,record] of Object.entries(r.daily).filter(([date])=>/^\d{4}-\d{2}-\d{2}$/.test(date)).sort().slice(-31)){if(record&&typeof record==='object')d.daily[date]={score:num(record.score),wins:num(record.wins)};}

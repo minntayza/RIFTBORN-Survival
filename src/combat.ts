@@ -1,3 +1,5 @@
+import {NINJA_SKIN_KEY} from './ninja-cosmetics';
+import {cosmeticColor,equippedSkin,equippedWeaponSkin} from './cosmetics';
 import {tankGuardHalfAngle} from './tank-skill-fx';
 import {samuraiStormLaunch} from './samurai-skill-fx';
 import {CONNECTED_ARMS} from './connected-arms';
@@ -13,7 +15,7 @@ import {ROBOT_ATLAS} from './cute-robots';
 import {rosterSpawn} from './enemy-roster';
 import {COMMAND_ATLAS} from './cute-command';
 import {HORDE_ATLAS,OFFICER_ATLAS} from './cute-horde';
-import {decodedImages} from './texture-cache';
+import {decodedImages,rememberImageSource} from './texture-cache';
 import {NINJA_ATTACK_ATLAS,NINJA_WEAPONS_ATLAS} from './ninja-attack-art';
 import {CUTE_ATLAS} from './cute-trio';
 import {bossAction,type BossAction} from './boss-motion';
@@ -30,8 +32,7 @@ import {assistedAim,escapeDirection,routedSpawn,buildSynergies,COMBAT_CACHE_KILL
 import {HERO_IDENTITIES,encounterRhythm,weaponMilestone} from './run-design';
 import {CARD_EVOLUTIONS} from './card-evolutions';
 import {WEAPON_EFFECTS,weaponPose,meleeContact,isGun} from './weapon-effects';
-import {heroTechniques,masteryTraining} from './mastery';
-import { seededRandom, techniqueUnlocked, masteryMilestones, earnedWaveGold, type RunOptions } from './retention';
+import { seededRandom, earnedWaveGold, type RunOptions } from './retention';
 import {UPGRADES} from './upgrades';
 import { rollReward, waveEvent, type RewardId, type EvolutionId } from './progression';
 import type { TouchState } from './touch';
@@ -148,10 +149,14 @@ export class ArenaScene extends Phaser.Scene {
     onArenaReady?:()=>void;
     onLoadingError?:()=>void;
     preload(){
+        const ninjaSkin=this.hero==='ninja'?equippedSkin(this.save,this.hero):undefined,ninjaWeapon=WEAPONS[this.weapon].hero==='ninja'?equippedWeaponSkin(this.save,this.weapon):undefined;
+        if(ninjaSkin)this.load.image(NINJA_SKIN_KEY,ninjaSkin);
+        if(ninjaWeapon)this.load.image('ninja-cosmetic-weapons',ninjaWeapon);
+
         const assets=[
-            [CONNECTED_ARMS.key,CONNECTED_ARMS.url],[TANK_WEAPONS_ATLAS.key,TANK_WEAPONS_ATLAS.url],[TANK_ATLAS.key,TANK_ATLAS.url],[GUNNER_ATLAS.key,GUNNER_ATLAS.url],[GUNNER_WEAPONS_ATLAS.key,GUNNER_WEAPONS_ATLAS.url],
-            [SAMURAI_WEAPONS_ATLAS.key,SAMURAI_WEAPONS_ATLAS.url],
-            [SAMURAI_ATLAS.key,SAMURAI_ATLAS.url],
+            [CONNECTED_ARMS.key,CONNECTED_ARMS.url],[TANK_WEAPONS_ATLAS.key,TANK_WEAPONS_ATLAS.url],[TANK_ATLAS.key,TANK_ATLAS.url],[GUNNER_ATLAS.key,this.hero==='gunner'?equippedSkin(this.save,this.hero)||GUNNER_ATLAS.url:GUNNER_ATLAS.url],[GUNNER_WEAPONS_ATLAS.key,this.hero==='gunner'?equippedWeaponSkin(this.save,this.weapon)||GUNNER_WEAPONS_ATLAS.url:GUNNER_WEAPONS_ATLAS.url],
+            [SAMURAI_WEAPONS_ATLAS.key,this.hero==='samurai'?equippedWeaponSkin(this.save,this.weapon)||SAMURAI_WEAPONS_ATLAS.url:SAMURAI_WEAPONS_ATLAS.url],
+            [SAMURAI_ATLAS.key,this.hero==='samurai'?equippedSkin(this.save,this.hero)||SAMURAI_ATLAS.url:SAMURAI_ATLAS.url],
             [LEADER_ATLAS.key,LEADER_ATLAS.url],
             [ROBOT_ATLAS.key,ROBOT_ATLAS.url],
             [COMMAND_ATLAS.key,COMMAND_ATLAS.url],
@@ -162,8 +167,11 @@ export class ArenaScene extends Phaser.Scene {
         ];
         this.load.on('progress',(progress:number)=>this.onLoading?.(progress));
         this.load.on('loaderror',()=>this.onLoadingError?.());
-        this.load.on('filecomplete',(key:string,type:string,image:HTMLImageElement)=>{if(type==='image')decodedImages.set(key,image);});
-        for(const [key,url] of assets){const image=decodedImages.get(key);if(image)this.textures.addImage(key,image);else this.load.image(key,url);}
+        const assetUrls=new Map(assets.map(([key,url])=>[key,url]));
+        if(ninjaSkin)assetUrls.set(NINJA_SKIN_KEY,ninjaSkin);
+        if(ninjaWeapon)assetUrls.set('ninja-cosmetic-weapons',ninjaWeapon);
+        this.load.on('filecomplete',(key:string,type:string,image:HTMLImageElement)=>{const url=assetUrls.get(key);if(type==='image'&&url){rememberImageSource(image,url);decodedImages.set(url,image);}});
+        for(const [key,url] of assets){const image=decodedImages.get(url);if(image){rememberImageSource(image,url);this.textures.addImage(key,image);}else this.load.image(key,url);}
     }
     moveOnGround(x:number,y:number,dx:number,dy:number,r:number){
         if(!this.mapCars.length)return {x:x+dx,y:y+dy};
@@ -259,7 +267,6 @@ export class ArenaScene extends Phaser.Scene {
     awakened:EvolutionId|undefined;
     fullEvolution=false;
     earlyAwakened=false;
-    extractionMastery=0;
     get earlyPower(){return this.earlyAwakened&&this.stats.wave<=10;}
     get earlyTechnique(){return ({ninja:"Shadow Edge · +5% critical chance",samurai:"Tempered Edge · +12% weapon damage",gunner:"Hot Chamber · +10% fire rate",tank:"Iron Impact · +20% knockback"})[this.hero];}
     get evolutionDue(){return !!weaponMilestone(this.stats.wave,!!this.awakened,this.fullEvolution);}
@@ -273,8 +280,8 @@ export class ArenaScene extends Phaser.Scene {
     landmark:{kind:'cache'|'beacon'|'patrol';x:number;y:number;progress:number;done:boolean;guards:Enemy[]}|undefined;
     get recovery(){return this.waveTime>=12&&this.waveTime<15||this.waveTime>=26&&this.waveTime<29;}
 
-    meta(id:string){return this.options.mode==='daily'?0:masteryTraining(this.masteryKills,id,this.save.permanent[id]||0);}
-    objectiveComplete(label:string){this.objectives++;this.waveObjectives++;this.master('objectives',1);this.banner(label,0xd8ba85);}
+    meta(id:string){return this.options.mode==='daily'?0:(this.save.permanent[id]||0);}
+    objectiveComplete(label:string){this.objectives++;this.waveObjectives++;this.banner(label,0xd8ba85);}
     cardEvolutions:Record<string,boolean>={};
     pendingEchoes:{delay:number;x:number;y:number;angle:number;damage:number}[]=[];
     speedCharge=0;speedBurst=0;lifePulse=0;vacuumClock=0;elementClock=0;
@@ -286,8 +293,6 @@ export class ArenaScene extends Phaser.Scene {
     overdrive=0;
     coveringClock=0;
     decoy:{x:number;y:number;life:number;angle:number}|undefined;
-    get masteryKills(){return this.save.mastery[this.hero]?.kills||0;}
-    get masteryAbility(){return this.options.mode!=='daily'&&this.masteryKills>=250?1.05:1;}
     boostDamage = 0;
     boostSpeed = 0;
     rewardShield = 0;
@@ -357,8 +362,8 @@ export class ArenaScene extends Phaser.Scene {
     }[] = [];
     grid = new Map<string, Enemy[]>();
     dashHits = new Set<Enemy>();
-    constructor(save: Save, audio: AudioManager, choice: (wave: boolean) => void, end: () => void, pause: () => void, options?:RunOptions) { super('arena'); this.save = save; this.audio = audio; this.hero = save.hero; this.weapon = save.weapon; this.onChoice = choice; this.onEnd = end; this.onPause = pause; if(options){this.options=options;this.hero=options.hero||save.hero;this.weapon=options.weapon||save.weapon;} if(this.options.seed!==undefined){this.random=seededRandom(this.options.seed);this.cardRandom=seededRandom(this.options.seed^0x85ebca6b);}if(!techniqueUnlocked(save.mastery[this.hero]?.kills||0,this.options.technique))this.options.technique='standard'; }
-    create() { this.robotArt=new RobotMapArt(this);const park=this.textures.get('park-ground'),pw=Math.floor(park.getSourceImage().width/5),ph=Math.floor(park.getSourceImage().height/5);for(let y=0;y<5;y++)for(let x=0;x<5;x++)park.add(`${x}-${y}`,0,x*pw,y*ph,pw,ph); this.textures.get('city-wreck').add('chassis',0,150,18,810,1395); this.floor = this.add.graphics().setDepth(-4); this.gfx = this.add.graphics();this.warningGfx=this.add.graphics().setDepth(6); this.drawFloor(); this.visuals = new ArenaVisuals(this); this.keys = this.input.keyboard!.addKeys('W,A,S,D,UP,DOWN,LEFT,RIGHT,SPACE,ESC,M,ONE,TWO,THREE') as typeof this.keys; this.input.keyboard!.on('keydown-ESC', () => this.onPause()); this.input.keyboard!.on('keydown-M', () => { this.save.settings.sound = !this.save.settings.sound; this.audio.sound = this.save.settings.sound; }); this.input.keyboard!.addCapture(['W', 'A', 'S', 'D', 'UP', 'DOWN', 'LEFT', 'RIGHT', 'SPACE']); const h = HEROES[this.hero]; this.maxHp = h.hp * (1 + this.meta('health') * .05); if(this.options.build==='guard')this.maxHp*=1.15;if(this.options.mode!=='daily'&&this.masteryKills>=100)this.maxHp*=1.05;this.hp = this.maxHp; this.rerolls = 1 + this.meta('reroll'); this.ammo=this.maxAmmo;this.applyMapView(); this.startWave();this.events.once('postupdate',()=>this.onArenaReady?.()); }
+    constructor(save: Save, audio: AudioManager, choice: (wave: boolean) => void, end: () => void, pause: () => void, options?:RunOptions) { super('arena'); this.save = save; this.audio = audio; this.hero = save.hero; this.weapon = save.weapon; this.onChoice = choice; this.onEnd = end; this.onPause = pause; if(options){this.options=options;this.hero=options.hero||save.hero;this.weapon=options.weapon||save.weapon;} if(this.options.seed!==undefined){this.random=seededRandom(this.options.seed);this.cardRandom=seededRandom(this.options.seed^0x85ebca6b);}this.options.technique='standard'; }
+    create() { this.robotArt=new RobotMapArt(this);const park=this.textures.get('park-ground'),pw=Math.floor(park.getSourceImage().width/5),ph=Math.floor(park.getSourceImage().height/5);for(let y=0;y<5;y++)for(let x=0;x<5;x++)park.add(`${x}-${y}`,0,x*pw,y*ph,pw,ph); this.textures.get('city-wreck').add('chassis',0,150,18,810,1395); this.floor = this.add.graphics().setDepth(-4); this.gfx = this.add.graphics();this.warningGfx=this.add.graphics().setDepth(6); this.drawFloor(); this.visuals = new ArenaVisuals(this,this.hero==='samurai'&&!!equippedSkin(this.save,this.hero),this.hero==='ninja'&&!!equippedSkin(this.save,this.hero),this.hero==='gunner'&&!!equippedSkin(this.save,this.hero)); this.keys = this.input.keyboard!.addKeys('W,A,S,D,UP,DOWN,LEFT,RIGHT,SPACE,ESC,M,ONE,TWO,THREE') as typeof this.keys; this.input.keyboard!.on('keydown-ESC', () => this.onPause()); this.input.keyboard!.on('keydown-M', () => { this.save.settings.sound = !this.save.settings.sound; this.audio.sound = this.save.settings.sound; }); this.input.keyboard!.addCapture(['W', 'A', 'S', 'D', 'UP', 'DOWN', 'LEFT', 'RIGHT', 'SPACE']); const h = HEROES[this.hero]; this.maxHp = h.hp * (1 + this.meta('health') * .05); if(this.options.build==='guard')this.maxHp*=1.15;this.hp = this.maxHp; this.rerolls = 1 + this.meta('reroll'); this.ammo=this.maxAmmo;this.applyMapView(); this.startWave();this.events.once('postupdate',()=>this.onArenaReady?.()); }
     applyMapView(){this.cameras.main.setZoom(1.05/(this.save.settings.mapView||1));this.cameras.main.centerOn(this.x,this.y);}
     floorTheme = 0;
     robotOrigin:RobotOrigin|undefined;
@@ -554,10 +559,10 @@ export class ArenaScene extends Phaser.Scene {
         if(this.evolved('bleed')&&e.bleed>0)this.heal(2);
         if((this.evolved('fire')||this.evolution.power>=2)&&(e.burn>0||Math.hypot(e.x-this.x,e.y-this.y)<110)){if(this.firePatches.length>=20)this.firePatches.shift();this.firePatches.push({x:e.x,y:e.y,life:3});}
         if(this.evolved('regen')&&['elite','boss','shooterBoss','commander'].includes(e.type)){this.lifePulse=5;this.impactRing(this.x,this.y,65,0x8fbe9a);}
-        this.stats.kills++;this.master('kills',1);
+        this.stats.kills++;
         if(e===this.huntTarget){this.huntTarget=undefined;this.grantGold(250+this.stats.wave*15);this.objectiveComplete('ELITE BOUNTY CLAIMED');}
         if(['shooterBoss','commander'].includes(e.type)){this.grantGold(400+this.stats.wave*20);this.heal(this.maxHp*.15);this.objectiveComplete('MINI-BOSS DEFEATED · GOLD + RECOVERY');}
-        if(e.type==='boss'){if(this.stats.wave===10&&!this.bossMagnet){const p=this.stats.wave<=10?separateWrecks(e.x,e.y,45,mapObstaclesNear(e.x,e.y)):{x:e.x,y:e.y};this.bossMagnet={...p,active:true,born:this.elapsed};}this.bossDefeated=true;if(this.stats.wave===10&&this.finiteRun){for(const enemy of this.enemies)if(enemy!==e)enemy.active=false;this.spawnIndex=this.plan.length;this.pendingStrikes=[];this.pendingEchoes=[];for(const bullet of this.bullets)if(bullet.hostile)bullet.active=false;}this.grantGold(300+this.stats.wave*20);this.heal(this.maxHp*.2);this.master('bosses',1);this.banner('BOSS DEFEATED · RECOVERY + GOLD',0xd8ba85);}
+        if(e.type==='boss'){if(this.stats.wave===10&&!this.bossMagnet){const p=this.stats.wave<=10?separateWrecks(e.x,e.y,45,mapObstaclesNear(e.x,e.y)):{x:e.x,y:e.y};this.bossMagnet={...p,active:true,born:this.elapsed};}this.bossDefeated=true;if(this.stats.wave===10&&this.finiteRun){for(const enemy of this.enemies)if(enemy!==e)enemy.active=false;this.spawnIndex=this.plan.length;this.pendingStrikes=[];this.pendingEchoes=[];for(const bullet of this.bullets)if(bullet.hostile)bullet.active=false;}this.grantGold(300+this.stats.wave*20);this.heal(this.maxHp*.2);this.banner('BOSS DEFEATED · RECOVERY + GOLD',0xd8ba85);}
         this.waveStats.kills++;
         this.combo = this.comboTime > 0 ? this.combo + 1 : 1;
         this.comboTime = 4;
@@ -573,13 +578,13 @@ export class ArenaScene extends Phaser.Scene {
             this.rerolls++;
         }
         if (this.dash > 0){
-            this.master('dashKills', 1);
+
             if(this.hasSynergy('shadow')&&this.synergyClock<=0){this.synergyClock=.4;this.clone=Math.min(8,Math.max(2,this.clone)+1);this.notifyCombat('SHADOW HARVEST · SHADOW EXTENDED');const ghost=this.add.image(e.x,e.y,`hero-${this.hero}-0`).setDisplaySize(78,78).setRotation(this.angle).setTint(0xa79ac5).setAlpha(.5).setDepth(2);this.tweens.add({targets:ghost,alpha:0,duration:650,onComplete:()=>ghost.destroy()});}
         }
         if(COMBAT_CACHE_KILLS.includes(this.stats.kills)&&!this.combatCaches.has(this.stats.kills)){this.combatCaches.add(this.stats.kills);this.xp+=Math.ceil(this.xpNeed*.45);this.notifyCombat(`${this.stats.kills} KILLS · COMBAT CACHE · +XP`);this.impactRing(this.x,this.y,55,0xb4c8a3);this.audio.play('buy');}
 
         if(this.stats.kills%5===0){if(this.evolved('damage')){this.impactRing(this.x,this.y,95,0xb898b9);for(const n of this.enemies)if(n.active&&Math.hypot(n.x-this.x,n.y-this.y)<95)this.hit(n,15,0,false,false);}if(this.evolved('magazine')){const before=this.ammo;this.ammo=Math.min(this.maxAmmo,this.ammo+2);if(this.hero==='gunner'&&this.ammo>before)this.visuals.gunnerSkills.refill(this.x,this.y,this.elapsed);}}
-        this.master('combo', this.combo, true);
+
         this.burst(e.x,e.y,e.faction==='robot'?parseInt(ROBOTS[ROBOT_ROLES[e.type]].color.slice(1),16):ENEMIES[e.type].color,14);
         this.drop(e.x, e.y, ENEMIES[e.type].xp, false);
         if (this.random() < BALANCE.goldChance || ['elite','brute','boss','shooterBoss','commander'].includes(e.type))
@@ -589,7 +594,6 @@ export class ArenaScene extends Phaser.Scene {
                 this.spawn('runner', Math.floor(this.random() * 4));
         this.audio.play('death');
     }
-    master(key: string, n: number, max = false) { const m = this.save.mastery[this.hero] ??= {};const previous=m[key]||0; m[key] = max ? Math.max(previous, n) : previous + n;if(key==='kills'){for(const milestone of [...heroTechniques(this.hero).filter(t=>t.kills>0),{kills:500,name:'Veteran appearance'}])if(previous<milestone.kills&&m[key]>=milestone.kills)this.banner(`MASTERY UNLOCK · ${milestone.name.toUpperCase()}`,0xd8ba85);} }
     drop(x: number, y: number, value: number, gold: boolean) {
         let d = this.drops.find(d => !d.active);
         if (!d) {
@@ -657,10 +661,10 @@ export class ArenaScene extends Phaser.Scene {
             this.burst(muzzle.tip.x,muzzle.tip.y,WEAPON_EFFECTS[this.weapon].color,this.weapon==='shotgun'?7:2);
             this.particle(muzzle.grip.x,muzzle.grip.y,0xb19770,70,2,.22);
             this.visuals.gunnerSkills.muzzle(muzzle.tip.x,muzzle.tip.y,this.angle,this.elapsed,last&&this.u('explosive')?0xffaa87:this.u('pierce')?0x9de8f5:0xffdfa2);
-            this.master('shots', 1);
+
             const n = this.weapon === 'shotgun' ? 5 : 1;
             for (let i = 0; i < n; i++)
-                this.shoot(muzzle.tip.x, muzzle.tip.y, this.angle + (i - (n - 1) / 2) * .12, w.damage * (this.openingShots>0?1.35:1) * (last ? 2 : 1)*(this.overdrive>0?this.masteryAbility:1), false, this.u('pierce') +(this.overdrive>0&&this.options.technique==='swift'?2:0)+(this.evolution.reach>=2?4:0)+ (last ? 3 : 0), this.evolution.power>=2 || (last && !!this.u('explosive')), last);
+                this.shoot(muzzle.tip.x, muzzle.tip.y, this.angle + (i - (n - 1) / 2) * .12, w.damage * (this.openingShots>0?1.35:1) * (last ? 2 : 1), false, this.u('pierce') +(this.evolution.reach>=2?4:0)+ (last ? 3 : 0), this.evolution.power>=2 || (last && !!this.u('explosive')), last);
             if(this.openingShots>0)this.openingShots--;
             if(this.evolution.tempo>=2||this.evolution.tempo===1&&this.attackSequence%3===0)this.pendingEchoes.push({delay:.16,x:muzzle.tip.x,y:muzzle.tip.y,angle:this.angle,damage:w.damage*.35});
             if (!this.ammo){
@@ -706,21 +710,19 @@ export class ArenaScene extends Phaser.Scene {
     activate(dx:number,dy:number){
         if(this.ability>0||this.paused||this.ended)return;
         this.invulnFromBite=false;
-        const technique=this.options.technique;
         this.ability=cooldownValue(HEROES[this.hero].cooldown,1,this.u('cooldown')*.15)*(this.options.build==='mobility'?.9:1);
-        this.master('abilities',1);this.dash=0;this.counter=0;
+        this.dash=0;this.counter=0;
         if(this.hero==='samurai'){this.counter=.6+this.u('counter')*.3;this.audio.play('lotus-guard');return;}
         if(this.hero==='gunner'){this.ammo=this.maxAmmo;this.reload=0;this.overdrive=3;this.coveringClock=0;this.attack=0;this.audio.play('overdrive');this.banner('OVERDRIVE · RAPID FIRE',0xb7ad8d);return;}
         if(this.hero==='tank'){
-            const range=technique==='swift'?210:155,duration=technique==='swift'?3:2;
-            this.slash(WEAPONS[this.weapon].damage*1.6*this.masteryAbility*(1+this.u('rush')*.25),range,Math.PI*2,this.angle,false);this.visuals.tankSkills.slam(this.x,this.y,range,this.u('rush'),this.elapsed);this.audio.play('tank-slam');
+            const range=155,duration=2;
+            this.slash(WEAPONS[this.weapon].damage*1.6*(1+this.u('rush')*.25),range,Math.PI*2,this.angle,false);this.visuals.tankSkills.slam(this.x,this.y,range,this.u('rush'),this.elapsed);this.audio.play('tank-slam');
             if(this.hasSynergy('aftershock')){if(this.firePatches.length>=20)this.firePatches.shift();this.firePatches.push({x:this.x,y:this.y,life:3});this.notifyCombat('BURNING AFTERSHOCK · GROUND IGNITED');}
             for(const e of this.enemies)if(e.active&&Math.hypot(e.x-this.x,e.y-this.y)<range+e.r)e.slow=duration;
-            if(technique==='fortified')this.rewardShield=Math.max(this.rewardShield,2);this.invuln=.25;return;
+            this.invuln=.25;return;
         }
         const a=dx||dy?Math.atan2(dy,dx):this.angle;
-        if(technique==='fortified')this.decoy={x:this.x,y:this.y,life:4,angle:this.angle};
-        this.dash=technique==='swift'?.55:.35;this.invuln=this.dash;this.dashX=Math.cos(a);this.dashY=Math.sin(a);this.dashHits.clear();this.audio.play('moon-dash');
+        this.dash=.35;this.invuln=this.dash;this.dashX=Math.cos(a);this.dashY=Math.sin(a);this.dashHits.clear();this.audio.play('moon-dash');
     }
     hurt(value: number, e?: Enemy, a = 0,source='Desert hazard',bite=false) {
         if(bite&&e&&(this.biteCooldowns.get(e)||0)>this.time.now)return;
@@ -733,11 +735,10 @@ export class ArenaScene extends Phaser.Scene {
             this.invuln = .5;
             if(this.hasSynergy('reversal')){const incoming=this.bullets.filter(b=>b.active&&b.hostile&&Math.hypot(b.x-this.x,b.y-this.y)<180).slice(0,5);const shots=incoming.map(b=>({angle:Math.atan2(-b.vy,-b.vx),damage:b.damage}));for(const b of incoming)b.active=false;const pose=weaponPose(this.weapon,this.x,this.y,a,0,false);for(const shot of shots)this.shoot(pose.grip.x,pose.grip.y,shot.angle,shot.damage*1.5,false,1,false,false,'round','Steel Reversal');if(shots.length)this.notifyCombat(`STEEL REVERSAL · ${shots.length} SHOTS RETURNED`);}
 
-            const counterRadius=this.options.technique==='swift'?290:210;
+            const counterRadius=210;
             this.visuals.samuraiSkills.counter(this.x,this.y,counterRadius,this.u('counter'),this.elapsed);
-            this.slash(WEAPONS[this.weapon].damage * 2.5*this.masteryAbility*(this.evolved('counter')?1.25:1),counterRadius,Math.PI*2,this.angle,false);
-            if(this.options.technique==='fortified')this.windSlash(WEAPONS[this.weapon].damage*this.masteryAbility);
-            this.master('counters', 1);
+            this.slash(WEAPONS[this.weapon].damage * 2.5*(this.evolved('counter')?1.25:1),counterRadius,Math.PI*2,this.angle,false);
+
             this.audio.play('lotus-counter');
             this.banner('PERFECT COUNTER', 0xffc399);
             return;
@@ -751,7 +752,7 @@ export class ArenaScene extends Phaser.Scene {
             this.visuals.tankSkills.block(this.x+Math.cos(a)*30,this.y+Math.sin(a)*30,a,this.elapsed);this.audio.play('tank-block');
             this.blockCharge += value;
             this.stamina = Math.max(0, this.stamina - value * .8);
-            this.master('blocked', value * .8);
+
             value *= this.evolved('block')?.1:.2;
             this.audio.play('hit');
         }
@@ -807,7 +808,7 @@ export class ArenaScene extends Phaser.Scene {
         if(this.stats.wave===5&&!this.earlyAwakened){this.earlyAwakened=true;this.reveal(this.earlyTechnique);}
         if(this.stats.wave>10&&[3,6,8].includes(this.stats.wave)&&(this.earned.combat>0||this.waveObjectives>0)){this.xp+=this.xpNeed;this.notifyCombat('COMBAT MILESTONE · BONUS LEVEL-UP');}
 
-        if(this.finiteRun&&this.stats.wave===10){const masteryXp=Math.floor(this.xp/20);if(masteryXp>0){this.extractionMastery=masteryXp;this.master('kills',masteryXp);this.master('extractionBonus',masteryXp);}this.victory=true;this.ended=true;this.paused=true;this.stats.time=this.elapsed;this.master('victories',1);this.onEnd();return;}
+        if(this.finiteRun&&this.stats.wave===10){this.victory=true;this.ended=true;this.paused=true;this.stats.time=this.elapsed;this.onEnd();return;}
         this.pendingStrikes=[];this.pendingEchoes=[];this.swing=0;
         this.waiting = true;
         this.paused = true;
@@ -857,7 +858,6 @@ export class ArenaScene extends Phaser.Scene {
         this.overdrive=Math.max(0,this.overdrive-dt);
         if(this.decoy){this.decoy.life-=dt;if(this.decoy.life<=0)this.decoy=undefined;}
         this.coveringClock-=dt;
-        if(this.hero==='gunner'&&this.overdrive>0&&this.options.technique==='fortified'&&this.coveringClock<=0&&(this.touch?.enabled?Math.hypot(this.touch.x,this.touch.y)>0:this.keys.W.isDown||this.keys.A.isDown||this.keys.S.isDown||this.keys.D.isDown||this.keys.UP.isDown||this.keys.DOWN.isDown||this.keys.LEFT.isDown||this.keys.RIGHT.isDown)){this.coveringClock=.3;for(const offset of [-.14,0,.14])this.shoot(this.x,this.y,this.angle+Math.PI+offset,WEAPONS[this.weapon].damage*.55*this.masteryAbility);}
         this.waveTime += dt;
         this.elapsed += dt;
         this.tick += dt;
@@ -903,13 +903,12 @@ export class ArenaScene extends Phaser.Scene {
             for (const e of this.enemies)
                 if (e.active && !this.dashHits.has(e) && Math.hypot(e.x - this.x, e.y - this.y) < 65) {
                     this.dashHits.add(e);
-                    this.hit(e, WEAPONS[this.weapon].damage * 1.4*this.masteryAbility, 55);
+                    this.hit(e, WEAPONS[this.weapon].damage * 1.4, 55);
                 }
             if (this.u('trail'))
                 this.slash(this.evolved('trail')?16:8,this.evolved('trail')?110:80,Math.PI*2,this.angle,this.hero!=='ninja');
             this.particle(this.x, this.y, HEROES[this.hero].color, 10, 8, .3);
-            if (this.dash <= 0 && this.hero === 'tank')
-                this.master('rushTargets', this.dashHits.size, true);
+
             if (this.dash <= 0 && this.u('rush'))
                 this.slash(110, 190, Math.PI * 2);
         }
@@ -1194,9 +1193,8 @@ export class ArenaScene extends Phaser.Scene {
                         this.hit(e, b.damage, 8, b.kind!=='wind',b.source!=='Crossfire');
                         if(b.kind==='wind'&&this.hero==='samurai')this.visuals.samuraiSkills.windHit(e.x,e.y,this.elapsed);
                         if(b.kind==='wind'&&this.hero!=='samurai'){const cut=this.add.graphics().setDepth(5);cut.lineStyle(3,0x9eb7b3,.9);cut.lineBetween(e.x-18,e.y-12,e.x+18,e.y+12);this.tweens.add({targets:cut,alpha:0,duration:140,onComplete:()=>cut.destroy()});}
-                        this.master('hits', 1);
-                        if (!e.active && b.last)
-                            this.master('lastBulletKills', 1);
+
+
                         if (b.explosive) {
                             if(this.hero==='gunner'){this.visuals.gunnerSkills.verdict(b.x,b.y,this.evolved('explosive')?120:85,this.elapsed);this.audio.play('verdict-pop');}else{this.burst(b.x,b.y,0xa58d73,10);this.impactRing(b.x,b.y,this.evolved('explosive')?120:85);}
                             for (const nearby of this.enemies)
@@ -1404,8 +1402,8 @@ export class ArenaScene extends Phaser.Scene {
         if(this.earlyPower){const w=this.warningGfx,color=({ninja:0xb9a1f2,samurai:0xffb279,gunner:0xffd16c,tank:0x84e1da})[this.hero];const pose=this.hero==='gunner'&&isGunnerWeapon(this.weapon)?gunnerWeaponPose(this.weapon,this.x,this.y,this.angle,1-this.swing/WEAPON_EFFECTS[this.weapon].duration,this.swing>0,this.weapon==='pistols'&&this.attackSequence%2===1,{reload:this.reload,reloadDuration:this.reloadDuration,overdrive:this.overdrive}):weaponPose(this.weapon,this.x,this.y,this.angle,this.swing,this.swing>0,this.attackSequence,false,false,1+this.u('range')*.25,1+this.u('wide')*.25);w.fillStyle(color,.28+.15*Math.sin(this.elapsed*5));w.fillCircle(pose.tip.x,pose.tip.y,5);}
 
         if(this.decoy){g.fillStyle(0x7d78a4,.35);g.fillEllipse(this.decoy.x,this.decoy.y,36,44);g.lineStyle(2,0xaba3c0,.6);g.strokeCircle(this.decoy.x,this.decoy.y,25);}
-        if((this.save.mastery[this.hero]?.kills||0)>=500&&this.options.mode!=='daily'){g.lineStyle(2,0xc5ac7c,.85);g.fillStyle(0xc5ac7c,.9);g.fillTriangle(this.x,this.y-36,this.x-5,this.y-28,this.x+5,this.y-28);this.visuals.veteran();}
         this.visuals.evolutionDetails(this.evolution,this.swing,this.elapsed);
+        this.visuals.applyCosmetics(cosmeticColor(this.save,'character',this.hero),cosmeticColor(this.save,'weapon',this.weapon),this.invuln>0&&this.dash<=0);
         if(this.hero==='ninja')this.visuals.ninjaUltimate(this.x,this.y,this.dashX,this.dashY,this.elapsed,this.dash>0,!!this.u('trail'),this.evolved('trail'));
         if(this.dash>0&&this.hero!=='ninja'&&!(this.hero==='samurai'&&this.u('dragon-slash'))){g.lineStyle(5,color,.5);g.lineBetween(this.x,this.y,this.x-this.dashX*65,this.y-this.dashY*65);}
         if(this.boostSpeed>0){g.lineStyle(3,0x829fa9,.8);for(let i=0;i<3;i++)g.lineBetween(this.x-20-i*8,this.y+10,this.x-28-i*8,this.y+10);}
