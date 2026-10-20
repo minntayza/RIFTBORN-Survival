@@ -5,9 +5,10 @@ export const SAMURAI_SKINS={sakura:{name:'Blossom Guardian',asset:'/assets/cosme
 export const SAMURAI_WEAPON_SKINS={sakura:{name:'Blossom',asset:'/assets/cosmetics/weapons-blossom.png'},jade:{name:'Fox Spirit',asset:'/assets/cosmetics/weapons-fox.png'},starlight:{name:'Crescent Moon',asset:'/assets/cosmetics/weapons-moon.png'}};
 export const NINJA_SKINS={sakura:{name:'Ancient Shadow',asset:'/assets/cosmetics/ninja-ancient.png'},jade:{name:'Modern Street Shinobi',asset:'/assets/cosmetics/ninja-modern.png'},starlight:{name:'Future Neon Ghost',asset:'/assets/cosmetics/ninja-future.png'}};
 export const GUNNER_SKINS={sakura:{name:'Lucky Outlaw',asset:'/assets/cosmetics/gunner-outlaw.png'},jade:{name:'Street Ace',asset:'/assets/cosmetics/gunner-street.png'},starlight:{name:'Star Courier',asset:'/assets/cosmetics/gunner-courier.png'}};
+export const TANK_SKINS={sakura:{name:'Royal Bulwark',asset:'/assets/cosmetics/tank-royal.png'},jade:{name:'Dwarven Forge Warden',asset:'/assets/cosmetics/tank-forge.png'},starlight:{name:'Polar Bastion',asset:'/assets/cosmetics/tank-polar.png'}};
 export const COSMETICS=([['character',HEROES],['weapon',WEAPONS]] as const).flatMap(([kind,targets])=>Object.entries(targets).flatMap(([target,value])=>FINISHES.map(f=>{
  const hero=kind==='character'?target:WEAPONS[target as WeaponId].hero;
- const design=hero==='gunner'?GUNNER_SKINS[f.id]:hero==='ninja'?NINJA_SKINS[f.id]:hero==='samurai'?(kind==='character'?SAMURAI_SKINS[f.id]:SAMURAI_WEAPON_SKINS[f.id]):undefined;
+ const design=hero==='tank'?TANK_SKINS[f.id]:hero==='gunner'?GUNNER_SKINS[f.id]:hero==='ninja'?NINJA_SKINS[f.id]:hero==='samurai'?(kind==='character'?SAMURAI_SKINS[f.id]:SAMURAI_WEAPON_SKINS[f.id]):undefined;
  return {...f,id:`${kind}:${target}:${f.id}`,kind,target,name:design?(kind==='character'?design.name:`${design.name} ${value.name}`):`${f.name} ${value.name}`,asset:design?.asset};
 })));
 export function equippedWeaponSkin(s:Save,weapon:WeaponId){return COSMETICS.find(c=>c.id===s.cosmetics.equipped[`weapon:${weapon}`])?.asset;}

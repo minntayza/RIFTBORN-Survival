@@ -1,3 +1,4 @@
+import {tankSkinArm} from './tank-cosmetics';
 import {gunnerSkinArm} from './gunner-cosmetics';
 import {imageSourceUrl} from './texture-cache';
 import {NINJA_SKIN_KEY,ninjaSkinWeaponCanvas,ninjaSkinCanvas,ninjaSkinArm} from './ninja-cosmetics';
@@ -360,7 +361,7 @@ export class ArenaVisuals {
     private lastGhost = 0;
     private lastX = 600;
     private lastY = 380;
-    constructor(private scene: Phaser.Scene,skin=false,ninjaSkin=false,gunnerSkin=false) {
+    constructor(private scene: Phaser.Scene,skin=false,ninjaSkin=false,gunnerSkin=false,tankSkin=false) {
         this.ninjaArmFx=scene.add.graphics().setDepth(3.15);
         this.shieldFx=scene.add.graphics().setDepth(.9);
         this.attackFx=scene.add.graphics().setDepth(3.3);
@@ -372,7 +373,7 @@ export class ArenaVisuals {
         for (const id of Object.keys(WEAPONS) as WeaponId[])
             if(!scene.textures.exists(`weapon-${id}`))scene.textures.addCanvas(`weapon-${id}`, weaponCanvas(id));
         const connectedSource=scene.textures.get(CONNECTED_ARMS.key).getSourceImage() as HTMLImageElement;
-        for(const hero of Object.keys(HEROES) as HeroId[])for(let i=0;i<2;i++)if(!scene.textures.exists(`connected-${hero}-${i}`))scene.textures.addCanvas(`connected-${hero}-${i}`,skin&&hero==='samurai'?samuraiSkinArm(scene.textures.get(SAMURAI_ATLAS.key).getSourceImage() as HTMLImageElement,i):ninjaSkin&&hero==='ninja'?ninjaSkinArm(scene.textures.get(NINJA_SKIN_KEY).getSourceImage() as HTMLImageElement,i):gunnerSkin&&hero==='gunner'?gunnerSkinArm(scene.textures.get(GUNNER_ATLAS.key).getSourceImage() as HTMLImageElement,i):connectedArmCanvas(connectedSource,hero,i));
+        for(const hero of Object.keys(HEROES) as HeroId[])for(let i=0;i<2;i++)if(!scene.textures.exists(`connected-${hero}-${i}`))scene.textures.addCanvas(`connected-${hero}-${i}`,skin&&hero==='samurai'?samuraiSkinArm(scene.textures.get(SAMURAI_ATLAS.key).getSourceImage() as HTMLImageElement,i):ninjaSkin&&hero==='ninja'?ninjaSkinArm(scene.textures.get(NINJA_SKIN_KEY).getSourceImage() as HTMLImageElement,i):gunnerSkin&&hero==='gunner'?gunnerSkinArm(scene.textures.get(GUNNER_ATLAS.key).getSourceImage() as HTMLImageElement,i):tankSkin&&hero==='tank'?tankSkinArm(scene.textures.get(TANK_ATLAS.key).getSourceImage() as HTMLImageElement,i):connectedArmCanvas(connectedSource,hero,i));
         const tankSource=scene.textures.get(TANK_ATLAS.key).getSourceImage() as HTMLImageElement;
         for(const part of ['upper','forearm','hand','otherHand'] as const)if(!scene.textures.exists(`tank-${part}`))scene.textures.addCanvas(`tank-${part}`,tankPart(tankSource,part));
         if(!scene.textures.exists('cute-tank-full'))scene.textures.addCanvas('cute-tank-full',tankCanvas(tankSource,0,true));
@@ -410,7 +411,7 @@ export class ArenaVisuals {
     }
     prepareTexture(key:string){
         const textures=this.scene.textures;if(textures.exists(key))return;
-        const sourceKey=key.startsWith('cute-gunner-')?GUNNER_ATLAS.key:key.startsWith('cute-samurai-')?SAMURAI_ATLAS.key:key.startsWith('cute-ninja-')?(textures.exists(NINJA_SKIN_KEY)?NINJA_SKIN_KEY:CUTE_ATLAS.key):undefined;
+        const sourceKey=key.startsWith('cute-tank-')?TANK_ATLAS.key:key.startsWith('cute-gunner-')?GUNNER_ATLAS.key:key.startsWith('cute-samurai-')?SAMURAI_ATLAS.key:key.startsWith('cute-ninja-')?(textures.exists(NINJA_SKIN_KEY)?NINJA_SKIN_KEY:CUTE_ATLAS.key):undefined;
         const cacheKey=sourceKey?`${key}:${imageSourceUrl(textures.get(sourceKey).getSourceImage() as HTMLImageElement)}`:key;
         const canvas=cachedCanvas(cacheKey,()=>{
             if(key.endsWith('-small')){const full=key.slice(0,-6);this.prepareTexture(full);return minifiedZombieCanvas(textures.get(full).getSourceImage() as HTMLCanvasElement);}

@@ -1590,3 +1590,61 @@ button:disabled{box-shadow:none;filter:saturate(.55)}
 .shop-collection-cosmetics{display:block!important}.cosmetic-intro{padding:16px;border-radius:12px;background:#222e34;margin:12px 0 22px}.cosmetic-intro p{color:#b8c6c0;font-size:13px}.cosmetic-intro label{display:flex;align-items:center;gap:12px;flex-wrap:wrap;font-size:13px}.cosmetic-intro select{padding:10px;background:#18242c;color:#eee;border:1px solid #51625b;border-radius:8px;min-height:44px}
 .cosmetic-cards{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}.cosmetic-group{margin:24px 0}.cosmetic-card{border-color:color-mix(in srgb,var(--finish) 45%,#283b3c)!important;min-width:0}.cosmetic-card .cosmetic-art{height:120px;display:flex;align-items:center;justify-content:center}.cosmetic-art img{max-width:100%;max-height:100%;object-fit:contain}.cosmetic-card h3{font-size:16px!important;color:var(--finish)}.cosmetic-card small{display:block;color:#b8c4bc;margin-bottom:12px}.cosmetic-card button{min-height:44px;width:100%;font-size:12px}.cosmetic-card button.active:after{content:' · Remove';font-size:10px}
 @media(max-width:600px){.cosmetic-cards{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.cosmetic-card{padding:12px!important}.cosmetic-card .cosmetic-art{height:100px}.cosmetic-card h3{font-size:14px!important}.shop-top{flex-wrap:wrap}.petal-wallet{font-size:11px}}
+
+/* Keep the entire cosmetic inside a dedicated preview frame. */
+.cosmetic-card .cosmetic-art{height:148px;min-height:148px;flex:0 0 148px;width:100%;padding:10px;box-sizing:border-box;overflow:hidden;margin:0 0 12px;position:relative}
+.cosmetic-card .cosmetic-art>svg,.cosmetic-card .cosmetic-art>img{display:block;position:static;width:100%;height:100%;max-width:100%;max-height:100%;min-width:0;min-height:0;object-fit:contain;flex:1 1 auto;transform:none;margin:0}
+.cosmetic-card h3{margin-top:0;overflow-wrap:anywhere;line-height:1.3}
+@media(max-width:600px){.cosmetic-card .cosmetic-art{height:128px;min-height:128px;flex-basis:128px;padding:8px;margin-bottom:10px}}
+
+/* Survivor selector shares the armoury's dark metal and muted gold. */
+.cosmetic-intro label{color:#b9c9bf;font-weight:650}
+.cosmetic-intro select[data-cosmetic-hero]{appearance:none;-webkit-appearance:none;color-scheme:dark;min-height:46px;min-width:170px;padding:11px 42px 11px 14px;border:1px solid #637365;border-radius:10px;background-color:#1b2c2c;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 16 16'%3E%3Cpath d='m4 6 4 4 4-4' fill='none' stroke='%23dfc789' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 14px center;box-shadow:inset 0 1px 0 #ffffff0a,0 3px 8px #0002;font:inherit;font-size:14px;font-weight:750;line-height:1.4;color:#eee6cd;cursor:pointer;transition:border-color .15s,background-color .15s}
+.cosmetic-intro select[data-cosmetic-hero]:hover{border-color:#c5ae76;background-color:#253a34}
+.cosmetic-intro select[data-cosmetic-hero]:focus-visible{outline:2px solid #e1c884;outline-offset:3px;border-color:#e1c884}
+.cosmetic-intro select[data-cosmetic-hero] option{background:#1b2c2c;color:#eee6cd;font-weight:650}
+@media(max-width:480px){.cosmetic-intro label{display:grid;grid-template-columns:1fr;gap:8px}.cosmetic-intro select[data-cosmetic-hero]{width:100%;min-width:0}}
+@media(prefers-reduced-motion:reduce){.cosmetic-intro select[data-cosmetic-hero]{transition:none}}
+
+/* No decorative strip above any game panel. */
+#overlay .panel::before{content:none!important;display:none!important}
+
+/* Mode selection uses full scene banners rather than narrow cropped strips. */
+.panel.mode-card-redesign{width:min(860px,calc(100vw - 24px));padding:24px;background:#172429;border-color:#3c514b;border-radius:18px}
+.mode-card-redesign .mode-choice-grid{gap:16px;margin:20px 0}
+.mode-card-redesign .mode-choice{display:flex;flex-direction:column;border:1px solid #46594e;border-radius:14px;background:#20312b;box-shadow:0 5px 14px #0002;text-transform:none;letter-spacing:normal}
+.mode-card-redesign .mode-choice.mode-daily{background:#282b39;border-color:#515469}
+.mode-card-redesign .mode-choice.is-selected{border-color:#829681}
+.mode-card-redesign .mode-choice:hover{border-color:var(--mode-accent);transform:translateY(-2px)}
+.mode-card-redesign .mode-choice-art{height:142px;width:100%;min-height:0;flex:none}
+.mode-card-redesign .mode-choice-art>img{position:static;width:100%;height:100%;object-fit:cover;object-position:50% 58%}
+.mode-card-redesign .mode-choice-art:after{background:linear-gradient(0deg,#14212780,transparent 55%)}
+.mode-card-redesign .mode-choice-badge{top:12px;left:12px;font-size:9px;padding:6px 9px;border:1px solid #ffffff25;border-radius:6px;background:#172328ef;letter-spacing:.6px}
+.mode-card-redesign .mode-choice-body{padding:18px;gap:10px;flex:1}
+.mode-card-redesign .mode-choice-body>small{font-size:9px;letter-spacing:1px}
+.mode-card-redesign .mode-choice-body>strong{font-style:normal;font-size:24px;letter-spacing:-.5px;line-height:1.15}
+.mode-card-redesign .mode-choice-body>span{font-size:13px;line-height:1.55;color:#c1cbc5}
+.mode-card-redesign .mode-choice-body>b{margin-top:auto;padding:12px 0 0;border:0;border-top:1px solid #ffffff16;border-radius:0;background:none;font-size:13px;min-height:36px;box-shadow:none}
+.mode-card-redesign>.actions{margin-top:0;padding-top:12px}
+.mode-card-redesign>.actions button{font-size:13px;min-height:44px;padding:10px 14px;box-shadow:none}
+@media(max-width:600px){.panel.mode-card-redesign{padding:18px;max-height:calc(100dvh - 20px)}.mode-card-redesign h2{font-size:28px}.mode-card-redesign>p.muted{font-size:13px}.mode-card-redesign .eyebrow span{display:none}.mode-card-redesign .mode-choice-grid{grid-template-columns:1fr;gap:12px;margin:16px 0}.mode-card-redesign .mode-choice-art{height:110px}.mode-card-redesign .mode-choice-body{padding:14px;gap:8px}.mode-card-redesign .mode-choice-body>strong{font-size:22px}.mode-card-redesign .mode-choice-body>span{font-size:12px}.mode-card-redesign .mode-choice-body>b{padding-top:10px;min-height:32px}.mode-card-redesign>.actions{position:sticky;bottom:-18px;margin:0 -18px -18px;padding:10px 18px max(10px,env(safe-area-inset-bottom));background:#172429fa;border-top:1px solid #384b45}}
+@media(prefers-reduced-motion:reduce){.mode-card-redesign .mode-choice:hover{transform:none}}
+
+/* Playful mission cards with a compact, consistent choice layout. */
+.mode-card-redesign .mission-card-grid .mode-choice{border:2px solid #3e5149;border-radius:18px;box-shadow:0 4px 0 #101c20;overflow:hidden}
+.mode-card-redesign .mission-card-grid .mode-choice.is-selected{border-color:#cfb97c}
+.mode-card-redesign .mission-card-grid .mode-daily.is-selected{border-color:#b9a7dc}
+.mode-card-redesign .mission-card-grid .mode-choice-art{height:110px;overflow:hidden;background:#354538}
+.mode-card-redesign .mission-card-grid .mode-choice-art>img{opacity:.48;object-position:center 48%;filter:saturate(.7)}
+.mode-card-redesign .mission-card-grid .mode-choice-art:after{background:linear-gradient(0deg,#1d302b,transparent)}
+.mission-mascot{position:absolute;z-index:2;left:16px;bottom:4px;width:100px;height:84px;filter:drop-shadow(0 4px 0 #0e1c2840)}
+.mission-mascot>svg{display:block;width:100%;height:100%}
+.mode-card-redesign .mission-card-grid .mode-choice-badge{left:auto;right:12px;top:12px;border-radius:20px;font-size:10px;letter-spacing:0;padding:6px 10px;color:#f4df9f;background:#223a31;border-color:#758060}
+.mode-card-redesign .mission-card-grid .mode-choice-body{padding:16px;gap:7px}
+.mode-card-redesign .mission-card-grid .mode-choice-body>strong{font-size:23px;letter-spacing:-.4px;color:#f0ead6}
+.mode-card-redesign .mission-card-grid .mission-caption{font-size:13px;color:#b7c8bf}
+.mode-card-redesign .mission-card-grid .mission-tags{display:flex;flex-wrap:wrap;gap:6px;margin:4px 0 6px}
+.mission-tags>span{padding:5px 8px;border-radius:7px;background:#101e2560;border:1px solid #ffffff0f;color:#d0dacf;font-size:10px;font-weight:650;line-height:1.25}
+.mode-card-redesign .mission-card-grid .mode-choice-body>b{padding:10px 12px;min-height:42px;border:1px solid #bdab76;border-radius:10px;background:#e2c780;color:#27342d;box-shadow:0 3px 0 #8b794b;font-size:13px}
+.mode-card-redesign .mission-card-grid .mode-daily .mode-choice-body>b{background:#c8b7e8;border-color:#b09acb;box-shadow:0 3px 0 #766288;color:#302c41}
+@media(max-width:600px){.mode-card-redesign .mission-card-grid{gap:14px}.mode-card-redesign .mission-card-grid .mode-choice-art{height:74px}.mission-mascot{width:79px;height:68px;bottom:0;left:12px}.mode-card-redesign .mission-card-grid .mode-choice-body{padding:12px;gap:5px}.mode-card-redesign .mission-card-grid .mode-choice-body>strong{font-size:21px}.mode-card-redesign .mission-card-grid .mission-caption{font-size:12px}.mode-card-redesign .mission-card-grid .mission-tags{margin:2px 0 4px}.mission-tags>span{font-size:9px;padding:4px 7px}.mode-card-redesign .mission-card-grid .mode-choice-body>b{min-height:42px;padding:9px 12px}}

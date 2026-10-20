@@ -1,3 +1,5 @@
+import {CosmeticWeaponEffects} from './cosmetic-weapon-fx';
+import {cosmeticEffectProfile} from './cosmetic-effect-profiles';
 import {NINJA_SKIN_KEY} from './ninja-cosmetics';
 import {cosmeticColor,equippedSkin,equippedWeaponSkin} from './cosmetics';
 import {tankGuardHalfAngle} from './tank-skill-fx';
@@ -134,6 +136,7 @@ export class ArenaScene extends Phaser.Scene {
         this.bossMarks.push(...bossMarks(e.type as 'boss'|'shooterBoss'|'commander',e.phase,e.faction,e.x,e.y,e.targetX,e.targetY).map(mark=>({...mark,remaining:mark.delay,owner:e,fired:false})));
     }
 
+    cosmeticFx!:CosmeticWeaponEffects;
     visuals!: ArenaVisuals;
     swing = 0;
     attackSequence=0;
@@ -155,7 +158,7 @@ export class ArenaScene extends Phaser.Scene {
         if(ninjaWeapon)this.load.image('ninja-cosmetic-weapons',ninjaWeapon);
 
         const assets=[
-            [CONNECTED_ARMS.key,CONNECTED_ARMS.url],[TANK_WEAPONS_ATLAS.key,TANK_WEAPONS_ATLAS.url],[TANK_ATLAS.key,TANK_ATLAS.url],[GUNNER_ATLAS.key,this.hero==='gunner'?equippedSkin(this.save,this.hero)||GUNNER_ATLAS.url:GUNNER_ATLAS.url],[GUNNER_WEAPONS_ATLAS.key,this.hero==='gunner'?equippedWeaponSkin(this.save,this.weapon)||GUNNER_WEAPONS_ATLAS.url:GUNNER_WEAPONS_ATLAS.url],
+            [CONNECTED_ARMS.key,CONNECTED_ARMS.url],[TANK_WEAPONS_ATLAS.key,this.hero==='tank'?equippedWeaponSkin(this.save,this.weapon)||TANK_WEAPONS_ATLAS.url:TANK_WEAPONS_ATLAS.url],[TANK_ATLAS.key,this.hero==='tank'?equippedSkin(this.save,this.hero)||TANK_ATLAS.url:TANK_ATLAS.url],[GUNNER_ATLAS.key,this.hero==='gunner'?equippedSkin(this.save,this.hero)||GUNNER_ATLAS.url:GUNNER_ATLAS.url],[GUNNER_WEAPONS_ATLAS.key,this.hero==='gunner'?equippedWeaponSkin(this.save,this.weapon)||GUNNER_WEAPONS_ATLAS.url:GUNNER_WEAPONS_ATLAS.url],
             [SAMURAI_WEAPONS_ATLAS.key,this.hero==='samurai'?equippedWeaponSkin(this.save,this.weapon)||SAMURAI_WEAPONS_ATLAS.url:SAMURAI_WEAPONS_ATLAS.url],
             [SAMURAI_ATLAS.key,this.hero==='samurai'?equippedSkin(this.save,this.hero)||SAMURAI_ATLAS.url:SAMURAI_ATLAS.url],
             [LEADER_ATLAS.key,LEADER_ATLAS.url],
@@ -373,7 +376,7 @@ export class ArenaScene extends Phaser.Scene {
     grid = new Map<string, Enemy[]>();
     dashHits = new Set<Enemy>();
     constructor(save: Save, audio: AudioManager, choice: (wave: boolean) => void, end: () => void, pause: () => void, options?:RunOptions) { super('arena'); this.save = save; this.audio = audio; this.hero = save.hero; this.weapon = save.weapon; this.onChoice = choice; this.onEnd = end; this.onPause = pause; if(options){this.options=options;this.hero=options.hero||save.hero;this.weapon=options.weapon||save.weapon;} if(this.options.seed!==undefined){this.random=seededRandom(this.options.seed);this.cardRandom=seededRandom(this.options.seed^0x85ebca6b);}this.options.technique='standard'; }
-    create() { this.robotArt=new RobotMapArt(this);const park=this.textures.get('park-ground'),pw=Math.floor(park.getSourceImage().width/5),ph=Math.floor(park.getSourceImage().height/5);for(let y=0;y<5;y++)for(let x=0;x<5;x++)park.add(`${x}-${y}`,0,x*pw,y*ph,pw,ph); this.textures.get('city-wreck').add('chassis',0,150,18,810,1395); this.floor = this.add.graphics().setDepth(-4); this.gfx = this.add.graphics();this.warningGfx=this.add.graphics().setDepth(6); this.drawFloor(); this.visuals = new ArenaVisuals(this,this.hero==='samurai'&&!!equippedSkin(this.save,this.hero),this.hero==='ninja'&&!!equippedSkin(this.save,this.hero),this.hero==='gunner'&&!!equippedSkin(this.save,this.hero)); this.keys = this.input.keyboard!.addKeys('W,A,S,D,UP,DOWN,LEFT,RIGHT,SPACE,ESC,M,ONE,TWO,THREE') as typeof this.keys; this.input.keyboard!.on('keydown-ESC', () => this.onPause()); this.input.keyboard!.on('keydown-M', () => { this.save.settings.sound = !this.save.settings.sound; this.audio.sound = this.save.settings.sound; }); this.input.keyboard!.addCapture(['W', 'A', 'S', 'D', 'UP', 'DOWN', 'LEFT', 'RIGHT', 'SPACE']); const h = HEROES[this.hero]; this.maxHp = h.hp * (1 + this.meta('health') * .05); if(this.options.build==='guard')this.maxHp*=1.15;this.hp = this.maxHp; this.rerolls = 1 + this.meta('reroll'); this.ammo=this.maxAmmo;this.applyMapView(); this.startWave();this.events.once('postupdate',()=>this.onArenaReady?.()); }
+    create() { this.robotArt=new RobotMapArt(this);const park=this.textures.get('park-ground'),pw=Math.floor(park.getSourceImage().width/5),ph=Math.floor(park.getSourceImage().height/5);for(let y=0;y<5;y++)for(let x=0;x<5;x++)park.add(`${x}-${y}`,0,x*pw,y*ph,pw,ph); this.textures.get('city-wreck').add('chassis',0,150,18,810,1395); this.floor = this.add.graphics().setDepth(-4); this.gfx = this.add.graphics();this.warningGfx=this.add.graphics().setDepth(6); this.drawFloor(); this.visuals = new ArenaVisuals(this,this.hero==='samurai'&&!!equippedSkin(this.save,this.hero),this.hero==='ninja'&&!!equippedSkin(this.save,this.hero),this.hero==='gunner'&&!!equippedSkin(this.save,this.hero),this.hero==='tank'&&!!equippedSkin(this.save,this.hero)); this.cosmeticFx=new CosmeticWeaponEffects(this); this.keys = this.input.keyboard!.addKeys('W,A,S,D,UP,DOWN,LEFT,RIGHT,SPACE,ESC,M,ONE,TWO,THREE') as typeof this.keys; this.input.keyboard!.on('keydown-ESC', () => this.onPause()); this.input.keyboard!.on('keydown-M', () => { this.save.settings.sound = !this.save.settings.sound; this.audio.sound = this.save.settings.sound; }); this.input.keyboard!.addCapture(['W', 'A', 'S', 'D', 'UP', 'DOWN', 'LEFT', 'RIGHT', 'SPACE']); const h = HEROES[this.hero]; this.maxHp = h.hp * (1 + this.meta('health') * .05); if(this.options.build==='guard')this.maxHp*=1.15;this.hp = this.maxHp; this.rerolls = 1 + this.meta('reroll'); this.ammo=this.maxAmmo;this.applyMapView(); this.startWave();this.events.once('postupdate',()=>this.onArenaReady?.()); }
     applyMapView(){this.cameras.main.setZoom(1.05/(this.save.settings.mapView||1));this.cameras.main.centerOn(this.x,this.y);}
     floorTheme = 0;
     robotOrigin:RobotOrigin|undefined;
@@ -520,6 +523,7 @@ export class ArenaScene extends Phaser.Scene {
         if(elemental&&this.hero==='samurai'&&this.identitySequence!==this.attackSequence){this.identitySequence=this.attackSequence;this.identityCharge=Math.min(100,this.identityCharge+20);}
 
         this.hitConfirm={time:.2,x:contactX,y:contactY,crit};
+        if(elemental)this.cosmeticFx?.impact(cosmeticEffectProfile(this.save,this.weapon),contactX,contactY,this.elapsed,crit);
         if(crit)this.visuals.criticalHit(contactX,contactY,this.elapsed);
         e.flash = .12;
         const boss=['boss','shooterBoss','commander'].includes(e.type);
@@ -673,6 +677,7 @@ export class ArenaScene extends Phaser.Scene {
             const muzzle=isGunnerWeapon(this.weapon)?gunnerWeaponPose(this.weapon,this.x,this.y,this.angle,0,true,this.weapon==='pistols'&&this.attackSequence%2===1):weaponPose(this.weapon,this.x,this.y,this.angle,0,true,this.attackSequence,false);
             this.burst(muzzle.tip.x,muzzle.tip.y,WEAPON_EFFECTS[this.weapon].color,this.weapon==='shotgun'?7:2);
             this.particle(muzzle.grip.x,muzzle.grip.y,0xb19770,70,2,.22);
+            this.cosmeticFx?.muzzle(cosmeticEffectProfile(this.save,this.weapon),muzzle.tip.x,muzzle.tip.y,this.angle,this.elapsed);
             this.visuals.gunnerSkills.muzzle(muzzle.tip.x,muzzle.tip.y,this.angle,this.elapsed,last&&this.u('explosive')?0xffaa87:this.u('pierce')?0x9de8f5:0xffdfa2);
 
             const n = this.weapon === 'shotgun' ? 5 : 1;
@@ -694,6 +699,7 @@ export class ArenaScene extends Phaser.Scene {
         }
     }
     resolveStrike(strike:{weapon:WeaponId;damage:number;range:number;arc:number;echo:boolean}){
+        this.cosmeticFx?.strike(cosmeticEffectProfile(this.save,strike.weapon),this.x,this.y,this.angle,strike.range,strike.arc,this.elapsed,this.hero==='tank');
         this.visuals.meleeReward(this.hero,strike.weapon,this.x,this.y,this.angle,this.attackSequence,
             strike.range/WEAPONS[strike.weapon].range,strike.arc/WEAPONS[strike.weapon].arc,this.u('damage'),this.u('wide'),strike.echo,this.elapsed);
         if(strike.echo)this.audio.play('echo-slash');
@@ -762,6 +768,7 @@ export class ArenaScene extends Phaser.Scene {
             return;
         }
         if (this.hero === 'tank' && this.weapon!=='hammer' && this.attacking && this.stamina > 0 && Math.abs(Phaser.Math.Angle.Wrap(a - this.angle)) < tankGuardHalfAngle(this.u('block'))) {
+            this.cosmeticFx?.impact(cosmeticEffectProfile(this.save,this.weapon),this.x+Math.cos(a)*30,this.y+Math.sin(a)*30,this.elapsed);
             this.visuals.tankSkills.block(this.x+Math.cos(a)*30,this.y+Math.sin(a)*30,a,this.elapsed);this.audio.play('tank-block');
             this.blockCharge += value;
             this.stamina = Math.max(0, this.stamina - value * .8);
@@ -1419,6 +1426,7 @@ export class ArenaScene extends Phaser.Scene {
 
         if(this.decoy){g.fillStyle(0x7d78a4,.35);g.fillEllipse(this.decoy.x,this.decoy.y,36,44);g.lineStyle(2,0xaba3c0,.6);g.strokeCircle(this.decoy.x,this.decoy.y,25);}
         this.visuals.evolutionDetails(this.evolution,this.swing,this.elapsed);
+        this.cosmeticFx?.render(this.elapsed,this.bullets,cosmeticEffectProfile(this.save,this.weapon));
         this.visuals.applyCosmetics(cosmeticColor(this.save,'character',this.hero),cosmeticColor(this.save,'weapon',this.weapon),this.invuln>0&&this.dash<=0);
         if(this.hero==='ninja')this.visuals.ninjaUltimate(this.x,this.y,this.dashX,this.dashY,this.elapsed,this.dash>0,!!this.u('trail'),this.evolved('trail'));
         if(this.dash>0&&this.hero!=='ninja'&&!(this.hero==='samurai'&&this.u('dragon-slash'))){g.lineStyle(5,color,.5);g.lineBetween(this.x,this.y,this.x-this.dashX*65,this.y-this.dashY*65);}

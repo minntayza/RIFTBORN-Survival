@@ -1,3 +1,5 @@
+import {imageSourceUrl} from './texture-cache';
+import {tankSkinCanvas} from './tank-cosmetics';
 import {rigidHeroArm,heroArmSprite} from './hero-arm';
 export const TANK_ATLAS={key:'cute-tank-parts-v1',url:'/assets/characters/cute-tank-parts-v1.webp'};
 const regions={body:[18,31,555,646],leftLeg:[578,341,234,342],rightLeg:[863,341,235,342],upper:[1145,400,176,206],forearm:[1372,347,178,317],hand:[1582,414,232,250],otherHand:[1582,414,232,250],shield:[1815,162,339,516]} as const;
@@ -10,7 +12,7 @@ function draws(phase:number,strength:number,arms:boolean):Draw[]{
 
  return out;
 }
-export function tankCanvas(image:HTMLImageElement,frame:number,arms=false){const c=document.createElement('canvas');c.width=c.height=128;const g=c.getContext('2d')!;for(const p of draws(frame===0?0:(frame-1)%24/24,frame===0?0:1,arms)){const [x,y,w,h]=regions[p.part];g.save();g.translate(p.x,p.y);g.rotate(p.angle);g.drawImage(image,x,y,w,h,-p.w*p.ox,-p.h*p.oy,p.w,p.h);g.restore();}return c;}
+export function tankCanvas(image:HTMLImageElement,frame:number,arms=false){if(imageSourceUrl(image).includes('/cosmetics/'))return tankSkinCanvas(image,frame,arms);const c=document.createElement('canvas');c.width=c.height=128;const g=c.getContext('2d')!;for(const p of draws(frame===0?0:(frame-1)%24/24,frame===0?0:1,arms)){const [x,y,w,h]=regions[p.part];g.save();g.translate(p.x,p.y);g.rotate(p.angle);g.drawImage(image,x,y,w,h,-p.w*p.ox,-p.h*p.oy,p.w,p.h);g.restore();}return c;}
 export function tankPart(image:HTMLImageElement,part:'upper'|'forearm'|'hand'|'otherHand'){const [x,y,w,h]=regions[part],c=document.createElement('canvas');c.width=w;c.height=h;c.getContext('2d')!.drawImage(image,x,y,w,h,0,0,w,h);return c;}
 export function tankPortrait(arms=true){return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" role="img" aria-label="Shield Tank gameplay illustration">${draws(0,0,arms).map(p=>`<g transform="translate(${p.x} ${p.y}) rotate(${p.angle*180/Math.PI})"><svg x="${-p.w*p.ox}" y="${-p.h*p.oy}" width="${p.w}" height="${p.h}" viewBox="${regions[p.part].join(' ')}" preserveAspectRatio="none" overflow="hidden"><image href="${TANK_ATLAS.url}" width="2172" height="724"/></svg></g>`).join('')}</svg>`;}
 

@@ -1,3 +1,4 @@
+import {cosmeticEffectProfile} from '../src/cosmetic-effect-profiles';
 import {imageSourceUrl} from '../src/texture-cache';
 import Phaser from 'phaser';
 import {ArenaScene} from '../src/combat';
@@ -9,7 +10,7 @@ import {gunnerWeaponCanvas,type GunnerWeapon,GUNNER_WEAPONS_ATLAS} from '../src/
 import {gunnerCanvas,GUNNER_ATLAS} from '../src/gunner-art';
 const results=document.querySelector('#results')!,lines:string[]=[],hashes=new Set<string>();
 for(const c of COSMETICS.filter(c=>c.kind==='weapon'&&WEAPONS[c.target as WeaponId].hero==='gunner')){
- const save=freshSave();save.heroes.push('gunner');save.weapons=Object.keys(WEAPONS) as WeaponId[];
+ const save=freshSave();save.petals=1000000;save.heroes.push('gunner');save.weapons=Object.keys(WEAPONS) as WeaponId[];
  const outfit=COSMETICS.find(o=>o.kind==='character'&&o.target==='gunner'&&o.id.endsWith(c.id.split(':').at(-1)!))!;buyCosmetic(save,outfit.id);equipCosmetic(save,outfit.id);
  buyCosmetic(save,c.id);if(!equipCosmetic(save,c.id))throw Error(`Cannot equip ${c.name}`);
  await new Promise<void>((resolve,reject)=>{
@@ -27,8 +28,10 @@ for(const c of COSMETICS.filter(c=>c.kind==='weapon'&&WEAPONS[c.target as Weapon
    const body=scene.textures.get('cute-gunner-0').getSourceImage() as HTMLCanvasElement;
    if(body.toDataURL()!==gunnerCanvas(bodyAtlas,0).toDataURL())throw Error('Outfit cache does not match selected design');
    const pixels=actual.getContext('2d')!.getImageData(0,0,128,128).data;if(!pixels.some((v,i)=>i%4===3&&v>0))throw Error('Invisible weapon');
+   scene.basicAttack();if(scene.hero!=='gunner'&&scene.pendingStrikes[0])scene.resolveStrike(scene.pendingStrikes[0]);
+   if(!cosmeticEffectProfile(save,scene.weapon)||scene.cosmeticFx.activeCount===0)throw Error('Cosmetic attack effects did not trigger');
    hashes.add(actual.toDataURL());const card=document.createElement('article');card.textContent=c.name;card.append(expected);document.querySelector('#previews')!.append(card);
-   lines.push(`PASS · ${c.name}: outfit, weapon, selection, atlas, visible combat texture`);results.textContent=lines.join('\n');
+   lines.push(`PASS · ${c.name}: outfit, weapon, selection, atlas, visible combat texture & attack effects`);results.textContent=lines.join('\n');
   }catch(e){lines.push(`FAIL · ${c.name}: ${e}`);results.textContent=lines.join('\n');}setTimeout(()=>{game.destroy(true);resolve();},0);};
   game=new Phaser.Game({type:Phaser.CANVAS,parent:'arena',width:1200,height:760,scene:[scene],audio:{noAudio:true},banner:false});
  });

@@ -1,3 +1,4 @@
+import {tankSkinArm} from './tank-cosmetics';
 import {gunnerSkinArm} from './gunner-cosmetics';
 import {ninjaSkinCanvas,ninjaSkinArm,ninjaSkinWeaponCanvas} from './ninja-cosmetics';
 import {tintArtwork} from './cosmetics';
@@ -22,8 +23,8 @@ function cachedFrame(key:string,make:()=>HTMLCanvasElement){let c=framesCache.ge
 /** A lightweight home-only showcase, sharing the actual combat art and grip poses. */
 export async function startHomeScene(canvas:HTMLCanvasElement,hero:HeroId,weapon:WeaponId,portrait=false,colors={character:0xffffff,weapon:0xffffff},skin?:string,weaponSkin?:string){
  try{
- const bodyAtlas=hero==='samurai'?{...SAMURAI_ATLAS,url:skin||SAMURAI_ATLAS.url}:hero==='gunner'?{...GUNNER_ATLAS,url:skin||GUNNER_ATLAS.url}:hero==='tank'?TANK_ATLAS:skin?{...CUTE_ATLAS,url:skin}:CUTE_ATLAS;
- const weaponAtlas=hero==='samurai'?{...SAMURAI_WEAPONS_ATLAS,url:weaponSkin||SAMURAI_WEAPONS_ATLAS.url}:hero==='gunner'?{...GUNNER_WEAPONS_ATLAS,url:weaponSkin||GUNNER_WEAPONS_ATLAS.url}:hero==='tank'?TANK_WEAPONS_ATLAS:weaponSkin?{key:'ninja-skin',url:weaponSkin}:weapon==='katana'?NINJA_ATTACK_ATLAS:NINJA_WEAPONS_ATLAS;
+ const bodyAtlas=hero==='samurai'?{...SAMURAI_ATLAS,url:skin||SAMURAI_ATLAS.url}:hero==='gunner'?{...GUNNER_ATLAS,url:skin||GUNNER_ATLAS.url}:hero==='tank'?{...TANK_ATLAS,url:skin||TANK_ATLAS.url}:skin?{...CUTE_ATLAS,url:skin}:CUTE_ATLAS;
+ const weaponAtlas=hero==='samurai'?{...SAMURAI_WEAPONS_ATLAS,url:weaponSkin||SAMURAI_WEAPONS_ATLAS.url}:hero==='gunner'?{...GUNNER_WEAPONS_ATLAS,url:weaponSkin||GUNNER_WEAPONS_ATLAS.url}:hero==='tank'?{...TANK_WEAPONS_ATLAS,url:weaponSkin||TANK_WEAPONS_ATLAS.url}:weaponSkin?{key:'ninja-skin',url:weaponSkin}:weapon==='katana'?NINJA_ATTACK_ATLAS:NINJA_WEAPONS_ATLAS;
  const [bodyImage,weaponImage,connectedImage]=await Promise.all([load(bodyAtlas.url),load(weaponAtlas.url),load(CONNECTED_ARMS.url)]);
  if(!canvas.isConnected)return;
  const heroFrame=(i:number)=>cachedFrame(`${hero}:${i}:${colors.character}:${skin||'base'}`,()=>tintArtwork(hero==='samurai'?samuraiCanvas(bodyImage,i+1):hero==='gunner'?gunnerCanvas(bodyImage,i+1):hero==='tank'?tankCanvas(bodyImage,i+1):skin?ninjaSkinCanvas(bodyImage,i+1):cuteCanvas(bodyImage,'ninja',i/24,1,false),colors.character));
@@ -32,7 +33,7 @@ export async function startHomeScene(canvas:HTMLCanvasElement,hero:HeroId,weapon
 
  const gun=isGunnerWeapon(weapon),dual=weapon==='dual'||weapon==='pistols';
  const equipment=cachedFrame(`weapon:${weapon}:${colors.weapon}:${weaponSkin||'base'}`,()=>tintArtwork(isSamuraiWeapon(weapon)?samuraiWeaponCanvas(weaponImage,weapon):isGunnerWeapon(weapon)?gunnerWeaponCanvas(weaponImage,weapon):isTankWeapon(weapon)?tankWeaponCanvas(weaponImage,weapon):weaponSkin?ninjaSkinWeaponCanvas(weaponImage,weapon as 'katana'|'dual'|'kama'):weapon==='katana'?ninjaSwordCanvas(weaponImage):ninjaWeaponCanvas(weaponImage,weapon==='dual'?'dual':'kama'),colors.weapon));
- const arms=[0,1].map(i=>cachedFrame(`connected:${hero}:${i}:${colors.character}:${skin||'base'}`,()=>tintArtwork(skin&&hero==='samurai'?samuraiSkinArm(bodyImage,i):skin&&hero==='ninja'?ninjaSkinArm(bodyImage,i):skin&&hero==='gunner'?gunnerSkinArm(bodyImage,i):connectedArmCanvas(connectedImage,hero,i),colors.character)));
+ const arms=[0,1].map(i=>cachedFrame(`connected:${hero}:${i}:${colors.character}:${skin||'base'}`,()=>tintArtwork(skin&&hero==='samurai'?samuraiSkinArm(bodyImage,i):skin&&hero==='ninja'?ninjaSkinArm(bodyImage,i):skin&&hero==='gunner'?gunnerSkinArm(bodyImage,i):skin&&hero==='tank'?tankSkinArm(bodyImage,i):connectedArmCanvas(connectedImage,hero,i),colors.character)));
  const g=canvas.getContext('2d')!;canvas.width=portrait?420:600;canvas.height=portrait?240:420;
  const reduced=portrait||matchMedia('(prefers-reduced-motion: reduce)').matches,start=performance.now();let last=-1;
  const sprite=(im:CanvasImageSource,x:number,y:number,w:number,h:number,rotation=0,ox=.5,oy=.5,flipX=false,flipY=false)=>{g.save();g.translate(x,y);g.rotate(rotation);g.scale(flipX?-1:1,flipY?-1:1);g.drawImage(im,-w*ox,-h*oy,w,h);g.restore();};
