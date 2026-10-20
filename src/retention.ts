@@ -2,7 +2,8 @@ import { HEROES, WEAPONS, type HeroId, type WeaponId } from './config';
 export type RunMode='endless'|'short'|'daily';
 export type BuildId='assault'|'mobility'|'guard';
 export type TechniqueId='standard'|'swift'|'fortified';
-export type RunOptions={mode:RunMode;build:BuildId;technique:TechniqueId;seed?:number;date?:string;hero?:HeroId;weapon?:WeaponId};
+export type BossConfig = { type: 'commander' | 'boss'; faction: 'zombie' | 'robot' };
+export type RunOptions={mode:RunMode;build:BuildId;technique:TechniqueId;seed?:number;date?:string;hero?:HeroId;weapon?:WeaponId;dailyBosses?:{wave5:BossConfig;wave10:BossConfig}};
 export const BUILDS=[
  {id:'assault' as const,name:'Assault',icon:'⚔',description:'+10% damage. Build piercing, critical hits, and area attacks.'},
  {id:'mobility' as const,name:'Mobility',icon:'↗',description:'+8% speed and 10% faster abilities. Build movement and technique.'},
@@ -13,7 +14,9 @@ export function dailySetup(date=new Date().toISOString().slice(0,10)):RunOptions
  let seed=2166136261;for(const c of date)seed=Math.imul(seed^c.charCodeAt(0),16777619);
  const random=seededRandom(seed),hero=(Object.keys(HEROES) as HeroId[])[Math.floor(random()*4)];
  const weapons=(Object.keys(WEAPONS) as WeaponId[]).filter(w=>WEAPONS[w].hero===hero);
- return {mode:'daily',build:BUILDS[Math.floor(random()*3)].id,technique:'standard',hero,weapon:weapons[Math.floor(random()*weapons.length)],seed:seed>>>0,date};
+ const wave5Boss:BossConfig=random()<0.5?{type:'commander',faction:'zombie'}:{type:'boss',faction:'zombie'};
+ const wave10Boss:BossConfig=random()<0.5?{type:'commander',faction:'robot'}:{type:'boss',faction:'robot'};
+ return {mode:'daily',build:BUILDS[Math.floor(random()*3)].id,technique:'standard',hero,weapon:weapons[Math.floor(random()*weapons.length)],seed:seed>>>0,date,dailyBosses:{wave5:wave5Boss,wave10:wave10Boss}};
 }
 export const masteryMilestones=[{kills:100,name:'Swift technique',description:'20% faster abilities, with 20% shorter dash or counter duration.'},{kills:250,name:'Fortified technique',description:'30% longer dash or counter duration, with 20% longer cooldowns.'},{kills:500,name:'Veteran appearance',description:'A veteran insignia and alternate survivor tint.'}];
 export function techniqueUnlocked(kills:number,id:TechniqueId){return id==='standard'||kills>=(id==='swift'?100:250);}

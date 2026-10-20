@@ -32,7 +32,7 @@ import {assistedAim,escapeDirection,routedSpawn,buildSynergies,COMBAT_CACHE_KILL
 import {HERO_IDENTITIES,encounterRhythm,weaponMilestone} from './run-design';
 import {CARD_EVOLUTIONS} from './card-evolutions';
 import {WEAPON_EFFECTS,weaponPose,meleeContact,isGun} from './weapon-effects';
-import { seededRandom, earnedWaveGold, type RunOptions } from './retention';
+import { seededRandom, earnedWaveGold, type RunOptions, type BossConfig } from './retention';
 import {UPGRADES} from './upgrades';
 import { rollReward, waveEvent, type RewardId, type EvolutionId } from './progression';
 import type { TouchState } from './touch';
@@ -51,6 +51,7 @@ export type RunStats = {
     taken: number;
     combo: number;
     elites: number;
+    petals: number;
 };
 type Enemy = {
     skillAge:number;
@@ -221,8 +222,8 @@ export class ArenaScene extends Phaser.Scene {
     spawnIndex = 0;
     plan: Spawn[] = [];
     levels: Record<string, number> = {};
-    stats: RunStats = { wave: 1, time: 0, kills: 0, gold: 0, dealt: 0, taken: 0, combo: 0, elites: 0 };
-    waveStats = { kills: 0, gold: 0, damage: 0, time: 0 };
+    stats: RunStats = { wave: 1, time: 0, kills: 0, gold: 0, dealt: 0, taken: 0, combo: 0, elites: 0, petals: 0 };
+    waveStats = { kills: 0, gold: 0, damage: 0, time: 0, petals: 0 };
     paused = false;
     ended = false;
     waiting = false;
@@ -264,6 +265,14 @@ export class ArenaScene extends Phaser.Scene {
     notifyCombat(label:string){this.combatNotice={time:2.5,label};}
 
     get finiteRun(){return this.options.mode!=='endless';}
+    get dailyBosses():{wave5:BossConfig;wave10:BossConfig}{
+        if(this.options.dailyBosses)return this.options.dailyBosses;
+        const r=this.random;
+        const w5:BossConfig=r()<0.5?{type:'commander',faction:'zombie'}:{type:'boss',faction:'zombie'};
+        const w10:BossConfig=r()<0.5?{type:'commander',faction:'robot'}:{type:'boss',faction:'robot'};
+        this.options.dailyBosses={wave5:w5,wave10:w10};
+        return this.options.dailyBosses;
+    }
     awakened:EvolutionId|undefined;
     fullEvolution=false;
     earlyAwakened=false;
@@ -306,6 +315,7 @@ export class ArenaScene extends Phaser.Scene {
     hazard: {x:number;y:number;time:number} | undefined;
     rewardPool(){return rollReward(this.hp,this.maxHp);}
     grantGold(n:number){this.stats.gold+=n;this.waveStats.gold+=n;this.save.gold+=n;}
+    grantPetals(n:number){this.stats.petals=(this.stats.petals||0)+n;this.waveStats.petals=(this.waveStats.petals||0)+n;this.save.petals=(this.save.petals||0)+n;}
     grantReward(id:RewardId){
         if(id==='heal')this.heal(this.maxHp*.25);
         if(id==='gold')this.grantGold(40+this.stats.wave*8);
@@ -445,7 +455,7 @@ export class ArenaScene extends Phaser.Scene {
     get maxAmmo() { return (this.weapon === 'shotgun' ? 6 : this.weapon==='smg'?28:12) + this.u('magazine') * 4; }
     startWave() { this.bossMarks=[];if(this.floorTheme !== (this.stats.wave>10?1:0)){this.drawFloor();this.cameras.main.fadeIn(900,15,8,12);} this.boostDamage=this.pendingReward==='damage'?15:0;this.boostSpeed=this.pendingReward==='speed'?15:0;this.pendingReward=undefined;this.eventName=waveEvent(this.stats.wave);if(this.stats.wave<=10)this.eventName=({2:'Supply rush',4:'Hold the zone',6:'Elite hunt',8:'Supply rush',10:'Boss encounter'} as Record<number,string>)[this.stats.wave]||'Survival';this.waveObjectives=0;this.zoneSpawnClock=5;this.bossDefeated=false;this.supplies=[];this.huntTarget=undefined;this.zone={x:this.x+180,y:this.y,progress:0,done:false};this.hazard=undefined;this.hazardClock=8;
         if(this.eventName==='Supply rush')this.supplies=Array.from({length:3},(_,i)=>{const x=this.x+Math.cos(i*2.1)*260,y=this.y+Math.sin(i*2.1)*260;return {...this.clearGroundPoint(x,y,65),active:true};});
-        this.createLandmark();this.waveTime = 0; this.spawnIndex = 0; this.plan = wavePlan(this.stats.wave,this.random); this.waveStats = { kills: 0, gold: 0, damage: 0, time: 0 }; this.waiting = false;if(this.evolved('ward'))this.rewardShield=Math.max(this.rewardShield,3); this.waveWard = !!this.u('ward'); if(this.eventName==='Elite hunt'){this.spawn('elite');this.huntTarget=this.enemies.find(e=>e.active&&e.type==='elite');} this.audio.play('wave'); this.banner(`WAVE ${String(this.stats.wave).padStart(2, '0')} · ${this.eventName.toUpperCase()}`, 0x9eefae); }
+        this.createLandmark();this.waveTime = 0; this.spawnIndex = 0; this.plan = wavePlan(this.stats.wave,this.random,this.options.mode==='daily'?this.dailyBosses:undefined); if(this.options.mode==='daily'){if(this.stats.wave===5)this.eventName='Boss encounter';else if(this.stats.wave===10)this.eventName='Final boss';} this.waveStats = { kills: 0, gold: 0, damage: 0, time: 0, petals: 0 }; this.waiting = false;if(this.evolved('ward'))this.rewardShield=Math.max(this.rewardShield,3); this.waveWard = !!this.u('ward'); if(this.eventName==='Elite hunt'){this.spawn('elite');this.huntTarget=this.enemies.find(e=>e.active&&e.type==='elite');} this.audio.play('wave'); this.banner(`WAVE ${String(this.stats.wave).padStart(2, '0')} · ${this.eventName.toUpperCase()}`, 0x9eefae); }
     banner(message: string, color = 0xffffff) { const t = this.add.text(this.cameras.main.width/2, 125, message, { fontFamily: 'monospace', fontSize: Math.min(26,Math.max(13,this.cameras.main.width/32))+'px', color: '#' + color.toString(16).padStart(6, '0'), fontStyle: 'bold' }).setOrigin(.5).setScrollFactor(0); this.tweens.add({ targets: t, alpha: 0, y: 100, delay: 1400, duration: 600, onComplete: () => t.destroy() }); }
     spawnSerial=0;
     spawn(type: EnemyId, side = Math.floor(this.random() * 4), offset = this.random(), factionOverride?:EnemyFaction) {
@@ -453,13 +463,14 @@ export class ArenaScene extends Phaser.Scene {
         if(rosterSpawn(type,faction)===undefined)return;
         if(this.count>=BALANCE.maxEnemies){if(['boss','shooterBoss','commander'].includes(type)){const replace=this.enemies.filter(e=>e.active&&['basic','runner'].includes(e.type)).sort((a,b)=>Math.hypot(b.x-this.x,b.y-this.y)-Math.hypot(a.x-this.x,a.y-this.y))[0];if(!replace)return;replace.active=false;}else return;}
         const d = ENEMIES[type], s = scaling(this.stats.wave), robot=faction==='robot'?robotStats(type):{health:1,damage:1,speed:1};
+        const dailyWave5BossMod = (this.options.mode === 'daily' && this.stats.wave === 5 && ['boss','commander'].includes(type)) ? 0.65 : 1;
         let e = this.enemies.find(e => !e.active);
         if (!e) {
             e = {} as Enemy;
             this.enemies.push(e);
         }
         const view=this.cameras.main.worldView; const halfW=view.width/2||600,halfH=view.height/2||380; const x=side===0?this.x-halfW-70:side===1?this.x+halfW+70:this.x-halfW+view.width*offset,y=side===2?this.y-halfH-70:side===3?this.y+halfH+70:this.y-halfH+view.height*offset;
-        Object.assign(e, { active: true, skillAge:99,skillWindup:1.15,skillAction:undefined,squad:Math.floor(serial/8), x, y, hp: d.hp * s.health*robot.health, max: d.hp * s.health*robot.health, type, faction, r: d.radius, speed: d.speed * s.speed*robot.speed, slow:0, stagger:0, burn:0, commandTime:0, shotKick:0, chargeTime:0, chargeHit:false, damage: d.damage * s.damage*robot.damage, flash: 0, attack: type === 'boss' ? 3 : 2, telegraph: 0, targetX: x, targetY: y, bleed: 0, touched: false, mod: Math.floor(this.random() * 5), phase: 0, threshold: 0 });
+        Object.assign(e, { active: true, skillAge:99,skillWindup:1.15,skillAction:undefined,squad:Math.floor(serial/8), x, y, hp: d.hp * s.health*robot.health*dailyWave5BossMod, max: d.hp * s.health*robot.health*dailyWave5BossMod, type, faction, r: d.radius, speed: d.speed * s.speed*robot.speed, slow:0, stagger:0, burn:0, commandTime:0, shotKick:0, chargeTime:0, chargeHit:false, damage: d.damage * s.damage*robot.damage, flash: 0, attack: type === 'boss' ? 3 : 2, telegraph: 0, targetX: x, targetY: y, bleed: 0, touched: false, mod: Math.floor(this.random() * 5), phase: 0, threshold: 0 });
         if (['elite','boss','brute','shooterBoss','commander'].includes(type)) {
             this.burst(x, y, 0xef6879, 22);
             this.audio.play(type === 'boss' ? 'boss' : 'elite');
@@ -561,8 +572,10 @@ export class ArenaScene extends Phaser.Scene {
         if(this.evolved('regen')&&['elite','boss','shooterBoss','commander'].includes(e.type)){this.lifePulse=5;this.impactRing(this.x,this.y,65,0x8fbe9a);}
         this.stats.kills++;
         if(e===this.huntTarget){this.huntTarget=undefined;this.grantGold(250+this.stats.wave*15);this.objectiveComplete('ELITE BOUNTY CLAIMED');}
-        if(['shooterBoss','commander'].includes(e.type)){this.grantGold(400+this.stats.wave*20);this.heal(this.maxHp*.15);this.objectiveComplete('MINI-BOSS DEFEATED · GOLD + RECOVERY');}
-        if(e.type==='boss'){if(this.stats.wave===10&&!this.bossMagnet){const p=this.stats.wave<=10?separateWrecks(e.x,e.y,45,mapObstaclesNear(e.x,e.y)):{x:e.x,y:e.y};this.bossMagnet={...p,active:true,born:this.elapsed};}this.bossDefeated=true;if(this.stats.wave===10&&this.finiteRun){for(const enemy of this.enemies)if(enemy!==e)enemy.active=false;this.spawnIndex=this.plan.length;this.pendingStrikes=[];this.pendingEchoes=[];for(const bullet of this.bullets)if(bullet.hostile)bullet.active=false;}this.grantGold(300+this.stats.wave*20);this.heal(this.maxHp*.2);this.banner('BOSS DEFEATED · RECOVERY + GOLD',0xd8ba85);}
+        const isFinalBoss = this.stats.wave === 10 && this.finiteRun && (e.type === 'boss' || e.type === 'commander');
+        if(isFinalBoss || e.type==='boss'){if(this.stats.wave===10&&!this.bossMagnet){const p=this.stats.wave<=10?separateWrecks(e.x,e.y,45,mapObstaclesNear(e.x,e.y)):{x:e.x,y:e.y};this.bossMagnet={...p,active:true,born:this.elapsed};}this.bossDefeated=true;if(this.stats.wave===10&&this.finiteRun){for(const enemy of this.enemies)if(enemy!==e)enemy.active=false;this.spawnIndex=this.plan.length;this.pendingStrikes=[];this.pendingEchoes=[];for(const bullet of this.bullets)if(bullet.hostile)bullet.active=false;}this.grantGold(300+this.stats.wave*20);this.heal(this.maxHp*.2);this.banner(`${enemyName(e.type,e.faction).toUpperCase()} DEFEATED · RECOVERY + GOLD`,0xd8ba85);}
+        else if(['shooterBoss','commander'].includes(e.type)){this.grantGold(400+this.stats.wave*20);this.heal(this.maxHp*.15);this.objectiveComplete(`${enemyName(e.type,e.faction).toUpperCase()} DEFEATED · GOLD + RECOVERY`);}
+
         this.waveStats.kills++;
         this.combo = this.comboTime > 0 ? this.combo + 1 : 1;
         this.comboTime = 4;
@@ -801,10 +814,13 @@ export class ArenaScene extends Phaser.Scene {
             if(this.bossMagnet.active){if(this.elapsed-this.bossMagnet.born<6)return;this.collectBossMagnet();return;}
             if(this.drops.some(d=>d.active&&d.vacuum))return;
         }
-        if(this.finiteRun&&this.stats.wave===10&&(!this.bossDefeated||this.enemies.some(e=>e.active&&e.type==='boss')))return;
+        if(this.finiteRun&&this.stats.wave===10&&(!this.bossDefeated||this.enemies.some(e=>e.active&&(e.type==='boss'||e.type==='commander'))))return;
+        if(this.options.mode==='daily'&&this.stats.wave===5&&this.enemies.some(e=>e.active&&(e.type==='boss'||e.type==='commander')))return;
         this.earned=earnedWaveGold(this.stats.wave,this.waveStats.kills,this.waveStats.damage,this.waveObjectives);
         const earnedGold=this.earned.combat+this.earned.perfect+this.earned.objective;this.grantGold(earnedGold);
-        this.banner(`WAVE CLEAR · +${earnedGold} EARNED GOLD`,0xd8ba85);
+        const earnedPetals = this.stats.wave === 10 ? 60 : this.stats.wave === 5 ? 40 : (this.options.mode === 'daily' ? 20 : 10);
+        this.grantPetals(earnedPetals);
+        this.banner(`WAVE CLEAR · +${earnedGold} GOLD · +${earnedPetals} ✿ PETALS`,0xd8ba85);
         if(this.stats.wave===5&&!this.earlyAwakened){this.earlyAwakened=true;this.reveal(this.earlyTechnique);}
         if(this.stats.wave>10&&[3,6,8].includes(this.stats.wave)&&(this.earned.combat>0||this.waveObjectives>0)){this.xp+=this.xpNeed;this.notifyCombat('COMBAT MILESTONE · BONUS LEVEL-UP');}
 
@@ -917,14 +933,14 @@ export class ArenaScene extends Phaser.Scene {
         const targetInReach=this.enemies.some(e=>e.active&&Math.hypot(e.x-this.x,e.y-this.y)<(isGun(this.weapon)?520:WEAPONS[this.weapon].range*(1+this.u('range')*.25)+e.r+25));
         if (this.attack <= 0&&targetInReach)this.basicAttack();
         // Major encounters must not be stuck behind a deferred ordinary pack.
-        for(let i=this.spawnIndex;i<this.plan.length&&this.plan[i].time<=this.waveTime;i++){const pack=this.plan[i];if(pack.count>0&&['boss','shooterBoss','commander'].includes(pack.type)){this.spawn(pack.type);pack.count--;}}
+        for(let i=this.spawnIndex;i<this.plan.length&&this.plan[i].time<=this.waveTime;i++){const pack=this.plan[i];if(pack.count>0&&['boss','shooterBoss','commander'].includes(pack.type)){this.spawn(pack.type,undefined,undefined,pack.faction);pack.count--;}}
         const localCrowd=this.enemies.filter(e=>e.active&&Math.hypot(e.x-this.x,e.y-this.y)<240).length;
         if(this.spawnPulse<=0)while(this.spawnIndex<this.plan.length&&this.plan[this.spawnIndex].time<=this.waveTime){
             if(this.plan[this.spawnIndex].count<=0){this.spawnIndex++;continue;}
             const pack=this.plan[this.spawnIndex],major=['boss','shooterBoss','commander'].includes(pack.type);
             if(!major&&localCrowd>=18){this.spawnPulse=.5;break;}
             const amount=Math.min(pack.count,major?1:4),side=Math.floor(this.random()*4),center=this.random();
-            for(let i=0;i<amount;i++){const requested=pack.formation===3?(side+i%2*2)%4:side,offset=Phaser.Math.Clamp(center+(i-amount/2)*.075,.05,.95),route=major?{side:requested,offset}:routedSpawn(requested,offset,this.cameras.main.worldView.width,this.cameras.main.worldView.height,this.escapeAngle);this.spawn(pack.type,route.side,route.offset);}
+            for(let i=0;i<amount;i++){const requested=pack.formation===3?(side+i%2*2)%4:side,offset=Phaser.Math.Clamp(center+(i-amount/2)*.075,.05,.95),route=major?{side:requested,offset}:routedSpawn(requested,offset,this.cameras.main.worldView.width,this.cameras.main.worldView.height,this.escapeAngle);this.spawn(pack.type,route.side,route.offset,pack.faction);}
             pack.count-=amount;if(pack.count<=0)this.spawnIndex++;this.spawnPulse=.18;break;
         }
         for(const strike of this.pendingStrikes)strike.delay-=dt;

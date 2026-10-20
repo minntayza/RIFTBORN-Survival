@@ -1,5 +1,7 @@
 import {encounterRhythm} from './run-design';
 import { ENEMIES, type EnemyId } from './config';
+import type { BossConfig } from './retention';
+import type { EnemyFaction } from './robot-enemies';
 export const waveBudget = (wave: number) => 100 + 30 * (wave - 1) + 4 * (wave - 1) ** 2;
 export const scaling = (wave: number) => ({ health: 1 + (wave - 1) * .06, damage: 1 + (wave - 1) * .045, speed: 1 + Math.min((wave - 1) * .012, .3) });
 export type Spawn = {
@@ -7,8 +9,9 @@ export type Spawn = {
     type: EnemyId;
     count: number;
     formation: number;
+    faction?: EnemyFaction;
 };
-export function wavePlan(w: number, random=Math.random): Spawn[] {
+export function wavePlan(w: number, random=Math.random, dailyBosses?: { wave5: BossConfig; wave10: BossConfig }): Spawn[] {
     if (w === 1)
         return [{ time: 0, type: 'basic', count: 4, formation: 0 }, { time: 6, type: 'basic', count: 3, formation: 1 }, { time: 6, type: 'runner', count: 1, formation: 1 }, { time: 12, type: 'basic', count: 3, formation: 2 }, { time: 18, type: 'runner', count: 2, formation: 3 }, { time: 24, type: 'basic', count: 3, formation: 0 }, { time: 24, type: 'runner', count: 1, formation: 0 }, { time: 30, type: 'basic', count: 3, formation: 2 }, { time: 35, type: 'brute', count: 1, formation: 1 }];
     const counts: Partial<Record<EnemyId, number>>[] = [{}, {},
@@ -21,6 +24,17 @@ export function wavePlan(w: number, random=Math.random): Spawn[] {
       {basic:44,runner:14,spitter:7,brute:4,armoured:7,rifle:3,elite:1},
       {basic:48,runner:16,spitter:8,brute:5,armoured:8,rifle:4,commander:1},
       {basic:54,runner:18,spitter:8,brute:5,armoured:9,rifle:5,boss:1}];
+    if (dailyBosses && w <= 10) {
+        if (w === 5) counts[5] = { basic: 16, runner: 4, spitter: 2, [dailyBosses.wave5.type]: 1 };
+        else if (w === 9) counts[9] = { basic: 28, runner: 8, spitter: 4, brute: 3, armoured: 4, rifle: 2 };
+        else if (w === 10) counts[10] = { basic: 24, runner: 6, spitter: 3, armoured: 4, [dailyBosses.wave10.type]: 1 };
+        else if (w >= 2 && counts[w]) {
+            const c = counts[w];
+            for (const key of Object.keys(c) as EnemyId[]) {
+                if (c[key] && c[key]! > 2) c[key] = Math.max(2, Math.round(c[key]! * 0.8));
+            }
+        }
+    }
     const out: Spawn[] = [];
     if (w <= 10) {
         for (const [type, n] of Object.entries(counts[w])) {
@@ -28,7 +42,17 @@ export function wavePlan(w: number, random=Math.random): Spawn[] {
             let i = 0;
             while (left > 0) {
                 const count = Math.min(left, type === 'basic' ? 4 : 2);
-                out.push({ time: type === 'boss' ? 0 : type==='commander'?20: Math.min(39, i * 38 / Math.max(1,Math.ceil(n/(type==='basic'?4:2))-1) + (type === 'basic' ? 0 : 2)), type: type as EnemyId, count, formation: i % 6 });
+                const isDailyW5Boss = !!dailyBosses && w === 5 && type === dailyBosses.wave5.type;
+                const isDailyW10Boss = !!dailyBosses && w === 10 && type === dailyBosses.wave10.type;
+                const faction = isDailyW5Boss ? dailyBosses!.wave5.faction : isDailyW10Boss ? dailyBosses!.wave10.faction : undefined;
+                const isBoss = isDailyW5Boss || isDailyW10Boss || type === 'boss';
+                out.push({
+                    time: isBoss ? 0 : type==='commander'?20: Math.min(39, i * 38 / Math.max(1,Math.ceil(n/(type==='basic'?4:2))-1) + (type === 'basic' ? 0 : 2)),
+                    type: type as EnemyId,
+                    count,
+                    formation: i % 6,
+                    ...(faction ? { faction } : {})
+                });
                 left -= count;
                 i++;
             }

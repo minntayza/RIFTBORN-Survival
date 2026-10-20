@@ -8,4 +8,4 @@ export type EnemyId = keyof typeof ENEMIES;
 export const PERMANENT = { health: { name: 'Vitality', cap: 3, value: .05 }, damage: { name: 'Steel discipline', cap: 2, value: .05 }, speed: { name: 'Fleet foot', cap: 2, value: .05 }, magnet: { name: 'Gold reach', cap: 5, value: .05 }, reroll: { name: 'Second chance', cap: 1, value: 1 }, defense: { name: 'Bulwark', cap: 5, value: .05 } };
 
 // Temporary playtesting: turn off to restore the normal gold economy.
-export const PLAYTEST = { unlimitedPetals: true, unlimitedGold: true, goldReserve: 1_000_000_000 };
+export const PLAYTEST = { unlimitedPetals: false, unlimitedGold: true, goldReserve: 1_000_000_000 };
