@@ -1,0 +1,4 @@
+.music-toggle { position: fixed; right: max(16px, env(safe-area-inset-right)); bottom: max(16px, env(safe-area-inset-bottom)); z-index: 10000; display: grid; place-items: center; width: 44px; height: 44px; padding: 0; color: #c2cec8; background: #17282feF; border: 1px solid #65756a; border-radius: 50%; cursor: pointer; box-shadow: 0 4px 16px #0005; }
+.music-toggle[aria-pressed="true"] { color: #e9cb7b; border-color: #e9cb7b; }
+.music-toggle:hover { background: #293e43; }
+.music-toggle:focus-visible { outline: 2px solid #e9cb7b; outline-offset: 3px; }

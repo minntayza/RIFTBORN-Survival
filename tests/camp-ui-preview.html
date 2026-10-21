@@ -1,0 +1,22 @@
+<!doctype html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><title>Camp UI · isolated test</title></head><body><div id="game"></div><div id="hud"></div><div id="overlay"></div><script type="module">
+// This harness uses its own tab-session save, never the player's localStorage.
+const namespace='zls-camp-ui-test:';
+const isolated={getItem:key=>sessionStorage.getItem(namespace+key),setItem:(key,value)=>sessionStorage.setItem(namespace+key,String(value)),removeItem:key=>sessionStorage.removeItem(namespace+key),clear:()=>Object.keys(sessionStorage).filter(k=>k.startsWith(namespace)).forEach(k=>sessionStorage.removeItem(k)),key:i=>Object.keys(sessionStorage).filter(k=>k.startsWith(namespace))[i]?.slice(namespace.length)??null,get length(){return Object.keys(sessionStorage).filter(k=>k.startsWith(namespace)).length;}};
+Object.defineProperty(window,'localStorage',{value:isolated});
+const {freshSave}=await import('/src/save.ts');
+const {HEROES,WEAPONS}=await import('/src/config.ts');
+if(!isolated.getItem('zombie-last-stand.progress.v2')){const save=freshSave();save.hero='zawgyi';save.weapon='mysticstaff';save.heroes=Object.keys(HEROES);save.weapons=Object.keys(WEAPONS);save.settings.sound=false;save.settings.music=false;isolated.setItem('zombie-last-stand.v1',JSON.stringify(save));}
+const query=new URLSearchParams(location.search);const proof=document.createElement('output');proof.id='camp-test-state';proof.style.cssText='position:fixed;bottom:0;left:0;z-index:99999;background:#10242b;color:#fff;font:11px sans-serif;padding:4px';proof.textContent='Isolated UI test · '+location.search;document.body.append(proof);
+if(query.has('art-error')){
+ const NativeImage=window.Image,src=Object.getOwnPropertyDescriptor(HTMLImageElement.prototype,'src');let injected=false;
+ window.Image=function(...args){const image=new NativeImage(...args);Object.defineProperty(image,'src',{get(){return src.get.call(this);},set(value){const fail=!injected&&String(value).includes('zawgyi-rig');if(fail)injected=true;src.set.call(this,fail?'/assets/intentionally-missing-test-art.png':value);}});return image;};
+}
+if(query.has('arena-error')||query.has('arena-hang')){
+ const {default:Phaser}=await import('phaser');const Game=Phaser.Game;let injected=false;
+ Phaser.Game=class extends Game{constructor(config){const first=!injected;injected=true;const scene=config.scene[0];if(first&&query.has('arena-hang')){scene.create=function(){};scene.update=function(){};}super(config);if(first&&query.has('arena-error'))setTimeout(()=>{proof.textContent='Isolated test · simulated loader error';scene.onLoadingError?.();},0);}};
+}
+await import('/src/main.ts');
+// Exercise the reduced-motion declarations without changing the user's OS settings.
+if(query.has('reduced'))for(const sheet of document.styleSheets)for(const rule of sheet.cssRules)if(rule instanceof CSSMediaRule&&rule.conditionText.includes('prefers-reduced-motion: reduce'))rule.media.mediaText='all';
+
+</script></body></html>
