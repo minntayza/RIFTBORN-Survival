@@ -4,10 +4,10 @@ type Spark={x:number;y:number;vx:number;vy:number;born:number;life:number;size:n
 type Sweep={x:number;y:number;angle:number;radius:number;span:number;born:number;life:number;profile:Profile;ring:boolean};
 /** Decorative only: no combat callbacks, damage, targeting, sounds or gameplay RNG. */
 export class CosmeticWeaponEffects{
- private g:Phaser.GameObjects.Graphics;private sparks:Spark[]=[];private sweeps:Sweep[]=[];private impactAt=-1;private serial=0;
+ private g:Phaser.GameObjects.Graphics;private sparks:Spark[]=[];private sweeps:Sweep[]=[];private impactAt=-1;private serial=0;private quiet=false;private reduced=false;
  get activeCount(){return this.sparks.length+this.sweeps.length;}
  constructor(scene:Phaser.Scene){this.g=scene.add.graphics().setDepth(5);}
- emit(p:Profile,x:number,y:number,angle:number,time:number,count:number,speed=40){for(let i=0;i<count;i++){
+ emit(p:Profile,x:number,y:number,angle:number,time:number,count:number,speed=40){for(let i=0;i<Math.min(count,this.quiet?2:count);i++){
   const phase=(++this.serial*2.399963)+(i*.7),a=angle+Math.sin(phase)*1.6;
   if(this.sparks.length>=COSMETIC_FX_LIMIT-10)this.sparks.shift();
   this.sparks.push({x,y,vx:Math.cos(a)*speed*(.5+.5*Math.abs(Math.sin(phase))),vy:Math.sin(a)*speed-15,born:time,life:.42+(i%3)*.12,size:4+(i%3)*1.4,spin:phase,profile:p,kind:i%3===2?'glint':'glyph'});
@@ -35,9 +35,9 @@ export class CosmeticWeaponEffects{
    case 'snow':for(let i=0;i<3;i++){const a=i*Math.PI/3,u=point(Math.cos(a),Math.sin(a)),v=point(-Math.cos(a),-Math.sin(a));g.lineBetween(u.x,u.y,v.x,v.y);}g.fillStyle(p.accent,alpha);g.fillCircle(x,y,r*.23);break;
   }
  }
- render(time:number,bullets:readonly {active:boolean;hostile:boolean;x:number;y:number;vx:number;vy:number}[],p:Profile|undefined){const g=this.g;g.clear();this.sparks=this.sparks.filter(s=>time-s.born<s.life);this.sweeps=this.sweeps.filter(s=>time-s.born<s.life);
-  for(const s of this.sweeps){const t=(time-s.born)/s.life,a=(1-t)*.55;g.lineStyle(8,s.profile.color,a*.15);g.beginPath();g.arc(s.x,s.y,s.radius*(.9+t*.16),s.angle-s.span/2,s.angle+s.span/2);g.strokePath();g.lineStyle(2,s.profile.accent,a);g.beginPath();g.arc(s.x,s.y,s.radius*(.9+t*.16),s.angle-s.span/2,s.angle+s.span/2);g.strokePath();if(s.ring){g.lineStyle(1.5,s.profile.color,a*.5);g.strokeCircle(s.x,s.y,s.radius*(.7+t*.4));}}
-  for(const s of this.sparks){const age=time-s.born,t=age/s.life;this.glyph(s.profile,s.x+s.vx*age,s.y+s.vy*age-12*age*age,s.size*(1-t*.5),s.spin+age*1.6,(1-t)*.9,s.kind==='glint');}
-  if(p){let n=0;for(const b of bullets){if(!b.active||b.hostile||n++>=40)continue;const length=Math.hypot(b.vx,b.vy)||1,dx=b.vx/length,dy=b.vy/length;g.lineStyle(3,p.color,.23);g.lineBetween(b.x,b.y,b.x-dx*15,b.y-dy*15);g.lineStyle(1,p.accent,.8);g.lineBetween(b.x,b.y,b.x-dx*9,b.y-dy*9);if(n%4===0)this.glyph(p,b.x-dx*18,b.y-dy*18,3,time+n,.65);}}
+ render(time:number,bullets:readonly {active:boolean;hostile:boolean;x:number;y:number;vx:number;vy:number}[],p:Profile|undefined,wide=false,reduced=false){this.quiet=wide||reduced;this.reduced=reduced;const g=this.g;g.clear();g.setAlpha(wide?.78:1);this.sparks=this.sparks.filter(s=>time-s.born<s.life);this.sweeps=this.sweeps.filter(s=>time-s.born<s.life);
+  for(const s of this.sweeps.slice(this.quiet?-3:-10)){const t=(time-s.born)/s.life,a=(1-t)*.55;g.lineStyle(8,s.profile.color,a*.15);g.beginPath();g.arc(s.x,s.y,s.radius*(.9+t*.16),s.angle-s.span/2,s.angle+s.span/2);g.strokePath();g.lineStyle(2,s.profile.accent,a);g.beginPath();g.arc(s.x,s.y,s.radius*(.9+t*.16),s.angle-s.span/2,s.angle+s.span/2);g.strokePath();if(s.ring){g.lineStyle(1.5,s.profile.color,a*.5);g.strokeCircle(s.x,s.y,s.radius*(.7+t*.4));}}
+  for(const s of this.sparks){const age=time-s.born,t=age/s.life;this.glyph(s.profile,s.x+s.vx*age,s.y+s.vy*age-12*age*age,s.size*(1-t*.5),s.spin+(this.reduced?0:age*.7),(1-t)*.9,s.kind==='glint');}
+  if(p){let n=0;for(const b of bullets){if(!b.active||b.hostile||n++>=(this.quiet?16:40))continue;const length=Math.hypot(b.vx,b.vy)||1,dx=b.vx/length,dy=b.vy/length;g.lineStyle(3,p.color,.23);g.lineBetween(b.x,b.y,b.x-dx*15,b.y-dy*15);g.lineStyle(1,p.accent,.8);g.lineBetween(b.x,b.y,b.x-dx*9,b.y-dy*9);if(!this.quiet&&n%4===0)this.glyph(p,b.x-dx*18,b.y-dy*18,3,time+n,.65);}}
  }
 }

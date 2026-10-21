@@ -15,7 +15,7 @@ import {combatHud,buildDetails,abilityIcons} from './combat-hud';
 import {cardEvolutionGuide,weaponEvolutionGuide} from './guide-ui';
 import {CARD_EVOLUTIONS} from './card-evolutions';
 import {HERO_IDENTITIES,EVOLUTION_STAGES,encounterRhythm,deathTip} from './run-design';
-import {visualUpgradeCard,upgradeBuildHint,upgradeVisual,upgradeValues} from './upgrade-ui';
+import {visualUpgradeCard,upgradeBuildHint} from './upgrade-ui';
 import {evolutionPreview} from './evolution-preview';
 import {BUILDS,dailySetup,incomingThreats,edgePosition,type RunMode,type BuildId,type RunOptions} from './retention';
 import { evolutionOptions, type EvolutionId } from './progression';
@@ -57,9 +57,21 @@ function header(title: string, sub: string) { return `<div class="eyebrow">ZOMBI
 function back() { return button('← Back', 'menu', 'quiet'); }
 function menu() {
  menuState='menu';hud.innerHTML='';overlay.className='';
- const mode=selectedMode==='short'?'Last Stand · 10 waves':selectedMode==='daily'?'Daily Challenge':'Endless';
- const build=BUILDS.find(b=>b.id===(selectedMode==='daily'?dailySetup().build:selectedBuild))!.name;
- shell(`<main class="landing-screen quick-start home-clean home-action hero-${save.hero}"><div class="landing-scene" aria-hidden="true"></div><header class="home-header"><span class="home-brand">ZLS <small>LAST STAND</small></span><div class="home-wallet"><span class="home-gold"><b>◈ ${PLAYTEST.unlimitedGold?'∞':save.gold.toLocaleString()}</b><small>GOLD</small></span>${button('Shop','shop','home-shop-button')}</div></header><section class="landing-copy"><div class="landing-eyebrow">YOUR NEXT STAND</div><h1>ZOMBIE<br><em>LAST STAND</em></h1><p class="intro">One hero. Endless hordes.<br> How long can you hold the line?</p><div class="loadout"><span class="portrait">${artImage('hero',save.hero)}</span><div><small class="home-label">YOUR SURVIVOR</small><b>${HEROES[save.hero].name}</b><small>${WEAPONS[save.weapon].name}</small></div>${button('Change','loadout','loadout-change')}</div><nav class="menu-actions" aria-label="Start a run"><div class="home-run"><span>${mode}</span><span>${build}</span></div>${button('PLAY NOW →','quick-play','primary')}</nav><details class="home-tools" ${desktopMenu.matches?'open':''}><summary>More options</summary><nav aria-label="Game options">${button('Field Guide','guide','quiet')}${button('Settings','settings','quiet')}</nav></details></section><section class="home-showcase" aria-label="Your survivor in action"><div class="home-survivor-poster" aria-hidden="true">${artImage('hero',save.hero)}</div><canvas id="home-scene" role="img" aria-label="${HEROES[save.hero].name} wielding ${WEAPONS[save.weapon].name} against approaching zombies"></canvas><div class="home-showcase-caption"><span>MEET YOUR SURVIVOR</span><b>${HEROES[save.hero].name}</b><small>${WEAPONS[save.weapon].name} · ${HEROES[save.hero].ability}</small></div></section><div class="records" aria-label="Your records"><div><b>${save.bestWave||'—'}</b><small>BEST WAVE</small></div><div><b>${format(save.bestTime)}</b><small>LONGEST STAND</small></div><div><b>${save.bestKills}</b><small>MOST KILLS</small></div><div><b>${save.shortWins}</b><small>WINS</small></div></div><footer><span><kbd>WASD</kbd> Move <span>·</span> Auto attack <span>·</span> <kbd>SPACE</kbd> Ability</span></footer></main>`,true);
+ const daily=dailySetup(),dailyMode=selectedMode==='daily',today=save.daily[daily.date!];
+ const build=BUILDS.find(b=>b.id===(dailyMode?daily.build:selectedBuild))!;
+ const outfitId=save.cosmetics.equipped[`character:${save.hero}`],outfit=COSMETICS.find(c=>c.id===outfitId)?.name;
+ const dailyStatus=today?.wins?'Completed today':today?.score?'Try again today':'Not completed yet';
+ const modes=`<div class="hub-mode-list" role="group" aria-label="Choose your game mode">${(['endless','daily'] as const).map(mode=>`<button class="hub-mode ${selectedMode===mode?'selected':''}" data-action="home-mode:${mode}" aria-pressed="${selectedMode===mode}"><span class="hub-mode-picture"><img src="/assets/mode-art/${mode}.webp" alt=""/></span><span class="hub-mode-copy"><b>${mode==='daily'?'Daily Challenge':'Endless'}</b><span>${mode==='daily'?'10 waves · Rotating bosses':'Growing hordes · No wave limit'}</span><small>${mode==='daily'?`✿ Petal rewards · ${dailyStatus}`:'Find your build. Beat your best.'}</small></span><span class="hub-mode-check" aria-hidden="true">${selectedMode===mode?'✓':'○'}</span></button>`).join('')}</div>`;
+ const builds=dailyMode?`<div class="hub-daily-build"><b>${build.icon} ${build.name}</b><span>Today’s fixed build</span></div>`:`<div class="hub-build-options" role="group" aria-label="Choose your starting build">${BUILDS.map(b=>`<button data-action="home-build:${b.id}" class="${b.id===selectedBuild?'selected':''}" aria-pressed="${b.id===selectedBuild}">${b.icon} ${b.name}</button>`).join('')}</div>`;
+ shell(`<main class="landing-screen quick-start home-clean home-action home-hub hero-${save.hero}">
+ <header class="home-header"><span class="home-brand">ZLS <small>LAST STAND</small></span><div class="hub-wallets"><span class="hub-wallet"><b>◈ ${PLAYTEST.unlimitedGold?'∞':save.gold.toLocaleString()}</b><small>Gold</small></span><span class="hub-wallet petals"><b>✿ ${PLAYTEST.unlimitedPetals?'∞':save.petals.toLocaleString()}</b><small>Petals</small></span>${button('Cosmetics','tab:cosmetics','hub-cosmetics')}${button('Shop','shop','quiet')}</div></header>
+ <section class="home-showcase" aria-label="Your equipped survivor"><div class="home-survivor-poster" aria-hidden="true">${artImage('hero',save.hero)}</div><canvas id="home-scene" role="img" aria-label="${HEROES[save.hero].name} holding the equipped ${WEAPONS[save.weapon].name}"></canvas><div class="hub-survivor"><div><small>YOUR SURVIVOR</small><h2>${HEROES[save.hero].name}</h2><p>${WEAPONS[save.weapon].name}${outfit?` · ${outfit}`:''}</p></div>${button('Change loadout','loadout','quiet')}</div></section>
+ <section class="landing-copy hub-run-setup"><div class="landing-eyebrow">YOUR NEXT STAND</div><h1>Choose your run</h1><p class="hub-intro">Survive the horde. Make it your own.</p>${modes}
+ <section class="hub-build"><div class="hub-section-label"><span>YOUR BUILD</span><small>${dailyMode?'DAILY SETUP':'CHOOSE YOUR ADVANTAGE'}</small></div>${builds}<p>${build.description.split('. ')[0]}.</p></section>
+ <div class="hub-launch">${button(dailyMode?'PLAY DAILY CHALLENGE →':'PLAY ENDLESS →','quick-play','primary')}<small>${dailyMode?`${dailyStatus}${today?.score?` · Best score ${today.score.toLocaleString()}`:''}`:'Your survivor, weapon, and build are ready.'}</small></div>
+ <div class="hub-petal-note"><span aria-hidden="true">✿</span><p>Earn Petals in Daily Challenge.<br><button data-action="tab:cosmetics">Find your next outfit or weapon design →</button></p></div>
+ </section>
+ <footer class="hub-footer"><nav aria-label="More game options">${button('Field Guide','guide','quiet')}${button('Settings','settings','quiet')}</nav><details class="hub-records"><summary>Personal records</summary><div class="records"><div><b>${save.bestWave||'—'}</b><small>BEST WAVE</small></div><div><b>${format(save.bestTime)}</b><small>LONGEST STAND</small></div><div><b>${save.bestKills}</b><small>MOST KILLS</small></div><div><b>${save.shortWins}</b><small>WINS</small></div></div></details></footer></main>`,true);
  overlay.querySelector('.panel')?.classList.add('landing-panel');
  const canvas=overlay.querySelector<HTMLCanvasElement>('#home-scene');if(canvas)void startHomeScene(canvas,save.hero,save.weapon,false,{character:cosmeticColor(save,'character',save.hero),weapon:cosmeticColor(save,'weapon',save.weapon)},equippedSkin(save),equippedWeaponSkin(save,save.weapon));
 }
@@ -168,20 +180,6 @@ function waveClear(){
  if(scene!.evolutionDue)evolutionMenu();else finishIntermission();
 }
 function renderChoices() { const s = scene!; const title=waveChoice?header(`Wave ${s.stats.wave} survived`,'Recover. Adapt. The next horde is coming.'):`<div class="choice-heading"><b>SKILL CHOICE</b><small>LEVEL ${s.level} · PICK ONE</small></div>`; shell(`${title} ${waveChoice ? `<div class="wave-recap"><span>${s.waveStats.time.toFixed(1)}s <small>CLEAR TIME</small></span><span>${s.waveStats.kills} <small>KILLS</small></span><span>◈ ${s.waveStats.gold} <small>GOLD</small></span><span>${Math.round(s.waveStats.damage)} <small>DAMAGE TAKEN</small></span></div><p class="badges">${s.waveStats.time < 45 ? '✦ QUICK CLEAR · +15% GOLD' : ''} ${s.waveStats.damage === 0 ? '◇ PERFECT CLEAR · +1 REROLL' : ''}</p>` : ''}<div class="cards upgrade-cards">${choices.map((u,i)=>visualUpgradeCard(u,i,s.hero,s.weapon,s.levels[u.id]||0,upgradeBuildHint(u,s.levels))).join('')}</div><div class="actions"><span class="muted">${button('Evolution guide','guide-cards','quiet')}</span>${button(`↻ Reroll (${s.rerolls} left)`, 'reroll', 'quiet')}</div>`, true); overlay.querySelector('.panel')?.classList.add('levelup-panel');const reroll=overlay.querySelector<HTMLButtonElement>('[data-action=reroll]');if(reroll)reroll.disabled=s.rerolls<=0; }
-function previewUpgrade(index:number){
- if(menuState!=='choice'||!choices[index])return;
- const s=scene!,u=choices[index],v=upgradeValues(u,s.levels[u.id]||0);
- overlay.querySelector('.upgrade-inspect')?.remove();
- const dialog=document.createElement('dialog');dialog.className='upgrade-inspect';
- dialog.setAttribute('aria-label',u.name+' details');
- dialog.innerHTML=`<button class="inspect-close" aria-label="Close skill preview">×</button>${upgradeVisual(u,s.hero,s.weapon)}<h3>${u.name}</h3><p>${u.description}</p><div class="inspect-values"><span>${v.before}</span><b>→ ${v.after}</b></div><button class="inspect-confirm">Choose ${u.name}</button><small>Choose to apply this upgrade and resume combat.</small>`;
- overlay.append(dialog);
- const close=()=>{dialog.close();dialog.remove();overlay.querySelector<HTMLButtonElement>(`[data-action="upgrade:${index}"]`)?.focus();};
- dialog.querySelector('.inspect-close')!.addEventListener('click',close);
- dialog.addEventListener('cancel',e=>{e.preventDefault();close();});
- dialog.querySelector('.inspect-confirm')!.addEventListener('click',()=>{dialog.close();dialog.remove();void pick(index);});
- dialog.showModal();dialog.querySelector<HTMLButtonElement>('.inspect-confirm')?.focus();
-}
 async function pick(index: number) {
     if (menuState !== 'choice' || !choices[index])
         return;
@@ -215,6 +213,8 @@ overlay.addEventListener('click', e => {
     if(a==='cosmetic-equip'){if(equipCosmetic(save,el.dataset.action!.slice('cosmetic-equip:'.length))){persist();shop('cosmetics');toast('Cosmetic equipped. Your weapon is ready in Your Loadout.');}else toast('Unlock this weapon and its survivor in the shop before equipping this design.');}
     if(a==='cosmetic-reset'){delete save.cosmetics.equipped[`${b}:${c}`];persist();shop('cosmetics');}
     if(a==='loadout')runLoadout();
+    if(a==='home-mode'&&(b==='daily'||b==='endless')){selectedMode=b;save.runSetup={mode:selectedMode,build:selectedBuild};persist();menu();}
+    if(a==='home-build'&&BUILDS.some(build=>build.id===b)&&selectedMode!=='daily'){selectedBuild=b as BuildId;save.runSetup={mode:selectedMode,build:selectedBuild};persist();menu();}
     if(a==='quick-play')start(selectedMode==='daily'?{...dailySetup(),hero:save.hero,weapon:save.weapon}:{mode:selectedMode,build:selectedBuild,technique:'standard'});
     if(a==='play')runMenu();
     if(a==='daily')runMenu('daily');
@@ -305,7 +305,7 @@ overlay.addEventListener('click', e => {
         shop(b);
     }
     if (a === 'upgrade')
-        previewUpgrade(Number(b));
+        void pick(Number(b));
     if (a === 'reroll') {
         if (scene!.rerolls <= 0) {
             toast('No rerolls remaining.');
@@ -352,7 +352,7 @@ overlay.addEventListener('change', e => {
 overlay.addEventListener('change',e=>{const el=e.target as HTMLSelectElement;if(el.dataset.control==='joystickSide')save.settings.joystickSide=el.value==='right'?'right':'left';else if(el.dataset.control==='joystickSize')save.settings.joystickSize=[95,115,135].includes(Number(el.value))?Number(el.value):115;else return;touchControls?.setLayout(save.settings.joystickSide,save.settings.joystickSize);persist();});
 document.addEventListener('keydown', e => {
     if (menuState === 'choice' && ['1', '2', '3'].includes(e.key))
-        previewUpgrade(Number(e.key) - 1);
+        void pick(Number(e.key) - 1);
     // Phaser captures gameplay keys itself. Preventing them here makes its
     // window listener discard the event before the arena can receive it.
 });

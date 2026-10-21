@@ -231,7 +231,7 @@ export class ArenaVisuals {
     private criticalPops:{x:number;y:number;born:number}[]=[];
     criticalHit(x:number,y:number,time:number){
         this.criticalPops.push({x,y,born:time});
-        if(this.criticalPops.length>12)this.criticalPops.shift();
+        if(this.criticalPops.length>5)this.criticalPops.shift();
     }
     private renderCriticalHits(time:number){
         if(!this.criticalFx&&!this.criticalPops.length)return;
@@ -465,11 +465,10 @@ export class ArenaVisuals {
         if(hero==='gunner')this.prepareTexture(`cute-gunner-${moved?1+Math.floor(time*10)%24:0}`);
         if(hero==='samurai')this.prepareTexture(`cute-samurai-${moved?1+Math.floor(time*10)%24:0}`);
         if(hero==='ninja')this.prepareTexture(`cute-ninja-${moved?1+Math.floor(time*10)%24:0}`);
-        this.hero.setTexture(hero==='tank'?`cute-tank-${moved?1+Math.floor(time*10)%24:0}`:hero==='gunner'?`cute-gunner-${moved?1+Math.floor(time*10)%24:0}`:hero==='samurai'?`cute-samurai-${moved?1+Math.floor(time*10)%24:0}`:hero==='ninja'?`cute-ninja-${moved?1+Math.floor(time*10)%24:0}`:`hero-${hero}-${frame}`).setPosition(x, y).setRotation(articulatedHero?0:angle).setFlipX(hero==='samurai'?samuraiFlipX(angle):articulatedHero&&Math.cos(angle)<0).setAlpha(invuln > 0 ? .75 : 1);
+        this.hero.setTexture(hero==='tank'?`cute-tank-${moved?1+Math.floor(time*10)%24:0}`:hero==='gunner'?`cute-gunner-${moved?1+Math.floor(time*10)%24:0}`:hero==='samurai'?`cute-samurai-${moved?1+Math.floor(time*10)%24:0}`:hero==='ninja'?`cute-ninja-${moved?1+Math.floor(time*10)%24:0}`:`hero-${hero}-${frame}`).setPosition(x, y).setRotation(articulatedHero?0:angle).setFlipX(hero==='samurai'?samuraiFlipX(angle):articulatedHero&&Math.cos(angle)<0).setAlpha(1);
         this.hero.setDisplaySize(78,articulatedHero?78:78+Math.sin(time*3)*.8);
         this.hero.clearTint();
-        if (invuln > 0 && dash <= 0)
-            this.hero.setTint(0xffb1b8);
+        // Protection is communicated by skill state, never by washing out the outfit.
         const duration=WEAPON_EFFECTS[weapon].duration,progress=Math.max(0,Math.min(1,swing/duration)),phase=1-progress,active=swing>0;
         const pose=hero==='gunner'&&isGunnerWeapon(weapon)?gunnerWeaponPose(weapon,x,y,angle,phase,active&&(weapon!=='pistols'||sequence%2===0),false,gunnerState):weaponPose(weapon,x,y,angle,phase,active&&(weapon!=='pistols'||sequence%2===0),sequence,false,blocking,reach,arcScale,weaponRig);
         this.weapon.setTexture(hero==='tank'?`tank-${weapon}`:hero==='gunner'?`gunner-${weapon}`:hero==='samurai'?`samurai-${weapon}`:hero==='ninja'?`ninja-${weapon}`:`weapon-${weapon}`).setOrigin(pose.originX,pose.originY).setDisplaySize(pose.size,hero==='samurai'?pose.size/reach:pose.size).setPosition(pose.grip.x,pose.grip.y).setRotation(pose.rotation).setFlipY(pose.flipY).setAlpha(1);

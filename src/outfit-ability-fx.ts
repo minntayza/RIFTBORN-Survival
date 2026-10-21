@@ -3,7 +3,7 @@ import {CosmeticWeaponEffects} from './cosmetic-weapon-fx';
 import type {OutfitProfile} from './outfit-effect-profiles';
 type Burst={p:OutfitProfile;x:number;y:number;born:number;radius:number};
 type Ghost={x:number;y:number;born:number};
-export type OutfitAbilityState={x:number;y:number;angle:number;time:number;dash:number;counter:number;overdrive:number;reduced:boolean;texture?:string};
+export type OutfitAbilityState={x:number;y:number;angle:number;time:number;dash:number;counter:number;overdrive:number;reduced:boolean;wide?:boolean;texture?:string};
 /** Outfit-only decoration. Never owns ability timers, collisions, damage, or gameplay RNG. */
 export class OutfitAbilityEffects{
  private g:Phaser.GameObjects.Graphics;private particles:CosmeticWeaponEffects;private bursts:Burst[]=[];private trail:Ghost[]=[];private ghosts:Phaser.GameObjects.Image[]=[];private trailAt=-1;private sparkleAt=-1;private began=-10;private lastId='';
@@ -19,12 +19,12 @@ export class OutfitAbilityEffects{
  private ring(x:number,y:number,r:number,color:number,alpha:number,width=2){this.g.lineStyle(width,color,alpha);this.g.strokeEllipse(x,y,r*2,r*1.16);}
  private stamp(p:OutfitProfile,x:number,y:number,r:number,time:number,alpha=1,spin=0){this.particles.glyph(p,x,y,r,spin,alpha);}
  private smilingStar(x:number,y:number,r:number,color:number,alpha:number){const g=this.g,points=[];for(let i=0;i<10;i++){const a=-Math.PI/2+i*Math.PI/5,s=i%2?r*.48:r;points.push({x:x+Math.cos(a)*s,y:y+Math.sin(a)*s});}g.fillStyle(color,alpha);g.fillPoints(points,true);g.fillStyle(0x3d4550,alpha);g.fillCircle(x-r*.22,y,r*.09);g.fillCircle(x+r*.22,y,r*.09);g.lineStyle(1.2,0x3d4550,alpha);g.beginPath();g.arc(x,y+r*.07,r*.22,.2,Math.PI-.2);g.strokePath();}
- render(p:OutfitProfile|undefined,s:OutfitAbilityState){const {x,y,time:t}=s,g=this.g;g.clear();this.particles.render(t,[],undefined);this.ghosts.forEach(i=>i.setVisible(false));this.bursts=this.bursts.filter(b=>t-b.born<1.05);this.trail=this.trail.filter(b=>t-b.born<.27);
+ render(p:OutfitProfile|undefined,s:OutfitAbilityState){const {x,y,time:t}=s,g=this.g;g.clear();this.particles.render(t,[],undefined,!!s.wide,s.reduced);g.setAlpha(s.wide?.72:1);this.ghosts.forEach(i=>i.setVisible(false));this.bursts=this.bursts.filter(b=>t-b.born<1.05);this.trail=this.trail.filter(b=>t-b.born<.27);
   if(!p){this.trail=[];this.bursts=[];return;}
   const age=t-this.began;
   // Dash themes: soft ink shadows, graphic street arrows, or holographic body copies.
   if(p.hero==='ninja'&&(s.dash>0||this.trail.length>0)){if(s.dash>0&&t-this.trailAt>.045){this.trailAt=t;this.trail.push({x,y,born:t});if(this.trail.length>6)this.trail.shift();this.particles.emit(p,x,y,s.angle+Math.PI,t,s.reduced?1:3,25);}
-   const texture=s.texture||'cute-ninja-0';if(!s.reduced&&this.scene.textures.exists(texture))for(let i=0;i<Math.min(4,this.trail.length);i++){const q=this.trail[Math.max(0,this.trail.length-1-i)],a=(1-(t-q.born)/.27)*.35;this.ghosts[i].setTexture(texture).setPosition(q.x,q.y).setDisplaySize(78,78).setTint(p.color).setAlpha(a).setFlipX(Math.cos(s.angle)<0).setVisible(true);}
+   const texture=s.texture||'cute-ninja-0';if(!s.reduced&&this.scene.textures.exists(texture))for(let i=0;i<Math.min(s.wide?1:3,this.trail.length);i++){const q=this.trail[Math.max(0,this.trail.length-1-i)],a=(1-(t-q.born)/.27)*.35;this.ghosts[i].setTexture(texture).setPosition(q.x,q.y).setDisplaySize(78,78).setTint(p.color).setAlpha(a).setFlipX(Math.cos(s.angle)<0).setVisible(true);}
    for(const [i,q] of this.trail.entries()){const fade=(1-(t-q.born)/.27)*.65;if(p.theme==='sakura'){g.fillStyle(0x253b38,fade*.45);g.fillEllipse(q.x,q.y+23,40,15);this.stamp(p,q.x,q.y-7,7,t,fade,i*.7);}else if(p.theme==='jade'){this.stamp(p,q.x,q.y+12,12,t,fade,s.angle);g.lineStyle(2,p.accent,fade*.4);g.lineBetween(q.x-8,q.y-13,q.x+7,q.y-13);}else{g.lineStyle(1.4,p.color,fade);g.strokeRoundedRect(q.x-24,q.y-32,48,64,6);this.stamp(p,q.x+25,q.y-25,6,t,fade);}}
   }
   // Counter stance is a readable halo; only successful counters trigger the celebration.
@@ -32,7 +32,7 @@ export class OutfitAbilityEffects{
   // Three seconds of Overdrive get a distinct sustained identity, not a one-frame flash.
   if(p.hero==='gunner'&&s.overdrive>0){const phase=s.reduced?0:t*1.8;this.ring(x,y+20,46,p.color,.32,1.5);
    if(p.theme==='sakura'){for(let i=0;i<5;i++){const a=phase+i*Math.PI*2/5;this.stamp(p,x+Math.cos(a)*43,y-7+Math.sin(a)*23,7,t,.9,a);}this.smilingStar(x,y-53,12,p.accent,.95);}
-   else if(p.theme==='jade'){for(let i=0;i<9;i++){const h=5+(s.reduced?7:(Math.sin(t*8+i*1.8)+1)*8);g.fillStyle(i%2?p.color:p.accent,.7);g.fillRoundedRect(x-37+i*9,y+39-h,5,h,2);}this.stamp(p,x-42,y-30,10,t,.9);this.stamp(p,x+39,y-40,8,t,.9,.2);}
+   else if(p.theme==='jade'){for(let i=0;i<9;i++){const h=5+(s.reduced?7:(Math.sin(t*3+i*1.8)+1)*8);g.fillStyle(i%2?p.color:p.accent,.7);g.fillRoundedRect(x-37+i*9,y+39-h,5,h,2);}this.stamp(p,x-42,y-30,10,t,.9);this.stamp(p,x+39,y-40,8,t,.9,.2);}
    else{this.ring(x,y-4,53,p.color,.5);for(let i=0;i<3;i++){const a=phase+i*Math.PI*2/3;const px=x+Math.cos(a)*52,py=y-8+Math.sin(a)*30;this.stamp(p,px,py,9,t,.9);g.lineStyle(2,p.accent,.5);g.lineBetween(px,py,px-Math.cos(a+.7)*10,py-Math.sin(a+.7)*10);}}
    if(t-this.sparkleAt>.17){this.sparkleAt=t;this.particles.emit(p,x,y-30,-Math.PI/2,t,1,27);}
   }

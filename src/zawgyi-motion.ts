@@ -2,8 +2,10 @@ import {zawgyiSlamMotion,ZAWGYI_SLAM} from './zawgyi-slam-motion';
 export type ZawgyiPart='body'|'leftArm'|'rightArm'|'leftLeg'|'rightLeg'|'staff';
 export type ZawgyiPose={part:ZawgyiPart;x:number;y:number;width:number;height:number;rotation:number;ox:number;oy:number};
 export const ZAWGYI_SCALE=.72;
-export const ZAWGYI_SHOULDERS=[{x:44,y:56},{x:93,y:55}] as const;
-export const ZAWGYI_HIPS=[{x:54,y:88},{x:77,y:88}] as const;
+export const ZAWGYI_SHOULDERS=[{x:41,y:61},{x:91,y:61}] as const;
+// The painted belt sits right of the atlas rectangle center in this three-quarter pose.
+export const ZAWGYI_WAIST_X=70;
+export const ZAWGYI_HIPS=[{x:ZAWGYI_WAIST_X-9,y:86},{x:ZAWGYI_WAIST_X+9,y:86}] as const;
 export function localPartPoint(p:ZawgyiPose,u:number,v:number){const dx=(u-p.ox)*p.width,dy=(v-p.oy)*p.height;return {x:p.x+Math.cos(p.rotation)*dx-Math.sin(p.rotation)*dy,y:p.y+Math.sin(p.rotation)*dx+Math.cos(p.rotation)*dy};}
 /** A shoulder-led backswing, fast sweep through the target, then recovery. */
 export function zawgyiSwing(remaining:number,sequence=0,aim=0){
@@ -19,11 +21,11 @@ export function zawgyiMotion(time:number,moving=false,attack=0,sequence=0,slam=-
  const action=zawgyiSlamMotion(slam),slamming=slam>=0&&slam<ZAWGYI_SLAM.duration;
  const stride=!slamming&&moving?Math.sin(time*10):0,bob=slamming?action.crouch:moving?-Math.abs(Math.cos(time*10))*1.2:Math.sin(time*2)*.35,legBob=slamming?0:bob;
  const striking=attack>0,swing=zawgyiSwing(attack,sequence,aim);
- const leftArm:ZawgyiPose={part:'leftArm',x:44,y:56+bob,width:24,height:43,rotation:slamming?action.leftArm:stride*.24,ox:.68,oy:.12};
- const rightArm:ZawgyiPose={part:'rightArm',x:93,y:55+bob,width:24,height:43,rotation:slamming?action.rightArm:striking?swing.arm:-stride*.1,ox:.25,oy:.12};
- const grip=localPartPoint(rightArm,.77,.89);
- const staff:ZawgyiPose={part:'staff',x:grip.x,y:grip.y,width:7,height:125,rotation:slamming?action.staff:striking?swing.staff:.12+rightArm.rotation,ox:.5,oy:1-27.55/125};
- const parts:ZawgyiPose[]=[{part:'leftLeg',x:54,y:88+legBob,width:25,height:41,rotation:-stride*.31-(slamming?action.stance:0),ox:.60,oy:.06},{part:'rightLeg',x:77,y:88+legBob,width:25,height:41,rotation:stride*.31+(slamming?action.stance:0),ox:.34,oy:.06},{part:'body',x:64,y:4+bob,width:70,height:90,rotation:moving?stride*.012:0,ox:.5,oy:0},leftArm,staff,rightArm];
+ const leftArm:ZawgyiPose={part:'leftArm',x:ZAWGYI_SHOULDERS[0].x,y:ZAWGYI_SHOULDERS[0].y+bob,width:24,height:34,rotation:slamming?action.leftArm:stride*.24,ox:.68,oy:.12};
+ const rightArm:ZawgyiPose={part:'rightArm',x:ZAWGYI_SHOULDERS[1].x,y:ZAWGYI_SHOULDERS[1].y+bob,width:24,height:34,rotation:slamming?action.rightArm:striking?swing.arm:-stride*.1,ox:.25,oy:.12};
+ const grip=localPartPoint(rightArm,.70,.87);
+ const staff:ZawgyiPose={part:'staff',x:grip.x,y:grip.y,width:11,height:135,rotation:slamming?action.staff:striking?swing.staff:.12+rightArm.rotation,ox:.5,oy:1-27.55/135};
+ const parts:ZawgyiPose[]=[{part:'leftLeg',x:ZAWGYI_HIPS[0].x,y:ZAWGYI_HIPS[0].y+legBob,width:25,height:38,rotation:-stride*.22-(slamming?action.stance:0),ox:.70,oy:.08},{part:'rightLeg',x:ZAWGYI_HIPS[1].x,y:ZAWGYI_HIPS[1].y+legBob,width:25,height:38,rotation:stride*.22+(slamming?action.stance:0),ox:.35,oy:.08},{part:'body',x:64,y:4+bob,width:72,height:90,rotation:moving?stride*.012:0,ox:.5,oy:0},leftArm,staff,rightArm];
  return {parts,grip,tip:localPartPoint(staff,.5,0),contact:localPartPoint(staff,.5,1)};
 }
 export function zawgyiWorldPoint(point:{x:number;y:number},x:number,y:number,aim:number,lift=0){return {x:x+(point.x-64)*ZAWGYI_SCALE*(Math.cos(aim)<0?-1:1),y:y+(point.y-98)*ZAWGYI_SCALE-lift};}

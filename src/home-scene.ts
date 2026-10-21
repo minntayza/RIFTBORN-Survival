@@ -29,9 +29,9 @@ export async function startHomeScene(canvas:HTMLCanvasElement,hero:HeroId,weapon
  if(hero==='zawgyi'){
  const image=await load(ZAWGYI_ART.url);if(!canvas.isConnected)return;
  canvas.width=portrait?420:600;canvas.height=portrait?240:420;
- const g=canvas.getContext('2d')!,scale=portrait?1.65:2.7;
- g.fillStyle='#07151866';g.beginPath();g.ellipse(canvas.width/2,canvas.height/2+62*scale,portrait?38:60,10,0,0,Math.PI*2);g.fill();
- g.save();g.translate(canvas.width/2-64*scale,canvas.height/2-64*scale);g.scale(scale,scale);drawZawgyi(g,image,0,false);g.restore();canvas.dataset.ready='true';return;
+ const g=canvas.getContext('2d')!,scale=portrait?1.5:2.7;
+ g.fillStyle='#07151866';g.beginPath();g.ellipse(canvas.width/2,canvas.height/2+67*scale,portrait?38:60,10,0,0,Math.PI*2);g.fill();
+ g.save();g.translate(canvas.width/2-64*scale,canvas.height/2-55*scale);g.scale(scale,scale);drawZawgyi(g,image,0,false);g.restore();canvas.dataset.ready='true';return;
  }
 
  const bodyAtlas=hero==='samurai'?{...SAMURAI_ATLAS,url:skin||SAMURAI_ATLAS.url}:hero==='gunner'?{...GUNNER_ATLAS,url:skin||GUNNER_ATLAS.url}:hero==='tank'?{...TANK_ATLAS,url:skin||TANK_ATLAS.url}:skin?{...CUTE_ATLAS,url:skin}:CUTE_ATLAS;

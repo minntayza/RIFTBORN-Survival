@@ -55,7 +55,7 @@ export class ZawgyiCombat {
  }
  s.visuals.zawgyiLift=this.lift;s.visuals.zawgyiSlam=this.slamAge;
  }
- boltHit(){const s=this.s;s.identityCharge+=100/6;if(s.identityCharge>=99.99){s.identityCharge=0;s.identityProcs++;s.heal(s.maxHp*.05);this.harmonyGlow=.9;s.notifyCombat('HARMONY · HEAL 5%');this.burst('heal',s.x,s.y,35);}}
+ boltHit(){const s=this.s;s.identityCharge+=100/6;if(s.identityCharge>=99.99){s.identityCharge=0;s.identityProcs++;const restored=Math.min(s.maxHp*.05,s.maxHp-s.hp);if(restored>0){s.heal(restored);this.harmonyGlow=.9;this.burst('heal',s.x,s.y,35);}}}
  render(time:number){const g=this.effects,f=this.ground;g.clear();f.clear();const reduced=matchMedia('(prefers-reduced-motion: reduce)').matches,wide=this.s.save.settings.mapView===2;
  const star=(x:number,y:number,r:number,alpha=1,color=0xffe3a0)=>{g.fillStyle(color,alpha);g.fillPoints([{x,y:y-r},{x:x+r*.3,y:y-r*.3},{x:x+r,y},{x:x+r*.3,y:y+r*.3},{x,y:y+r},{x:x-r*.3,y:y+r*.3},{x:x-r,y},{x:x-r*.3,y:y-r*.3}],true);};
  const flame=(x:number,y:number,r:number,alpha:number,phase:number)=>{const flicker=reduced?0:Math.sin(time*4+phase)*r*.06;f.fillStyle(0xe77938,alpha*.11);f.fillEllipse(x,y+2,r*3,r*1.4);g.fillStyle(0xe95737,alpha*.85);g.fillCircle(x,y-r*.25,r*.55);g.fillTriangle(x-r*.55,y-r*.2,x+r*.55,y-r*.2,x+flicker,y-r*1.75);g.fillStyle(0xffbd58,alpha);g.fillEllipse(x,y-r*.35,r*.72,r*1.25);g.fillStyle(0xffecc2,alpha*.95);g.fillEllipse(x,y-r*.22,r*.32,r*.64);};
