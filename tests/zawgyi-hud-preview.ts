@@ -1,0 +1,18 @@
+import '../src/style.css';
+import Phaser from 'phaser';
+import {ArenaScene} from '../src/combat';
+import {AudioManager} from '../src/audio';
+import {freshSave} from '../src/save';
+import {combatHud} from '../src/combat-hud';
+import {updateHud} from '../src/hud-dom';
+import {TouchControls} from '../src/touch';
+import {zawgyiSkillIcon} from '../src/zawgyi';
+const save=freshSave();save.hero='zawgyi';save.heroes.push('zawgyi');save.weapon='mysticstaff';save.settings.sound=false;save.settings.music=false;save.settings.shake=false;save.zawgyiSkills=['datlone','slam'];
+const audio=new AudioManager();audio.sound=false;audio.music=false;
+const s=new ArenaScene(save,audio,()=>{s.paused=false;s.xp=0;},()=>{},()=>{});
+const controls=new TouchControls(()=>s.activate(0,0));controls.state.enabled=innerWidth<700;s.touch=controls.state;controls.setLayout('left',115);
+s.onArenaReady=()=>{s.xpNeed=100000;s.plan=[];s.hp=70;for(let i=0;i<6;i++){const e=s.spawn('basic')!;e.x=s.x+Math.cos(i)*170;e.y=s.y+Math.sin(i)*140;e.damage=0;e.hp=e.max=300;e.speed=7;}document.body.dataset.ready='true';};
+new Phaser.Game({type:Phaser.CANVAS,parent:'game',width:innerWidth,height:innerHeight,scene:[s],audio:{noAudio:true},banner:false,scale:{mode:Phaser.Scale.RESIZE}});
+const hud=document.querySelector<HTMLElement>('#hud')!;
+hud.addEventListener('pointerdown',e=>{const target=(e.target as Element).closest<HTMLElement>('[data-hud]');if(target?.dataset.hud?.startsWith('zawgyi-')){e.preventDefault();s.zawgyi?.activate(Number(target.dataset.hud.slice(-1)),controls.state.x,controls.state.y);}});
+setInterval(()=>{if(!s.zawgyi)return;updateHud(hud,combatHud(s,controls.state.enabled));controls.update(!s.paused&&!s.ended,0,'Mystic arts',1,zawgyiSkillIcon('datlone'));},100);

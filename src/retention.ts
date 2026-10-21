@@ -9,10 +9,10 @@ export const BUILDS=[
  {id:'mobility' as const,name:'Mobility',icon:'↗',description:'+8% speed and 10% faster abilities. Build movement and technique.'},
  {id:'guard' as const,name:'Guard',icon:'◇',description:'+15% maximum health. Build recovery, protection, and retaliation.'}
 ];
-export function seededRandom(seed:number){let state=seed>>>0;return()=>{state+=0x6D2B79F5;let t=state;t=Math.imul(t^(t>>>15),t|1);t^=t+Math.imul(t^(t>>>7),t|61);return((t^(t>>>14))>>>0)/4294967296;};}
+export function seededRandom(seed:number){let state=seed>>>0;const random=()=>{state=(state+0x6D2B79F5)>>>0;let t=state;t=Math.imul(t^(t>>>15),t|1);t^=t+Math.imul(t^(t>>>7),t|61);return((t^(t>>>14))>>>0)/4294967296;};random.getState=()=>state;random.setState=(value:number|undefined)=>{if(value!==undefined)state=value>>>0;};return random;}
 export function dailySetup(date=new Date().toISOString().slice(0,10)):RunOptions{
  let seed=2166136261;for(const c of date)seed=Math.imul(seed^c.charCodeAt(0),16777619);
- const random=seededRandom(seed),hero=(Object.keys(HEROES) as HeroId[])[Math.floor(random()*4)];
+ const random=seededRandom(seed),hero=(Object.keys(HEROES) as HeroId[])[Math.floor(random()*Object.keys(HEROES).length)];
  const weapons=(Object.keys(WEAPONS) as WeaponId[]).filter(w=>WEAPONS[w].hero===hero);
  const wave5Boss:BossConfig=random()<0.5?{type:'commander',faction:'zombie'}:{type:'boss',faction:'zombie'};
  const wave10Boss:BossConfig=random()<0.5?{type:'commander',faction:'robot'}:{type:'boss',faction:'robot'};

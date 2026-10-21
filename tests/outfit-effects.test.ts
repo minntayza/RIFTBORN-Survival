@@ -1,0 +1,9 @@
+import {test} from 'node:test';
+import assert from 'node:assert/strict';
+import {freshSave} from '../src/save';
+import {COSMETICS} from '../src/cosmetics';
+import {outfitEffectProfile,outfitUltimateIcon} from '../src/outfit-effect-profiles';
+import type {HeroId} from '../src/config';
+test('all twelve owned outfits have unique ability themes and button crests',()=>{const s=freshSave(),names=new Set<string>(),motifs=new Set<string>();for(const c of COSMETICS.filter(c=>c.kind==='character')){s.cosmetics.owned.push(c.id);s.cosmetics.equipped[`character:${c.target}`]=c.id;const p=outfitEffectProfile(s,c.target as HeroId);assert.ok(p,c.name);names.add(p.name);motifs.add(p.motif);const icon=outfitUltimateIcon(s,c.target as HeroId,`<svg data-ultimate="${c.target}"></svg>`);assert.ok(icon.includes(`data-outfit="${c.target}-${p.theme}"`));assert.ok(icon.includes(`data-ultimate="${c.target}"`));assert.ok(icon.includes('outfit-crest'));}assert.equal(names.size,12);assert.equal(motifs.size,12);});
+test('outfit effects are independent of weapons and do not mutate saves',()=>{const s=freshSave();s.cosmetics.owned=['character:ninja:starlight','weapon:katana:jade'];s.cosmetics.equipped={'character:ninja':'character:ninja:starlight','weapon:katana':'weapon:katana:jade'};const before=JSON.stringify(s);assert.equal(outfitEffectProfile(s,'ninja')?.name,'Hologram Dash');s.weapon='dual';assert.equal(outfitEffectProfile(s,'ninja')?.name,'Hologram Dash');s.weapon='katana';assert.equal(JSON.stringify(s),before);assert.equal(outfitEffectProfile(s,'samurai'),undefined);});
+test('unowned and missing outfits keep the standard ability button and effects',()=>{const s=freshSave(),base='<svg data-ultimate="tank"></svg>';assert.equal(outfitUltimateIcon(s,'tank',base),base);s.cosmetics.equipped['character:tank']='character:tank:jade';assert.equal(outfitEffectProfile(s,'tank'),undefined);assert.equal(outfitUltimateIcon(s,'tank',base),base);});

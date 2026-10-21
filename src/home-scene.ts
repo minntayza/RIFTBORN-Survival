@@ -1,3 +1,6 @@
+import {drawZawgyi} from './zawgyi-rig-art';
+import {ZAWGYI_ART} from './zawgyi';
+import {tankArmAsset,registerTankArmArtwork,tankOutfitShoulder} from './tank-arm-art';
 import {tankSkinArm} from './tank-cosmetics';
 import {gunnerSkinArm} from './gunner-cosmetics';
 import {ninjaSkinCanvas,ninjaSkinArm,ninjaSkinWeaponCanvas} from './ninja-cosmetics';
@@ -23,9 +26,17 @@ function cachedFrame(key:string,make:()=>HTMLCanvasElement){let c=framesCache.ge
 /** A lightweight home-only showcase, sharing the actual combat art and grip poses. */
 export async function startHomeScene(canvas:HTMLCanvasElement,hero:HeroId,weapon:WeaponId,portrait=false,colors={character:0xffffff,weapon:0xffffff},skin?:string,weaponSkin?:string){
  try{
+ if(hero==='zawgyi'){
+ const image=await load(ZAWGYI_ART.url);if(!canvas.isConnected)return;
+ canvas.width=portrait?420:600;canvas.height=portrait?240:420;
+ const g=canvas.getContext('2d')!,scale=portrait?1.65:2.7;
+ g.fillStyle='#07151866';g.beginPath();g.ellipse(canvas.width/2,canvas.height/2+62*scale,portrait?38:60,10,0,0,Math.PI*2);g.fill();
+ g.save();g.translate(canvas.width/2-64*scale,canvas.height/2-64*scale);g.scale(scale,scale);drawZawgyi(g,image,0,false);g.restore();canvas.dataset.ready='true';return;
+ }
+
  const bodyAtlas=hero==='samurai'?{...SAMURAI_ATLAS,url:skin||SAMURAI_ATLAS.url}:hero==='gunner'?{...GUNNER_ATLAS,url:skin||GUNNER_ATLAS.url}:hero==='tank'?{...TANK_ATLAS,url:skin||TANK_ATLAS.url}:skin?{...CUTE_ATLAS,url:skin}:CUTE_ATLAS;
  const weaponAtlas=hero==='samurai'?{...SAMURAI_WEAPONS_ATLAS,url:weaponSkin||SAMURAI_WEAPONS_ATLAS.url}:hero==='gunner'?{...GUNNER_WEAPONS_ATLAS,url:weaponSkin||GUNNER_WEAPONS_ATLAS.url}:hero==='tank'?{...TANK_WEAPONS_ATLAS,url:weaponSkin||TANK_WEAPONS_ATLAS.url}:weaponSkin?{key:'ninja-skin',url:weaponSkin}:weapon==='katana'?NINJA_ATTACK_ATLAS:NINJA_WEAPONS_ATLAS;
- const [bodyImage,weaponImage,connectedImage]=await Promise.all([load(bodyAtlas.url),load(weaponAtlas.url),load(CONNECTED_ARMS.url)]);
+ const [bodyImage,weaponImage,connectedImage,tankArms]=await Promise.all([load(bodyAtlas.url),load(weaponAtlas.url),load(CONNECTED_ARMS.url),hero==='tank'&&skin?load(tankArmAsset(skin)):Promise.resolve(undefined)]);if(tankArms&&skin)registerTankArmArtwork(tankArms,tankArmAsset(skin));
  if(!canvas.isConnected)return;
  const heroFrame=(i:number)=>cachedFrame(`${hero}:${i}:${colors.character}:${skin||'base'}`,()=>tintArtwork(hero==='samurai'?samuraiCanvas(bodyImage,i+1):hero==='gunner'?gunnerCanvas(bodyImage,i+1):hero==='tank'?tankCanvas(bodyImage,i+1):skin?ninjaSkinCanvas(bodyImage,i+1):cuteCanvas(bodyImage,'ninja',i/24,1,false),colors.character));
  let trio:HTMLImageElement|undefined;
@@ -53,7 +64,7 @@ export async function startHomeScene(canvas:HTMLCanvasElement,hero:HeroId,weapon
  const handDraws:{image:HTMLCanvasElement;p:ReturnType<typeof heroArmSprite>}[]=[];
  for(let i=0;i<2;i++){
  if(!connectedArmVisible(hero,i))continue;
- const shoulder={x:i===0?8:-9,y:5},target=i===0?pose.grip:hero==='samurai'||hero==='tank'&&weapon==='hammer'?samuraiSupportHand(pose.grip,pose.rotation):hero==='gunner'&&!dual&&isGunnerWeapon(weapon)?gunnerSupportHand(gunnerWeaponPose(weapon,0,0,0,phase,active)):dual?other.grip:{x:-12,y:21};
+ const shoulder=hero==='tank'&&skin?tankOutfitShoulder(0,0,i):{x:i===0?8:-9,y:5},target=i===0?pose.grip:hero==='samurai'||hero==='tank'&&weapon==='hammer'?samuraiSupportHand(pose.grip,pose.rotation):hero==='gunner'&&!dual&&isGunnerWeapon(weapon)?gunnerSupportHand(gunnerWeaponPose(weapon,0,0,0,phase,active)):dual?other.grip:{x:-12,y:21};
  const resting=i===1&&!dual&&hero!=='samurai'&&hero!=='gunner'&&weapon!=='hammer';
  const p=connectedArmPose(hero,i,shoulder,resting?shoulderGrip(shoulder,Math.PI/2,18):target);
  if(hero==='tank'&&weapon!=='hammer')sprite(arms[i],p.x,p.y,p.width,p.height,p.rotation,p.originX,p.originY);else handDraws.push({image:arms[i],p});

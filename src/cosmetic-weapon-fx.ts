@@ -7,7 +7,7 @@ export class CosmeticWeaponEffects{
  private g:Phaser.GameObjects.Graphics;private sparks:Spark[]=[];private sweeps:Sweep[]=[];private impactAt=-1;private serial=0;
  get activeCount(){return this.sparks.length+this.sweeps.length;}
  constructor(scene:Phaser.Scene){this.g=scene.add.graphics().setDepth(5);}
- private emit(p:Profile,x:number,y:number,angle:number,time:number,count:number,speed=40){for(let i=0;i<count;i++){
+ emit(p:Profile,x:number,y:number,angle:number,time:number,count:number,speed=40){for(let i=0;i<count;i++){
   const phase=(++this.serial*2.399963)+(i*.7),a=angle+Math.sin(phase)*1.6;
   if(this.sparks.length>=COSMETIC_FX_LIMIT-10)this.sparks.shift();
   this.sparks.push({x,y,vx:Math.cos(a)*speed*(.5+.5*Math.abs(Math.sin(phase))),vy:Math.sin(a)*speed-15,born:time,life:.42+(i%3)*.12,size:4+(i%3)*1.4,spin:phase,profile:p,kind:i%3===2?'glint':'glyph'});
@@ -17,7 +17,7 @@ export class CosmeticWeaponEffects{
   for(let i=0;i<5;i++){const a=angle+(i/4-.5)*Math.min(span,2.5);this.emit(p,x+Math.cos(a)*range*.72,y+Math.sin(a)*range*.72,a,time,1,26);}
  }
  impact(p:Profile|undefined,x:number,y:number,time:number,critical=false){if(!p||time-this.impactAt<.045)return;this.impactAt=time;this.emit(p,x,y,-Math.PI/2,time,critical?6:4,critical?64:42);}
- private glyph(p:Profile,x:number,y:number,r:number,angle:number,alpha:number,glint=false){const g=this.g,c=Math.cos(angle),s=Math.sin(angle),point=(px:number,py:number)=>({x:x+(px*c-py*s)*r,y:y+(px*s+py*c)*r}),line=(a:number,b:number,d:number,e:number)=>{const u=point(a,b),v=point(d,e);g.lineBetween(u.x,u.y,v.x,v.y);},poly=(pts:number[][])=>{g.fillPoints(pts.map(([a,b])=>point(a,b)),true);};
+ glyph(p:Profile,x:number,y:number,r:number,angle:number,alpha:number,glint=false){const g=this.g,c=Math.cos(angle),s=Math.sin(angle),point=(px:number,py:number)=>({x:x+(px*c-py*s)*r,y:y+(px*s+py*c)*r}),line=(a:number,b:number,d:number,e:number)=>{const u=point(a,b),v=point(d,e);g.lineBetween(u.x,u.y,v.x,v.y);},poly=(pts:number[][])=>{g.fillPoints(pts.map(([a,b])=>point(a,b)),true);};
   g.fillStyle(p.color,alpha);g.lineStyle(1.3,p.accent,alpha);
   if(glint){line(-.8,0,.8,0);line(0,-.8,0,.8);return;}
   switch(p.motif){

@@ -1,4 +1,5 @@
 import {cosmeticEffectProfile} from '../src/cosmetic-effect-profiles';
+import {tankSkinArm} from '../src/tank-cosmetics';
 import {imageSourceUrl} from '../src/texture-cache';
 import Phaser from 'phaser';
 import {ArenaScene} from '../src/combat';
@@ -27,6 +28,7 @@ for(const c of COSMETICS.filter(c=>c.kind==='weapon'&&WEAPONS[c.target as Weapon
    scene.visuals.prepareTexture('cute-tank-0');
    const body=scene.textures.get('cute-tank-0').getSourceImage() as HTMLCanvasElement;
    if(body.toDataURL()!==tankCanvas(bodyAtlas,0).toDataURL())throw Error('Outfit cache does not match selected design');
+   for(let side=0;side<2;side++){const arm=scene.textures.get(`connected-tank-${side}`).getSourceImage() as HTMLCanvasElement;if(arm.toDataURL()!==tankSkinArm(bodyAtlas,side).toDataURL())throw Error('Combat arm artwork mismatch');if(!arm.getContext('2d')!.getImageData(0,0,arm.width,arm.height).data.some((v,i)=>i%4===3&&v>96))throw Error('Invisible outfit arm');}
    const pixels=actual.getContext('2d')!.getImageData(0,0,128,128).data;if(!pixels.some((v,i)=>i%4===3&&v>0))throw Error('Invisible weapon');
    scene.basicAttack();if(scene.hero!=='gunner'&&scene.pendingStrikes[0])scene.resolveStrike(scene.pendingStrikes[0]);
    if(!cosmeticEffectProfile(save,scene.weapon)||scene.cosmeticFx.activeCount===0)throw Error('Cosmetic attack effects did not trigger');

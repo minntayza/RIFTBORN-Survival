@@ -1648,3 +1648,63 @@ button:disabled{box-shadow:none;filter:saturate(.55)}
 .mode-card-redesign .mission-card-grid .mode-choice-body>b{padding:10px 12px;min-height:42px;border:1px solid #bdab76;border-radius:10px;background:#e2c780;color:#27342d;box-shadow:0 3px 0 #8b794b;font-size:13px}
 .mode-card-redesign .mission-card-grid .mode-daily .mode-choice-body>b{background:#c8b7e8;border-color:#b09acb;box-shadow:0 3px 0 #766288;color:#302c41}
 @media(max-width:600px){.mode-card-redesign .mission-card-grid{gap:14px}.mode-card-redesign .mission-card-grid .mode-choice-art{height:74px}.mission-mascot{width:79px;height:68px;bottom:0;left:12px}.mode-card-redesign .mission-card-grid .mode-choice-body{padding:12px;gap:5px}.mode-card-redesign .mission-card-grid .mode-choice-body>strong{font-size:21px}.mode-card-redesign .mission-card-grid .mission-caption{font-size:12px}.mode-card-redesign .mission-card-grid .mission-tags{margin:2px 0 4px}.mission-tags>span{font-size:9px;padding:4px 7px}.mode-card-redesign .mission-card-grid .mode-choice-body>b{min-height:42px;padding:9px 12px}}
+
+/* Outfit crests are shared by desktop and touch ultimate buttons. */
+.outfit-ultimate-art{position:relative;display:inline-flex;align-items:center;justify-content:center;width:48px;height:48px;filter:drop-shadow(0 0 4px var(--outfit-glow))}
+.outfit-ultimate-art>svg:first-child{width:44px!important;height:44px!important;display:block}
+.outfit-ultimate-art>svg.outfit-crest{position:absolute;right:-7px;bottom:-5px;width:23px!important;height:23px!important;filter:drop-shadow(0 2px 2px #13202b88)}
+:is(.hud-skill,.touch-ability):has(.outfit-ultimate-art){border-color:#aab7a5}
+:is(.hud-skill,.touch-ability).ready .outfit-ultimate-art{animation:outfit-ready-breathe 2.2s ease-in-out infinite}
+:is(.hud-skill,.touch-ability).skill-active .outfit-ultimate-art{filter:drop-shadow(0 0 9px var(--outfit-glow))}
+:is(.hud-skill,.touch-ability).cooling .outfit-ultimate-art{filter:saturate(.65);opacity:.8}
+@keyframes outfit-ready-breathe{0%,100%{filter:drop-shadow(0 0 3px var(--outfit-glow))}50%{filter:drop-shadow(0 0 8px var(--outfit-glow))}}
+@media(prefers-reduced-motion:reduce){:is(.hud-skill,.touch-ability).ready .outfit-ultimate-art{animation:none}}
+
+/* Constrain illustrated SVGs to their card viewport, including tall blades. */
+.weapon-select-card .weapon-art>svg,.weapon-shop-item .weapon-art>svg{display:block;width:100%;height:100%;min-width:0;min-height:0;max-width:100%;max-height:100%;box-sizing:border-box;padding:10px;flex-shrink:1}
+
+/* Zawgyi keeps two chosen arts visible on both keyboard and touch layouts. */
+.zawgyi-loadout{padding:20px;border:1px solid #8a7652;border-radius:16px;background:#24322c;margin:16px 0}.zawgyi-loadout h3{margin:6px 0;font-size:21px;color:#f8dfaa}.zawgyi-loadout p{font-size:13px;color:#c2c9ba}.zawgyi-loadout>div>small{color:#e1bf75;font:800 10px monospace;letter-spacing:1px}.zawgyi-slots{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin:16px 0}.zawgyi-slots label{min-width:0;display:flex;flex-direction:column;gap:9px}.zawgyi-slots label>span{font:800 10px monospace;letter-spacing:1px;color:#efd395}.zawgyi-slots select{width:100%;min-height:46px;padding:10px;border:1px solid #ad9566;border-radius:9px;background:#17272b;color:#f5e5be;font:700 13px system-ui}.zawgyi-slots label>small{font-size:12px;line-height:1.6;color:#cbd0c6}.zawgyi-skill-guide{display:flex;gap:8px;flex-wrap:wrap}.zawgyi-skill-guide article{flex:1;min-width:140px;display:flex;align-items:center;gap:8px;padding:10px;border:1px solid #48584c;border-radius:10px;opacity:.65}.zawgyi-skill-guide article.equipped{opacity:1;border-color:#c4a46a;background:#d8b76a12}.zawgyi-skill-guide svg{width:38px;height:38px;flex-shrink:0}.zawgyi-skill-guide b{display:block;font-size:12px;color:#f5deb1}.zawgyi-skill-guide small{display:block;font-size:10px;color:#b7c6b3;margin-top:4px}.zawgyi-skill-pair{position:absolute;right:28px;bottom:30px;display:flex;align-items:end;gap:14px;pointer-events:auto}.zawgyi-skill{position:relative;display:flex;align-items:center;flex-direction:column;justify-content:center;width:96px;min-height:118px;padding:6px 4px;border:2px solid #ad945d;border-radius:20px;background:#20312eeF;color:#ffe2a1;touch-action:manipulation;box-shadow:0 4px 0 #0d171c}.zawgyi-skill svg{width:58px;height:58px;flex-shrink:0}.zawgyi-skill b{font:800 10px monospace;margin:3px}.zawgyi-skill span{font:700 10px system-ui;line-height:1.2}.zawgyi-skill small{font:800 9px monospace;opacity:.7;margin-top:5px}.zawgyi-skill.ready{border-color:#eed28d;box-shadow:0 0 16px #f7cd6b33,0 4px 0 #0d171c}.zawgyi-skill:disabled{opacity:.65;filter:saturate(.65)}.combat-hud.is-touch .zawgyi-skill-pair{right:16px;bottom:max(26px,env(safe-area-inset-bottom));gap:8px}.combat-hud.is-touch.controls-right .zawgyi-skill-pair{right:auto;left:16px}.combat-hud.is-touch .zawgyi-skill{width:72px;min-height:99px;border-radius:16px}.combat-hud.is-touch .zawgyi-skill svg{width:45px;height:45px}.combat-hud.is-touch .zawgyi-skill small{display:none}.combat-hud.is-touch .zawgyi-skill span{font-size:9px}.combat-hud.is-touch .zawgyi-skill b{font-size:9px}@media(max-width:650px){.zawgyi-slots{grid-template-columns:1fr}.zawgyi-loadout{padding:16px}.zawgyi-skill-pair{right:12px;gap:8px}.zawgyi-skill{width:76px;min-height:104px}.zawgyi-skill svg{width:46px;height:46px}}
+
+/* Circular hero skill medallions, shared by keyboard and touch controls. */
+.combat-hud .hud-skill,.touch-ability,.combat-hud .zawgyi-skill{
+ width:90px!important;height:90px!important;min-height:90px!important;padding:7px!important;
+ border:3px solid #dfbd70!important;border-radius:50%!important;overflow:visible!important;
+ background:radial-gradient(circle at 35% 28%,#476168,#172d36 65%,#101d27)!important;
+ box-shadow:inset 0 0 0 2px #5d4c31,inset 0 0 15px #07151c,0 3px 0 #182023,0 0 0 2px #101d28aa!important;
+ filter:none!important;opacity:1!important;animation:none!important;isolation:isolate;
+}
+.combat-hud .hud-skill::before,.touch-ability::before,.combat-hud .zawgyi-skill::before{
+ content:'';position:absolute;inset:-7px;border-radius:50%;pointer-events:none;border:1px solid #f4d79166;
+ background:none!important;transform:none!important;animation:none!important;
+}
+.combat-hud .hud-skill>span,.touch-ability .ability-symbol{display:block!important;width:100%!important;height:100%!important;margin:0!important;transform:none!important;filter:none!important;animation:none!important}
+.combat-hud .hud-skill svg,.touch-ability svg,.combat-hud .zawgyi-skill svg{width:100%!important;height:100%!important;display:block;filter:drop-shadow(0 2px 2px #08151c88)!important;animation:none!important;transform:none!important}
+.combat-hud .hud-skill>b,.touch-ability>b,.combat-hud .zawgyi-skill>b{
+ position:absolute!important;inset:0!important;display:flex;align-items:center;justify-content:center;margin:0!important;
+ border-radius:50%;font:800 20px system-ui!important;color:#fff5d8!important;text-shadow:0 2px 3px #06121c,0 0 5px #06121c;
+ pointer-events:none;z-index:2;background:#101e2a99;
+}
+.combat-hud .hud-skill.ready>b,.combat-hud .hud-skill.skill-active>b,.touch-ability.ready>b,.touch-ability.skill-active>b,.combat-hud .zawgyi-skill.ready>b{display:none!important}
+.combat-hud .hud-skill>small,.combat-hud .zawgyi-skill>small{
+ position:absolute;right:-3px;bottom:1px;margin:0!important;padding:3px 5px;border-radius:5px;border:1px solid #aa915d;
+ background:#152830;color:#ffebbd;font:800 9px monospace!important;opacity:1!important;z-index:3;
+}
+.touch-ability>span,.combat-hud .zawgyi-skill>span{position:absolute;left:50%;top:calc(100% + 10px);transform:translateX(-50%);width:125px;text-align:center;color:#f5e2bc!important;text-shadow:0 2px 3px #07131b;font:700 11px system-ui!important;line-height:1.2;pointer-events:none}
+.combat-hud .hud-skill.ready,.touch-ability.ready,.combat-hud .zawgyi-skill.ready{border-color:#f2d58a!important}
+.combat-hud .hud-skill:active,.touch-ability:active,.combat-hud .zawgyi-skill:active{transform:scale(.95)!important}
+.combat-hud .zawgyi-skill-pair{width:188px;height:178px;right:max(24px,env(safe-area-inset-right));bottom:max(38px,calc(env(safe-area-inset-bottom) + 26px));display:block;pointer-events:none}
+.combat-hud .zawgyi-skill{position:absolute;left:0;bottom:0;pointer-events:auto}
+.combat-hud .zawgyi-skill:nth-child(2){left:auto;right:0;bottom:87px}
+.combat-hud:has(.zawgyi-skill-pair) .combat-passive{bottom:max(246px,calc(env(safe-area-inset-bottom) + 230px))}
+.combat-hud.is-touch .zawgyi-skill-pair{right:max(20px,env(safe-area-inset-right));bottom:max(36px,calc(env(safe-area-inset-bottom) + 24px));width:166px;height:160px}
+.combat-hud.is-touch .zawgyi-skill{width:78px!important;height:78px!important;min-height:78px!important;border-radius:50%!important}
+.combat-hud.is-touch .zawgyi-skill:nth-child(2){bottom:78px}
+.combat-hud.is-touch.controls-right .zawgyi-skill-pair{left:max(20px,env(safe-area-inset-left));right:auto}
+.combat-hud.is-touch.controls-right .zawgyi-skill{left:auto;right:0}
+.combat-hud.is-touch.controls-right .zawgyi-skill:nth-child(2){left:0;right:auto}
+@media(max-height:500px){.combat-hud .zawgyi-skill-pair,.combat-hud.is-touch .zawgyi-skill-pair{width:156px;height:132px;bottom:30px}.combat-hud .zawgyi-skill,.combat-hud.is-touch .zawgyi-skill{width:70px!important;height:70px!important;min-height:70px!important}.combat-hud .zawgyi-skill:nth-child(2),.combat-hud.is-touch .zawgyi-skill:nth-child(2){bottom:60px}.combat-hud:has(.zawgyi-skill-pair) .combat-passive{bottom:180px}}
+.combat-hud .hud-skill[class],#touch-controls .touch-ability[class]{border:3px solid #dfbd70!important;border-radius:50%!important;background:radial-gradient(circle at 35% 28%,#476168,#172d36 65%,#101d27)!important}
+.combat-hud .hud-skill[class]::before,#touch-controls .touch-ability[class]::before{border-radius:50%!important;background:none!important}
+.combat-hud .hud-skill[class].ready,#touch-controls .touch-ability[class].ready{border-color:#f2d58a!important;box-shadow:inset 0 0 0 2px #5d4c31,0 3px 0 #182023,0 0 0 2px #101d28aa!important}
+.combat-hud:has(.zawgyi-skill-pair) .combat-passive>div{min-width:0}.combat-hud:has(.zawgyi-skill-pair) .combat-passive b{white-space:normal}

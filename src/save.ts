@@ -1,9 +1,12 @@
+import {validZawgyiLoadout,type ZawgyiLoadout} from './zawgyi';
+import {validRun,type RunRecovery} from './run-recovery';
 import {COSMETICS} from './cosmetics';
 import type { TechniqueId,RunMode,BuildId } from './retention';
 import { HEROES, WEAPONS, PERMANENT, type HeroId, type WeaponId } from './config';
 export type Save = {
     runSetup:{mode:RunMode;build:BuildId};
     version: 1;
+    zawgyiSkills:ZawgyiLoadout;
     archive: Record<string,1|2>;
     gold: number;
     petals:number;
@@ -32,7 +35,7 @@ export type Save = {
     };
 };
 export const defaultMapView = (): 1|2 => typeof matchMedia !== 'undefined' && (matchMedia('(pointer:coarse)').matches || navigator.maxTouchPoints > 0) ? 2 : 1;
-export const freshSave = (): Save => ({ version: 1, runSetup:{mode:'endless',build:'assault'}, archive:{}, petals:0, cosmetics:{owned:[],equipped:{}}, gold: 0, heroes: ['ninja'], weapons: ['katana', 'nodachi', 'pistols', 'shield'], hero: 'ninja', weapon: 'katana', permanent: {}, bestWave: 0, bestTime: 0, bestKills: 0, mastery: {}, techniques:{},daily:{},shortWins:0, settings: { sound: true, music: true, shake: true,aimAssist:true,joystickSide:'left',joystickSize:115,mapView:defaultMapView() } });
+export const freshSave = (): Save => ({ version: 1, zawgyiSkills:['datlone','flame'], runSetup:{mode:'endless',build:'assault'}, archive:{}, petals:0, cosmetics:{owned:[],equipped:{}}, gold: 0, heroes: ['ninja'], weapons: ['katana', 'nodachi', 'pistols', 'shield', 'mysticstaff'], hero: 'ninja', weapon: 'katana', permanent: {}, bestWave: 0, bestTime: 0, bestKills: 0, mastery: {}, techniques:{},daily:{},shortWins:0, settings: { sound: true, music: true, shake: true,aimAssist:true,joystickSide:'left',joystickSize:115,mapView:defaultMapView() } });
 const num = (x: unknown, max = 1e9) => typeof x === 'number' && Number.isFinite(x) ? Math.max(0, Math.min(max, Math.floor(x))) : 0;
 export const compatible = (h: HeroId, w: WeaponId) => WEAPONS[w]?.hero === h;
 export function validateSave(raw: unknown): Save { const d = freshSave(); if (!raw || typeof raw !== 'object')
@@ -47,6 +50,7 @@ export function validateSave(raw: unknown): Save { const d = freshSave(); if (!r
     if(r.archive&&typeof r.archive==='object')for(const [k,v] of Object.entries(r.archive))if(/^(card|weapon):[a-z]+(?::[a-z]+)?$/.test(k)&&(v===1||v===2))d.archive[k]=v;
     if(['endless','short','daily'].includes(r.runSetup?.mode||''))d.runSetup.mode=r.runSetup!.mode;
     if(['assault','mobility','guard'].includes(r.runSetup?.build||''))d.runSetup.build=r.runSetup!.build;
+    d.zawgyiSkills=validZawgyiLoadout(r.zawgyiSkills);
     d.petals=num(r.petals);
     d.cosmetics.owned=Array.isArray(r.cosmetics?.owned)?Array.from(new Set(r.cosmetics.owned.filter(id=>COSMETICS.some(c=>c.id===id)))):[];
     if(r.cosmetics?.equipped&&typeof r.cosmetics.equipped==='object')for(const c of COSMETICS)if(d.cosmetics.owned.includes(c.id)&&r.cosmetics.equipped[`${c.kind}:${c.target}`]===c.id)d.cosmetics.equipped[`${c.kind}:${c.target}`]=c.id;
@@ -57,19 +61,30 @@ export function validateSave(raw: unknown): Save { const d = freshSave(); if (!r
     if (typeof r.settings?.[k] === 'boolean')
         d.settings[k] = r.settings[k]; d.settings.joystickSide=r.settings?.joystickSide==='right'?'right':'left';d.settings.joystickSize=[95,115,135].includes(r.settings?.joystickSize||0)?r.settings!.joystickSize:115;d.settings.mapViewChosen=r.settings?.mapViewChosen===true;d.settings.mapView=d.settings.mapViewChosen?(r.settings?.mapView===2?2:1):defaultMapView();return d; }
 const KEY = 'zombie-last-stand.v1';
-export const loadSave = () => { try {
-    return validateSave(JSON.parse(localStorage.getItem(KEY) || 'null'));
-}
-catch {
-    return freshSave();
-} };
-export function storeSave(s: Save) { try {
-    localStorage.setItem(KEY, JSON.stringify(s));
-    return true;
-}
-catch {
-    return false;
-} }
+export const PROGRESS_KEY='zombie-last-stand.progress.v2';
+export type Progress={version:2;updatedAt:number;save:Save;run:RunRecovery|null};
+let recovery:RunRecovery|null=null;
+let savedAt=0;
+export const currentRun=()=>recovery;
+export function setCurrentRun(run:RunRecovery|null){recovery=run;}
+export function validProgress(raw:unknown):raw is Progress{const p=raw as Progress;return !!p&&p.version===2&&Number.isFinite(p.updatedAt)&&p.save?.version===1&&!!p.save.settings&&Array.isArray(p.save.heroes)&&!!p.save.cosmetics&&(p.run===null||validRun(p.run));}
+const checksum=(text:string)=>{let hash=2166136261;for(let i=0;i<text.length;i++)hash=Math.imul(hash^text.charCodeAt(i),16777619);return (hash>>>0).toString(16);};
+export function packProgress(p:Progress){const payload=JSON.stringify(p);return JSON.stringify({payload,checksum:checksum(payload)});}
+export function unpackProgress(text:string|null):Progress|null{try{if(!text||text.length>4_000_000)return null;const envelope=JSON.parse(text);if(typeof envelope.payload!=='string'||checksum(envelope.payload)!==envelope.checksum)return null;const p=JSON.parse(envelope.payload);return validProgress(p)?{...p,save:validateSave(p.save)}:null;}catch{return null;}}
+export function progressBundle(save:Save):Progress{return {version:2,updatedAt:savedAt||Date.now(),save:validateSave(save),run:recovery};}
+export function acceptProgress(p:Progress){if(!validProgress(p))throw Error('Invalid progress');recovery=p.run;savedAt=p.updatedAt;return validateSave(p.save);}
+export const loadSave = () => {try{
+ const primary=unpackProgress(localStorage.getItem(PROGRESS_KEY)),backup=unpackProgress(localStorage.getItem(PROGRESS_KEY+'.backup'));
+ const p=primary||backup;if(p)return acceptProgress(p);
+ const old=JSON.parse(localStorage.getItem(KEY)||'null');return validateSave(old);
+ }catch{return freshSave();}};
+export function storeSave(s:Save){try{
+ savedAt=Date.now();const next=packProgress(progressBundle(s)),old=localStorage.getItem(PROGRESS_KEY);
+ // Keep a separately recoverable last-known-good copy. Never rotate corrupt data.
+ if(unpackProgress(old))localStorage.setItem(PROGRESS_KEY+'.backup',old!);
+ else localStorage.setItem(PROGRESS_KEY+'.backup',next);
+ localStorage.setItem(PROGRESS_KEY,next);return true;
+ }catch{return false;}}
 export function purchase(s: Save, kind: 'heroes' | 'weapons' | 'permanent', id: string): boolean { let cost = 0; if (kind === 'heroes') {
     if (!Object.hasOwn(HEROES, id) || s.heroes.includes(id as HeroId))
         return false;

@@ -1,3 +1,5 @@
+import {ZawgyiRig} from './zawgyi-rig';
+import {tankOutfitShoulder} from './tank-arm-art';
 import {tankSkinArm} from './tank-cosmetics';
 import {gunnerSkinArm} from './gunner-cosmetics';
 import {imageSourceUrl} from './texture-cache';
@@ -55,6 +57,9 @@ type EnemyVisual = {
     max: number;
 };
 export class ArenaVisuals {
+    zawgyiLift=0;
+    zawgyiSlam=-1;
+    private zawgyiRig?:ZawgyiRig;
     private tankEffects?:TankSkillEffects;
     get tankSkills(){return this.tankEffects??=new TankSkillEffects(this.scene);}
 
@@ -361,7 +366,8 @@ export class ArenaVisuals {
     private lastGhost = 0;
     private lastX = 600;
     private lastY = 380;
-    constructor(private scene: Phaser.Scene,skin=false,ninjaSkin=false,gunnerSkin=false,tankSkin=false) {
+    private tankOutfit=false;
+    constructor(private scene: Phaser.Scene,skin=false,ninjaSkin=false,gunnerSkin=false,tankSkin=false) {this.tankOutfit=tankSkin;
         this.ninjaArmFx=scene.add.graphics().setDepth(3.15);
         this.shieldFx=scene.add.graphics().setDepth(.9);
         this.attackFx=scene.add.graphics().setDepth(3.3);
@@ -373,7 +379,7 @@ export class ArenaVisuals {
         for (const id of Object.keys(WEAPONS) as WeaponId[])
             if(!scene.textures.exists(`weapon-${id}`))scene.textures.addCanvas(`weapon-${id}`, weaponCanvas(id));
         const connectedSource=scene.textures.get(CONNECTED_ARMS.key).getSourceImage() as HTMLImageElement;
-        for(const hero of Object.keys(HEROES) as HeroId[])for(let i=0;i<2;i++)if(!scene.textures.exists(`connected-${hero}-${i}`))scene.textures.addCanvas(`connected-${hero}-${i}`,skin&&hero==='samurai'?samuraiSkinArm(scene.textures.get(SAMURAI_ATLAS.key).getSourceImage() as HTMLImageElement,i):ninjaSkin&&hero==='ninja'?ninjaSkinArm(scene.textures.get(NINJA_SKIN_KEY).getSourceImage() as HTMLImageElement,i):gunnerSkin&&hero==='gunner'?gunnerSkinArm(scene.textures.get(GUNNER_ATLAS.key).getSourceImage() as HTMLImageElement,i):tankSkin&&hero==='tank'?tankSkinArm(scene.textures.get(TANK_ATLAS.key).getSourceImage() as HTMLImageElement,i):connectedArmCanvas(connectedSource,hero,i));
+        for(const hero of (Object.keys(HEROES) as HeroId[]).filter(h=>h!=='zawgyi'))for(let i=0;i<2;i++)if(!scene.textures.exists(`connected-${hero}-${i}`))scene.textures.addCanvas(`connected-${hero}-${i}`,skin&&hero==='samurai'?samuraiSkinArm(scene.textures.get(SAMURAI_ATLAS.key).getSourceImage() as HTMLImageElement,i):ninjaSkin&&hero==='ninja'?ninjaSkinArm(scene.textures.get(NINJA_SKIN_KEY).getSourceImage() as HTMLImageElement,i):gunnerSkin&&hero==='gunner'?gunnerSkinArm(scene.textures.get(GUNNER_ATLAS.key).getSourceImage() as HTMLImageElement,i):tankSkin&&hero==='tank'?tankSkinArm(scene.textures.get(TANK_ATLAS.key).getSourceImage() as HTMLImageElement,i):connectedArmCanvas(connectedSource,hero,i));
         const tankSource=scene.textures.get(TANK_ATLAS.key).getSourceImage() as HTMLImageElement;
         for(const part of ['upper','forearm','hand','otherHand'] as const)if(!scene.textures.exists(`tank-${part}`))scene.textures.addCanvas(`tank-${part}`,tankPart(tankSource,part));
         if(!scene.textures.exists('cute-tank-full'))scene.textures.addCanvas('cute-tank-full',tankCanvas(tankSource,0,true));
@@ -453,6 +459,7 @@ export class ArenaVisuals {
         const moved = Math.hypot(x - this.lastX, y - this.lastY) > .2, frame = moved ? 1 + Math.floor(time * 10) % 2 : 0;
         this.lastX = x;
         this.lastY = y;
+        if(hero!=='zawgyi'){
         const articulatedHero=hero==='ninja'||hero==='samurai'||hero==='gunner'||hero==='tank',weaponRig=hero==='samurai'?'samurai':hero==='tank'?'tank':hero==='ninja';
         if(hero==='tank')this.prepareTexture(`cute-tank-${moved?1+Math.floor(time*10)%24:0}`);
         if(hero==='gunner')this.prepareTexture(`cute-gunner-${moved?1+Math.floor(time*10)%24:0}`);
@@ -475,7 +482,7 @@ export class ArenaVisuals {
             const g=this.ninjaArmFx,flip=Math.cos(angle)<0?-1:1;
             for(let index=0;index<2;index++){
                 if(!connectedArmVisible(hero,index))continue;
-                const shoulder={x:x+(index===0?8:-9)*flip,y:y+5};
+                const shoulder=hero==='tank'&&this.tankOutfit?tankOutfitShoulder(x,y,index,flip):{x:x+(index===0?8:-9)*flip,y:y+5};
                 const target=index===0?pose.grip:hero==='samurai'||hero==='tank'&&weapon==='hammer'?samuraiSupportHand(pose.grip,pose.rotation):hero==='gunner'&&!dual&&isGunnerWeapon(weapon)?gunnerSupportHand(gunnerWeaponPose(weapon,x,y,angle,phase,active,false,gunnerState),gunnerState):dual?other.grip:{x:x-12*flip,y:y+21};
                 const resting=index===1&&!dual&&hero!=='samurai'&&hero!=='gunner'&&weapon!=='hammer';
                 const held=resting?shoulderGrip(shoulder,Math.PI/2,18):target;
@@ -516,6 +523,7 @@ export class ArenaVisuals {
             s.expires = time + .22;
             s.image.setTexture(hero==='tank'?'cute-tank-full':hero==='gunner'?'cute-gunner-full':hero==='samurai'?'cute-samurai-full':hero==='ninja'?'cute-ninja-full':`hero-${hero}-${frame}`).setPosition(x, y).setDisplaySize(78, 78).setRotation(articulatedHero?0:angle).setFlipX(hero==='samurai'?samuraiFlipX(angle):(hero==='ninja'||hero==='gunner'||hero==='tank')&&Math.cos(angle)<0).setTint(HEROES[hero].color).setVisible(true);
         }
+        }else{this.hero.setVisible(false);this.weapon.setVisible(false);this.offhand.setVisible(false);this.cuteArms.forEach(a=>a.setVisible(false));this.ninjaBones.forEach(a=>a.setVisible(false));this.attackFx.clear();(this.zawgyiRig??=new ZawgyiRig(this.scene)).render(x,y,angle,time,moved,swing,sequence,this.zawgyiLift,invuln,this.zawgyiSlam);}
         for (const s of this.afterimages) {
             const left = s.expires - time;
             s.image.setVisible(left > 0).setAlpha(Math.max(0, left / .22) * .4);

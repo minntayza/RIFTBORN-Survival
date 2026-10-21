@@ -13,6 +13,7 @@ export class AudioManager {
     play(kind: string) { if (!this.sound)
         return; const now = performance.now(); if (['hit', 'xp', 'death'].includes(kind) && now - this.last < 45)
         return;
+        if(kind==='staff-contact'){this.tone(180,.055,.025,'triangle');this.tone(390,.07,.009,'sine');return;}
         if(kind==='tank-bonk'){this.tone(360,.08,.023,'triangle');return;}
         if(kind==='tank-thump'){this.tone(95,.19,.03,'triangle');return;}
         if(kind==='tank-block'){this.tone(610,.12,.02,'sine');return;}

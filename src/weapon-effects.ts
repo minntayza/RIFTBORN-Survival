@@ -8,6 +8,7 @@ import type {WeaponId} from './config';
 export type Point={x:number;y:number};
 type Geometry={grip:Point;tip:Point;size:number;duration:number;style:string;color:number};
 export const WEAPON_EFFECTS:Record<WeaponId,Geometry>={
+ mysticstaff:{grip:{x:0,y:10},tip:{x:0,y:-42},size:90,duration:.24,style:"magic-bolt",color:0xffce76},
  katana:{grip:{x:-20,y:0},tip:{x:52,y:-9},size:110,duration:.3,style:'clean-cut',color:0xabbcc3},
  dual:{grip:{x:-20,y:0},tip:{x:48,y:-9},size:92,duration:.2,style:'cross-cut',color:0xa6a2bb},
  kama:{grip:{x:-19,y:0},tip:{x:42,y:-24},size:105,duration:.27,style:'hook-cut',color:0xadb5b7},

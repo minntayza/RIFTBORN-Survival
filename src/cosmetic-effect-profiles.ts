@@ -3,7 +3,7 @@ import {WEAPONS,type WeaponId} from './config';
 import {COSMETICS} from './cosmetics';
 export type CosmeticMotif='petal'|'fox'|'moon'|'leaf'|'chevron'|'chip'|'coin'|'note'|'planet'|'crown'|'rune'|'snow';
 export type CosmeticEffectProfile={id:string;motif:CosmeticMotif;color:number;accent:number;name:string};
-const styles:Record<string,readonly [CosmeticMotif,number,number,string]>={
+export const styles:Record<string,readonly [CosmeticMotif,number,number,string]>={
  'samurai:sakura':['petal',0xffa9ce,0xffecae,'Blossom Dance'],'samurai:jade':['fox',0xffcc73,0x9be2c1,'Foxfire Waltz'],'samurai:starlight':['moon',0xc6caff,0xffefbd,'Moonlit Wishes'],
  'ninja:sakura':['leaf',0xb4d1aa,0xffdda0,'Hidden Garden'],'ninja:jade':['chevron',0xff8caa,0xc2a6ff,'Street Spark'],'ninja:starlight':['chip',0x7af1ff,0xdfc5ff,'Neon Comet'],
  'gunner:sakura':['coin',0xffda83,0xfff0c6,'Lucky Stars'],'gunner:jade':['note',0x7ef0dd,0xff9da7,'Arcade Pop'],'gunner:starlight':['planet',0xc1a3ff,0x8af5ff,'Pocket Galaxy'],

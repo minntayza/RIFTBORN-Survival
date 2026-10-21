@@ -1,5 +1,6 @@
 import type {HeroId} from './config';
 export const HERO_IDENTITIES:Record<HeroId,{name:string;trigger:string;benefit:string;icon:string}>={
+ zawgyi:{name:'Alchemical harmony',trigger:'Land 6 staff hits',benefit:'Restore 5% maximum health.',icon:'✿'},
  ninja:{name:'Momentum',trigger:'Move for 3 seconds',benefit:'Your next attack adds a shadow follow-up.',icon:'↗'},
  samurai:{name:'Resolve',trigger:'Land 5 separate attacks',benefit:'Your next attack adds a wide cutting wave.',icon:'◔'},
  gunner:{name:'Opening shots',trigger:'Finish a magazine reload',benefit:'Your first 3 shots deal 35% more damage.',icon:'▥'},
