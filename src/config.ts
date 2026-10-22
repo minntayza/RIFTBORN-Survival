@@ -9,3 +9,13 @@ export const PERMANENT = { health: { name: 'Vitality', cap: 3, value: .05 }, dam
 
 // Temporary playtesting: turn off to restore the normal gold economy.
 export const PLAYTEST = { unlimitedPetals: true, unlimitedGold: true, goldReserve: 1_000_000_000 };
+
+// Active-skill tuning. Damage is base damage and still uses the normal hero/upgrade scaling.
+export const ABILITY_TUNING={
+ draw:{cooldown:10,window:.32,range:250,arc:1.8,damage:2.8,damageCap:240},
+ mark:{cooldown:16,duration:8,range:550,hits:4,finisher:100,bossFinisher:70,pulseRadius:150,push:100},
+ beacon:{cooldown:14,duration:5,deployRange:90,radius:95,targetRange:280,maxRedirects:16,maxBounces:2},
+ breach:{cooldown:13,throwRange:210,flight:.3,fuse:.8,radius:145,damage:70,push:115,elitePush:.35},
+ bulwark:{cooldown:15,duration:2.2,radius:75,halfAngle:1.05,maxProjectiles:8,energyCap:80,baseDamage:40,energyScale:.8,radiusBurst:180,push:65},
+ march:{cooldown:16,duration:2.5,protection:.5,speed:1.15,pushRadius:68,pushSpeed:130,stompRadius:145,damage:65,push:100}
+} as const;

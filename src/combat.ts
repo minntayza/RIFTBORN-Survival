@@ -1,3 +1,5 @@
+import {HeroAbilityCombat} from './hero-ability-combat';
+import {isAbilityHero} from './hero-abilities';
 import {SkillInputBuffer,effectBudget} from './combat-polish';
 import {ZawgyiCombat} from './zawgyi-combat';
 import {ZAWGYI_ART} from './zawgyi';
@@ -46,7 +48,7 @@ import { rollReward, waveEvent, type RewardId, type EvolutionId } from './progre
 import type { TouchState } from './touch';
 import { ArenaVisuals } from './visuals';
 import Phaser from 'phaser';
-import { BALANCE, HEROES, WEAPONS, ENEMIES, type HeroId, type WeaponId, type EnemyId } from './config';
+import { ABILITY_TUNING, BALANCE, HEROES, WEAPONS, ENEMIES, type HeroId, type WeaponId, type EnemyId } from './config';
 import { wavePlan, scaling, damageValue, cooldownValue, type Spawn } from './waves';
 import type { Save } from './save';
 import { AudioManager } from './audio';
@@ -61,7 +63,7 @@ export type RunStats = {
     elites: number;
     petals: number;
 };
-type Enemy = {
+export type Enemy = {
     skillAge:number;
     skillWindup:number;
     skillAction?:BossAction;
@@ -94,7 +96,8 @@ type Enemy = {
     phase: number;
     threshold: number;
 };
-type Bullet = {
+export type Bullet = {
+    beaconRedirected?:boolean;
     active: boolean;
     x: number;
     y: number;
@@ -143,6 +146,7 @@ export class ArenaScene extends Phaser.Scene {
     }
 
     zawgyi?:ZawgyiCombat;
+    heroAbilities?:HeroAbilityCombat;
     outfitFx!:OutfitAbilityEffects;
     cosmeticFx!:CosmeticWeaponEffects;
     visuals!: ArenaVisuals;
@@ -389,7 +393,7 @@ export class ArenaScene extends Phaser.Scene {
     grid = new Map<string, Enemy[]>();
     dashHits = new Set<Enemy>();
     constructor(save: Save, audio: AudioManager, choice: (wave: boolean) => void, end: () => void, pause: () => void, options?:RunOptions) { super('arena'); this.save = save; this.audio = audio; this.hero = save.hero; this.weapon = save.weapon; this.onChoice = choice; this.onEnd = end; this.onPause = pause; if(options){this.options=options;this.hero=options.hero||save.hero;this.weapon=options.weapon||save.weapon;} if(this.options.seed!==undefined){this.random=seededRandom(this.options.seed);this.cardRandom=seededRandom(this.options.seed^0x85ebca6b);}this.options.technique='standard'; }
-    create() { this.robotArt=new RobotMapArt(this);const park=this.textures.get('park-ground'),pw=Math.floor(park.getSourceImage().width/5),ph=Math.floor(park.getSourceImage().height/5);for(let y=0;y<5;y++)for(let x=0;x<5;x++)park.add(`${x}-${y}`,0,x*pw,y*ph,pw,ph); this.textures.get('city-wreck').add('chassis',0,150,18,810,1395); this.floor = this.add.graphics().setDepth(-4); this.gfx = this.add.graphics();this.warningGfx=this.add.graphics().setDepth(6); this.drawFloor(); this.visuals = new ArenaVisuals(this,this.hero==='samurai'&&!!equippedSkin(this.save,this.hero),this.hero==='ninja'&&!!equippedSkin(this.save,this.hero),this.hero==='gunner'&&!!equippedSkin(this.save,this.hero),this.hero==='tank'&&!!equippedSkin(this.save,this.hero)); this.cosmeticFx=new CosmeticWeaponEffects(this);this.outfitFx=new OutfitAbilityEffects(this); this.keys = this.input.keyboard!.addKeys('W,A,S,D,UP,DOWN,LEFT,RIGHT,SPACE,Q,E,ESC,M,ONE,TWO,THREE') as typeof this.keys; this.input.keyboard!.on('keydown-ESC', () => this.onPause()); this.input.keyboard!.on('keydown-M', () => { this.save.settings.sound = !this.save.settings.sound; this.audio.sound = this.save.settings.sound; }); this.input.keyboard!.on('keydown', (event:KeyboardEvent)=>{if(event.repeat||event.ctrlKey||event.metaKey||event.altKey)return;const slot=event.code==='Space'||this.hero==='zawgyi'&&event.code==='KeyQ'?0:this.hero==='zawgyi'&&event.code==='KeyE'?1:-1;if(slot<0)return;const k=this.keys,dx=this.touch?.enabled?this.touch.x:Number(k.D.isDown||k.RIGHT.isDown)-Number(k.A.isDown||k.LEFT.isDown),dy=this.touch?.enabled?this.touch.y:Number(k.S.isDown||k.DOWN.isDown)-Number(k.W.isDown||k.UP.isDown);this.requestAbility(slot,dx,dy);});this.input.keyboard!.addCapture(['Q','E','W', 'A', 'S', 'D', 'UP', 'DOWN', 'LEFT', 'RIGHT', 'SPACE']); const h = HEROES[this.hero]; this.maxHp = h.hp * (1 + this.meta('health') * .05); if(this.options.build==='guard')this.maxHp*=1.15;this.hp = this.maxHp; this.rerolls = 1 + this.meta('reroll'); this.ammo=this.maxAmmo;this.applyMapView(); this.startWave();if(this.hero==='zawgyi')this.zawgyi=new ZawgyiCombat(this);this.events.once('postupdate',()=>this.onArenaReady?.()); }
+    create() { this.robotArt=new RobotMapArt(this);const park=this.textures.get('park-ground'),pw=Math.floor(park.getSourceImage().width/5),ph=Math.floor(park.getSourceImage().height/5);for(let y=0;y<5;y++)for(let x=0;x<5;x++)park.add(`${x}-${y}`,0,x*pw,y*ph,pw,ph); this.textures.get('city-wreck').add('chassis',0,150,18,810,1395); this.floor = this.add.graphics().setDepth(-4); this.gfx = this.add.graphics();this.warningGfx=this.add.graphics().setDepth(6); this.drawFloor(); this.visuals = new ArenaVisuals(this,this.hero==='samurai'&&!!equippedSkin(this.save,this.hero),this.hero==='ninja'&&!!equippedSkin(this.save,this.hero),this.hero==='gunner'&&!!equippedSkin(this.save,this.hero),this.hero==='tank'&&!!equippedSkin(this.save,this.hero)); this.cosmeticFx=new CosmeticWeaponEffects(this);this.outfitFx=new OutfitAbilityEffects(this); this.keys = this.input.keyboard!.addKeys('W,A,S,D,UP,DOWN,LEFT,RIGHT,SPACE,Q,E,ESC,M,ONE,TWO,THREE') as typeof this.keys; this.input.keyboard!.on('keydown-ESC', () => this.onPause()); this.input.keyboard!.on('keydown-M', () => { this.save.settings.sound = !this.save.settings.sound; this.audio.sound = this.save.settings.sound; }); this.input.keyboard!.on('keydown', (event:KeyboardEvent)=>{if(event.repeat||event.ctrlKey||event.metaKey||event.altKey)return;const slot=event.code==='Space'||this.hero!=='ninja'&&event.code==='KeyQ'?0:this.hero!=='ninja'&&event.code==='KeyE'?1:-1;if(slot<0)return;const k=this.keys,dx=this.touch?.enabled?this.touch.x:Number(k.D.isDown||k.RIGHT.isDown)-Number(k.A.isDown||k.LEFT.isDown),dy=this.touch?.enabled?this.touch.y:Number(k.S.isDown||k.DOWN.isDown)-Number(k.W.isDown||k.UP.isDown);this.requestAbility(slot,dx,dy);});this.input.keyboard!.addCapture(['Q','E','W', 'A', 'S', 'D', 'UP', 'DOWN', 'LEFT', 'RIGHT', 'SPACE']); const h = HEROES[this.hero]; this.maxHp = h.hp * (1 + this.meta('health') * .05); if(this.options.build==='guard')this.maxHp*=1.15;this.hp = this.maxHp; this.rerolls = 1 + this.meta('reroll'); this.ammo=this.maxAmmo;this.applyMapView(); this.startWave();if(this.hero==='zawgyi')this.zawgyi=new ZawgyiCombat(this);if(isAbilityHero(this.hero))this.heroAbilities=new HeroAbilityCombat(this);this.events.once('postupdate',()=>this.onArenaReady?.()); }
     applyMapView(){this.cameras.main.setZoom(1.05/(this.save.settings.mapView||1));this.cameras.main.centerOn(this.x,this.y);}
     floorTheme = 0;
     robotOrigin:RobotOrigin|undefined;
@@ -524,7 +528,7 @@ export class ArenaScene extends Phaser.Scene {
         n.life = .65;
         n.text.setPosition(x - 8, y - 20).setText(String(Math.round(value))).setColor(crit ? '#ffd87d' : '#dcece3').setFontSize(crit ? 21 : 14).setAlpha(1).setVisible(true);
     }
-    hit(e: Enemy, base: number, knock = 20, bullet = false,elemental=true) {
+    hit(e: Enemy, base: number, knock = 20, bullet = false,elemental=true,sourceOverride?:string) {
         if (!e.active)
             return;
         const crit = this.random() < .05 + (this.earlyPower&&this.hero==='ninja'?.05:0) + this.u('crit') * .07, raw = damageValue(base, HEROES[this.hero].damage * (1 + this.u('damage') * .12 + this.meta('damage') * .05 + this.honour * .05 + (this.options.build==='assault'?.1:0) + (this.boostDamage>0?.4:0) + (this.earlyPower&&this.hero==='samurai'?.12:0)), crit, bullet && e.type === 'armoured');
@@ -533,7 +537,7 @@ export class ArenaScene extends Phaser.Scene {
         e.hp -= d;
         const actual=Math.min(d,Math.max(0,e.hp+d));
         this.stats.dealt += actual;
-        const source=elemental?WEAPONS[this.weapon].name:'Evolution & follow-ups';this.damageSources[source]=(this.damageSources[source]||0)+actual;
+        const source=sourceOverride||(elemental?WEAPONS[this.weapon].name:'Evolution & follow-ups');this.damageSources[source]=(this.damageSources[source]||0)+actual;
         if(elemental&&this.hero==='samurai'&&this.identitySequence!==this.attackSequence){this.identitySequence=this.attackSequence;this.identityCharge=Math.min(100,this.identityCharge+20);}
 
         this.hitConfirm={time:.2,x:contactX,y:contactY,crit};
@@ -578,11 +582,13 @@ export class ArenaScene extends Phaser.Scene {
             if(this.evolution.reach&&this.elementClock<=0){this.elementClock=this.evolution.reach>=2?.18:.8;let x=e.x,y=e.y;const visited=new Set([e]);for(let i=0;i<(this.evolution.reach>=2?3:1);i++){const target=this.enemies.filter(n=>n.active&&!visited.has(n)&&Math.hypot(n.x-x,n.y-y)<190).sort((a,b)=>Math.hypot(a.x-x,a.y-y)-Math.hypot(b.x-x,b.y-y))[0];if(!target)break;visited.add(target);const bolt=this.add.graphics().setDepth(5);bolt.lineStyle(3,0x19263b,.9);bolt.lineBetween(x,y,target.x,target.y);bolt.lineStyle(1.5,0x9dbdd8,.9);bolt.strokePoints([{x,y},{x:(x+target.x)/2+9,y:(y+target.y)/2-8},{x:target.x,y:target.y}],false);this.tweens.add({targets:bolt,alpha:0,duration:180,onComplete:()=>bolt.destroy()});this.hit(target,base*.35,0,bullet,false);x=target.x;y=target.y;}}
         }
         if (e.hp <= 0&&e.active)this.kill(e);
+        if(e.active)this.heroAbilities?.onHit(e,elemental);
     }
     kill(e: Enemy) {
         this.bossMarks=this.bossMarks.filter(mark=>mark.owner!==e);
         this.visuals.death(e, this.elapsed);
         e.active = false;
+        this.heroAbilities?.onKill(e);
         if(this.landmark)this.landmark.guards=this.landmark.guards.filter(guard=>guard!==e);
         if(this.evolved('bleed')&&e.bleed>0)this.heal(2);
         if((this.evolved('fire')||this.evolution.power>=2)&&(e.burn>0||Math.hypot(e.x-this.x,e.y-this.y)<110)){if(this.firePatches.length>=20)this.firePatches.shift();this.firePatches.push({x:e.x,y:e.y,life:3});}
@@ -648,7 +654,7 @@ export class ArenaScene extends Phaser.Scene {
             this.bullets.push(b);
         }
         b.hit.clear();
-        Object.assign(b, { active: true, x, y, vx: Math.cos(a) * (hostile ? 180 : kind==='wind'?460:650), vy: Math.sin(a) * (hostile ? 180 : kind==='wind'?460:650), damage, hostile, pierce, explosive, last, kind, source, reflected:false,piercingRound:!hostile&&pierce>0,bounces:0,life: hostile ? 5 : 1 });
+        Object.assign(b, { active: true, x, y, vx: Math.cos(a) * (hostile ? 180 : kind==='wind'?460:650), vy: Math.sin(a) * (hostile ? 180 : kind==='wind'?460:650), damage, hostile, pierce, explosive, last, kind, source, beaconRedirected:false,reflected:false,piercingRound:!hostile&&pierce>0,bounces:0,life: hostile ? 5 : 1 });
         if(source==='Cane Spark'){b.vx=Math.cos(a)*390;b.vy=Math.sin(a)*390;b.life=.67;}
         return b;
     }
@@ -675,7 +681,7 @@ export class ArenaScene extends Phaser.Scene {
         this.tweens.add({ targets: g, alpha: 0, duration: 140, onComplete: () => g.destroy() });
     }
     basicAttack() {
-        if(this.zawgyi&&this.zawgyi.slamTime>0)return;
+        if(this.zawgyi&&this.zawgyi.slamTime>0||this.heroAbilities&&this.heroAbilities.drawTime>0)return;
         const w = WEAPONS[this.weapon];
         this.attack = cooldownValue(w.cooldown, HEROES[this.hero].rate * (this.earlyPower&&this.hero==='gunner'?1.1:1) * (1 + (this.momentum > 0 ? .1 * Math.min(3, Math.floor(this.combo / 5)) : 0))*(1+this.evolution.tempo*.1)*(this.overdrive>0?1.6:1));
 
@@ -746,6 +752,10 @@ export class ArenaScene extends Phaser.Scene {
     requestAbility(slot:number,dx:number,dy:number){if(this.paused||this.ended||this.countdown>0)return;this.skillInput.request(slot,dx,dy,this.time.now);}
     activate(dx:number,dy:number){
         if(this.hero==='zawgyi'){this.zawgyi?.activate(0,dx,dy);return;}
+        if(this.heroAbilities){this.heroAbilities.activate(0,dx,dy);return;}
+        this.activateLegacy(dx,dy);
+    }
+    activateLegacy(dx:number,dy:number){
         if(this.ability>0||this.paused||this.ended)return;
         this.invulnFromBite=false;
         this.ability=cooldownValue(HEROES[this.hero].cooldown,1,this.u('cooldown')*.15)*(this.options.build==='mobility'?.9:1);
@@ -770,6 +780,7 @@ export class ArenaScene extends Phaser.Scene {
             return;
         this.invulnFromBite=false;
         if(this.rewardShield>0){this.damageFeedback={time:.5,angle:a,value:0,label:'SHIELD BLOCK'};this.rewardShield--;this.invuln=.4;this.burst(this.x,this.y,0x92acb9,8);return;}
+        if(e&&!/reactor|mortar|rupture/i.test(source)&&this.heroAbilities?.parry(a))return;
         if (this.counter > 0) {
             this.counter = 0;
             this.invuln = .5;
@@ -799,6 +810,7 @@ export class ArenaScene extends Phaser.Scene {
             this.audio.play('hit');
         }
         if(e){if(this.enemies.some(c=>c.active&&c.type==='commander'&&c.commandTime>0&&Math.hypot(c.x-e.x,c.y-e.y)<220))value*=1.15;e.touched=true;}
+        value=this.heroAbilities?.incomingDamage(value)??value;
         value *= 1 - this.meta('defense') * .05;
         if(e)a=Math.atan2(e.y-this.y,e.x-this.x);
         if(this.hero==='ninja'&&this.u('smoke')&&this.time.now>=this.smokeBombReadyAt){const level=this.u('smoke'),radius=145+level*28;this.smokeBombReadyAt=this.time.now+Math.max(4200,9000-level*1500);for(const enemy of this.enemies)if(enemy.active&&Math.hypot(enemy.x-this.x,enemy.y-this.y)<radius)enemy.slow=Math.max(enemy.slow,1.5+level*.5+(this.evolved('smoke')?1:0));if(this.evolved('smoke'))this.rewardShield=Math.max(this.rewardShield,1);this.invuln=Math.max(this.invuln,.35);this.visuals.smokeBomb(this.x,this.y,radius,level,this.evolved('smoke'),this.elapsed);this.audio.play('smoke-bloom');this.notifyCombat('SMOKE BOMB · ENEMIES DAZED');}
@@ -870,9 +882,9 @@ export class ArenaScene extends Phaser.Scene {
         this.audio.play('clear');
         this.onChoice(true);
     }
-    nextWave() { for(const e of this.enemies)if(e.active&&!['boss','shooterBoss','commander'].includes(e.type))e.slow=Math.max(e.slow,2);this.waiting = true; this.paused = false; this.countdown = encounterRhythm(this.stats.wave).recovery; }
+    nextWave() { this.heroAbilities?.clear();for(const e of this.enemies)if(e.active&&!['boss','shooterBoss','commander'].includes(e.type))e.slow=Math.max(e.slow,2);this.waiting = true; this.paused = false; this.countdown = encounterRhythm(this.stats.wave).recovery; }
     update(_time: number, ms: number) {
-        if (this.paused || this.ended){this.skillInput.clear();return;}
+        if (this.paused || this.ended){this.skillInput.clear();if(this.ended)this.heroAbilities?.clear();return;}
         const dt = Math.min(ms / 1000, .04);
         if (this.strongStop > 0) {
             this.strongStop -= dt;
@@ -882,7 +894,7 @@ export class ArenaScene extends Phaser.Scene {
             this.countdown -= dt;
             let dx=this.touch?.enabled?this.touch.x:Number(this.keys.D.isDown||this.keys.RIGHT.isDown)-Number(this.keys.A.isDown||this.keys.LEFT.isDown),dy=this.touch?.enabled?this.touch.y:Number(this.keys.S.isDown||this.keys.DOWN.isDown)-Number(this.keys.W.isDown||this.keys.UP.isDown);
             const length=Math.hypot(dx,dy);if(length>1){dx/=length;dy/=length;}if(length>0){this.angle=Math.atan2(dy,dx);const p=this.moveOnGround(this.x,this.y,dx*HEROES[this.hero].speed*dt,dy*HEROES[this.hero].speed*dt,17);this.x=p.x;this.y=p.y;}
-            this.ability=Math.max(0,this.ability-dt);this.updateDrops(dt);
+            this.ability=Math.max(0,this.ability-dt);this.heroAbilities?.tickCooldowns(dt);this.updateDrops(dt);
             this.render();
             if (this.countdown <= 0) {
                 this.stats.wave++;
@@ -907,7 +919,8 @@ export class ArenaScene extends Phaser.Scene {
         this.tick += dt;
         this.attack -= dt;
         this.zawgyi?.update(dt);
-        this.skillInput.consume(this.time.now,(slot,dx,dy)=>{if(this.paused||this.ended||this.countdown>0)return false;if(this.zawgyi)return this.zawgyi.activate(slot,dx,dy);if(slot!==0||this.ability>0)return false;this.activate(dx,dy);return true;});
+        this.heroAbilities?.update(dt);
+        this.skillInput.consume(this.time.now,(slot,dx,dy)=>{if(this.paused||this.ended||this.countdown>0)return false;if(this.zawgyi)return this.zawgyi.activate(slot,dx,dy);if(this.heroAbilities)return this.heroAbilities.activate(slot,dx,dy);if(slot!==0||this.ability>0)return false;this.activate(dx,dy);return true;});
         this.swing = Math.max(0, this.swing - dt);
         this.ability = Math.max(0, this.ability - dt);
         this.invuln = Math.max(0, this.invuln - dt);
@@ -943,6 +956,7 @@ export class ArenaScene extends Phaser.Scene {
         if(this.hero!=='zawgyi'&&this.hero!=='gunner'&&this.swing>0)this.angle=this.meleeAim;
         if(this.dash>0)this.angle=Math.atan2(this.dashY,this.dashX);
         if(this.zawgyi?.lockedAim!==undefined)this.angle=this.zawgyi.lockedAim;
+        if(this.heroAbilities&&this.heroAbilities.drawTime>0)this.angle=this.heroAbilities.drawAim;
 
         if (this.dash > 0) {
             this.dash -= dt;
@@ -961,7 +975,7 @@ export class ArenaScene extends Phaser.Scene {
                 this.slash(110, 190, Math.PI * 2);
         }
         if(this.zawgyi&&(this.zawgyi.actionLocked)){dx=0;dy=0;}
-        const speed = this.dash > 0 ? 650 : HEROES[this.hero].speed * (1 + this.u('speed') * .08 + this.meta('speed') * .05 + (this.momentum > 0 ? .1 : 0) + (this.boostSpeed>0?.25:0)+(this.speedBurst>0?.3:0)+(this.options.build==='mobility'?.08:0)) * (blocking ? .55 : 1)*(this.zawgyi?.speedMultiplier||1);
+        const speed = this.dash > 0 ? 650 : HEROES[this.hero].speed * (1 + this.u('speed') * .08 + this.meta('speed') * .05 + (this.momentum > 0 ? .1 : 0) + (this.boostSpeed>0?.25:0)+(this.speedBurst>0?.3:0)+(this.options.build==='mobility'?.08:0)) * (blocking&&!this.heroAbilities?.marchTime ? .55 : 1)*(this.zawgyi?.speedMultiplier||1)*(this.heroAbilities?.speedMultiplier||1);
         {const p=this.moveOnGround(this.x,this.y,dx*speed*dt,dy*speed*dt,17);this.x=p.x;this.y=p.y;}
         const targetInReach=this.enemies.some(e=>e.active&&Math.hypot(e.x-this.x,e.y-this.y)<(isGun(this.weapon)?520:WEAPONS[this.weapon].range*(1+this.u('range')*.25)+e.r+25));
         if (this.attack <= 0&&targetInReach)this.basicAttack();
@@ -1209,6 +1223,7 @@ export class ArenaScene extends Phaser.Scene {
         for (const b of this.bullets) {
             if (!b.active)
                 continue;
+            this.heroAbilities?.redirect(b);
             b.life -= dt;
             b.x += b.vx * dt;
             b.y += b.vy * dt;
@@ -1217,8 +1232,10 @@ export class ArenaScene extends Phaser.Scene {
                 continue;
             }
             if (b.hostile) {
+                if(this.heroAbilities?.absorb(b))continue;
                 if (Math.hypot(b.x - this.x, b.y - this.y) < 22) {
                     const a = Math.atan2(b.y - this.y, b.x - this.x);
+                    if(this.heroAbilities?.parry(a)){b.active=false;continue;}
                     if (this.u('reflect') && this.attacking && Math.abs(Phaser.Math.Angle.Wrap(a - this.angle)) < 1.3) {
                         b.hostile = false;if(this.evolved('reflect'))b.damage*=2;
                         if(this.hero==='tank'){b.reflected=true;this.visuals.tankSkills.reflect(b.x,b.y,a,this.elapsed);this.audio.play('tank-return');}
@@ -1250,7 +1267,7 @@ export class ArenaScene extends Phaser.Scene {
                                 if (nearby.active && Math.hypot(nearby.x - b.x, nearby.y - b.y) < (this.evolved('explosive')?120:85))
                                     this.hit(nearby, b.damage * (.6+this.evolution.power*.1), 22);
                         }
-                        if (b.source!=='Crossfire'&&this.u('ricochet') && b.hit.size <= (this.evolved('ricochet')?2:1)) {
+                        if (b.source!=='Crossfire'&&(!b.beaconRedirected||b.bounces<ABILITY_TUNING.beacon.maxBounces)&&this.u('ricochet') && b.hit.size <= (this.evolved('ricochet')?2:1)) {
                             const target = this.enemies.find(n => n.active && !b.hit.has(n) && Math.hypot(n.x - b.x, n.y - b.y) < 180);
                             if (target) {
                                 const a = Math.atan2(target.y - b.y, target.x - b.x);
@@ -1454,6 +1471,7 @@ export class ArenaScene extends Phaser.Scene {
         if(this.decoy){g.fillStyle(0x7d78a4,.35);g.fillEllipse(this.decoy.x,this.decoy.y,36,44);g.lineStyle(2,0xaba3c0,.6);g.strokeCircle(this.decoy.x,this.decoy.y,25);}
         this.visuals.evolutionDetails(this.evolution,this.swing,this.elapsed);
         this.zawgyi?.render(this.elapsed);
+        this.heroAbilities?.render();
         this.cosmeticFx?.render(this.elapsed,this.bullets,cosmeticEffectProfile(this.save,this.weapon),this.save.settings.mapView===2,window.matchMedia('(prefers-reduced-motion: reduce)').matches);
         this.outfitFx?.render(outfitEffectProfile(this.save,this.hero),{x:this.x,y:this.y,angle:this.angle,time:this.elapsed,dash:this.dash,counter:this.counter,overdrive:this.overdrive,reduced:window.matchMedia('(prefers-reduced-motion: reduce)').matches,wide:this.save.settings.mapView===2});
         this.visuals.applyCosmetics(cosmeticColor(this.save,'character',this.hero),cosmeticColor(this.save,'weapon',this.weapon),this.invuln>0&&this.dash<=0);

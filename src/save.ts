@@ -1,3 +1,4 @@
+import {validHeroAbilities,type AbilityHero,type AbilityPair} from './hero-abilities';
 import {validZawgyiLoadout,type ZawgyiLoadout} from './zawgyi';
 import {validRun,type RunRecovery} from './run-recovery';
 import {COSMETICS} from './cosmetics';
@@ -7,6 +8,7 @@ export type Save = {
     runSetup:{mode:RunMode;build:BuildId};
     version: 1;
     zawgyiSkills:ZawgyiLoadout;
+    heroAbilities:Record<AbilityHero,AbilityPair>;
     archive: Record<string,1|2>;
     gold: number;
     petals:number;
@@ -35,7 +37,7 @@ export type Save = {
     };
 };
 export const defaultMapView = (): 1|2 => typeof matchMedia !== 'undefined' && (matchMedia('(pointer:coarse)').matches || navigator.maxTouchPoints > 0) ? 2 : 1;
-export const freshSave = (): Save => ({ version: 1, zawgyiSkills:['datlone','flame'], runSetup:{mode:'endless',build:'assault'}, archive:{}, petals:0, cosmetics:{owned:[],equipped:{}}, gold: 0, heroes: ['ninja'], weapons: ['katana', 'nodachi', 'pistols', 'shield', 'mysticstaff'], hero: 'ninja', weapon: 'katana', permanent: {}, bestWave: 0, bestTime: 0, bestKills: 0, mastery: {}, techniques:{},daily:{},shortWins:0, settings: { sound: true, music: true, shake: true,aimAssist:true,joystickSide:'left',joystickSize:115,mapView:defaultMapView() } });
+export const freshSave = (): Save => ({ version: 1, heroAbilities:{samurai:validHeroAbilities('samurai',null),gunner:validHeroAbilities('gunner',null),tank:validHeroAbilities('tank',null)}, zawgyiSkills:['datlone','flame'], runSetup:{mode:'endless',build:'assault'}, archive:{}, petals:0, cosmetics:{owned:[],equipped:{}}, gold: 0, heroes: ['ninja'], weapons: ['katana', 'nodachi', 'pistols', 'shield', 'mysticstaff'], hero: 'ninja', weapon: 'katana', permanent: {}, bestWave: 0, bestTime: 0, bestKills: 0, mastery: {}, techniques:{},daily:{},shortWins:0, settings: { sound: true, music: true, shake: true,aimAssist:true,joystickSide:'left',joystickSize:115,mapView:defaultMapView() } });
 const num = (x: unknown, max = 1e9) => typeof x === 'number' && Number.isFinite(x) ? Math.max(0, Math.min(max, Math.floor(x))) : 0;
 export const compatible = (h: HeroId, w: WeaponId) => WEAPONS[w]?.hero === h;
 export function validateSave(raw: unknown): Save { const d = freshSave(); if (!raw || typeof raw !== 'object')
@@ -51,6 +53,7 @@ export function validateSave(raw: unknown): Save { const d = freshSave(); if (!r
     if(['endless','short','daily'].includes(r.runSetup?.mode||''))d.runSetup.mode=r.runSetup!.mode;
     if(['assault','mobility','guard'].includes(r.runSetup?.build||''))d.runSetup.build=r.runSetup!.build;
     d.zawgyiSkills=validZawgyiLoadout(r.zawgyiSkills);
+    for(const hero of ['samurai','gunner','tank'] as const)d.heroAbilities[hero]=validHeroAbilities(hero,r.heroAbilities?.[hero]);
     d.petals=num(r.petals);
     d.cosmetics.owned=Array.isArray(r.cosmetics?.owned)?Array.from(new Set(r.cosmetics.owned.filter(id=>COSMETICS.some(c=>c.id===id)))):[];
     if(r.cosmetics?.equipped&&typeof r.cosmetics.equipped==='object')for(const c of COSMETICS)if(d.cosmetics.owned.includes(c.id)&&r.cosmetics.equipped[`${c.kind}:${c.target}`]===c.id)d.cosmetics.equipped[`${c.kind}:${c.target}`]=c.id;

@@ -1,0 +1,71 @@
+/* Arcade HUD: keep the action clear and group controls at the edges. */
+.combat-hud { --hud-top:max(14px,env(safe-area-inset-top)); --skill-bottom:max(68px,calc(env(safe-area-inset-bottom) + 58px)); }
+.combat-hud .combat-health { width:220px; min-width:0; height:62px; padding:6px 12px 6px 6px; gap:10px; border:1px solid #b59b6277; border-radius:36px 14px 14px 36px; background:linear-gradient(110deg,#14282fee,#0a151ee8); box-shadow:0 4px 12px #0005; }
+.combat-hud .combat-portrait { display:block; width:48px; height:48px; flex:none; border:2px solid #d6bc7e; border-radius:50%; background:radial-gradient(circle,#70509d,#1c2637); }
+.combat-hud .combat-portrait .art-image { width:100%;height:100%;object-fit:contain;transform:none; }
+.combat-hud .combat-health>div { flex:1; width:auto; position:relative; }
+.combat-hud .combat-hp { display:block; text-align:center; font:800 14px system-ui; color:#fff4dc; }
+.combat-hud .combat-hp small { color:#e5dbc8; font-size:11px; }
+.combat-hud .combat-health .health { height:9px; margin:4px 0; border-radius:8px; background:#471f2b; border:1px solid #e99a9a44; }
+.combat-hud .combat-health .health i { background:linear-gradient(#f85c70,#b91e3e); }
+.combat-hud .combat-health>div>small { position:absolute;left:-47px;top:38px;padding:2px 6px;background:#10232a;border:1px solid #b59b62;border-radius:8px;color:#f1d89c;font:800 10px system-ui;white-space:nowrap; }
+.combat-hud .combat-health .combat-xp { position:relative;left:auto;right:auto;bottom:auto;height:5px;margin:5px 0 0;border:1px solid #5baeff77;border-radius:5px;background:#112c49;overflow:hidden; }
+.combat-hud .combat-health .combat-xp i { display:block;height:100%;background:linear-gradient(90deg,#2579df,#69caff);box-shadow:0 0 6px #43aaff66; }
+.combat-hud .combat-wave { top:var(--hud-top); min-width:160px;padding:7px 20px;border:1px solid #c6a86b88;border-radius:18px 18px 24px 24px;background:linear-gradient(#152b31eb,#091720eb);box-shadow:0 4px 14px #0004; }
+.combat-hud .combat-wave b { font:800 22px Georgia,serif;letter-spacing:1px; }
+.combat-hud .combat-wave span { color:#f6e6bc;font:700 14px system-ui;margin-top:2px; }
+.combat-hud .wave-remaining { display:block;font:9px system-ui;color:#b6c9c5;margin-top:3px; }
+.combat-hud .combat-gold { position:absolute;right:180px;top:calc(var(--hud-top) + 9px);padding:8px 13px;background:#0b1d25dd;border:1px solid #b59b6277;border-radius:22px;color:#f1cc75;font:700 16px system-ui; }
+.combat-hud .combat-pause,.combat-hud .combat-map-view { width:44px;height:44px;top:var(--hud-top);border:1px solid #cfb374;border-radius:50%;padding:0;background:linear-gradient(#233c43,#0b1c25);box-shadow:0 3px 8px #0006; }
+.combat-hud .combat-pause { right:max(16px,env(safe-area-inset-right)); }
+.combat-hud .combat-map-view { right:124px; }
+body:has(.combat-hud) .music-toggle { top:max(14px,env(safe-area-inset-top));bottom:auto;right:70px;width:44px;height:44px;border-color:#cfb374;background:linear-gradient(#233c43,#0b1c25); }
+.combat-hud .combat-boss { top:calc(var(--hud-top) + 91px); }
+.combat-hud .combat-notice { top:calc(var(--hud-top) + 90px);font:800 11px system-ui;letter-spacing:.6px;padding:7px 12px;background:#14252ee8;border:1px solid #a58b5666; }
+.combat-hud.has-boss .combat-notice { top:calc(var(--hud-top) + 125px); }
+.combat-hud[class] .combat-passive { top:calc(var(--hud-top) + 85px);width:155px;opacity:.9; }
+.combat-hud .combat-resource { bottom:calc(var(--skill-bottom) + 130px);right:24px; }
+/* Shared circular medallions, including independent cooldowns for paired skills. */
+.combat-hud .hud-skill[class],#touch-controls .touch-ability[class],.combat-hud .zawgyi-skill[class] { width:104px!important;height:104px!important;min-height:104px!important;padding:10px!important;border:3px solid #dfbd70!important;background:radial-gradient(circle at 40% 25%,#674493,#21182e 72%)!important;box-shadow:inset 0 0 0 2px #baa37b66,inset 0 0 20px #170d2c,0 4px 12px #0008!important; }
+.combat-hud .hud-skill[class].ready,#touch-controls .touch-ability[class].ready,.combat-hud .zawgyi-skill[class].ready { box-shadow:inset 0 0 0 2px #e4cd9388,0 0 18px #b377ed55,0 4px 12px #0008!important; }
+.combat-hud .hud-skill[class]::before,#touch-controls .touch-ability[class]::before,.combat-hud .zawgyi-skill[class]::before { inset:-7px;background:conic-gradient(from -90deg,#c59bff var(--cooldown-progress,100%),#24333d 0)!important;mask:radial-gradient(farthest-side,transparent calc(100% - 4px),#000 calc(100% - 3px)); }
+.combat-hud .hud-skill .skill-name,.combat-hud .zawgyi-skill>span,#touch-controls .touch-ability>span { display:block;top:calc(100% + 12px);font:800 11px system-ui!important;text-transform:uppercase;max-height:none;overflow:visible;width:112px;white-space:normal; }
+.combat-hud .hud-skill>small,.combat-hud .zawgyi-skill>small { display:block;top:calc(100% + 43px);bottom:auto;right:auto;left:50%;transform:translateX(-50%);white-space:nowrap; }
+.combat-hud .zawgyi-skill-pair,.combat-hud.is-touch .zawgyi-skill-pair { display:flex;align-items:center;gap:24px;width:auto;height:104px;bottom:var(--skill-bottom);right:max(26px,env(safe-area-inset-right)); }
+.combat-hud .zawgyi-skill-pair .zawgyi-skill,.combat-hud.is-touch .zawgyi-skill-pair .zawgyi-skill:nth-child(n) { position:relative;left:auto;right:auto;bottom:auto; }
+.combat-hud.controls-right .zawgyi-skill-pair { left:max(26px,env(safe-area-inset-left));right:auto; }
+#touch-controls .touch-ability[class] { bottom:max(68px,calc(env(safe-area-inset-bottom) + 58px))!important;right:max(26px,env(safe-area-inset-right)); }
+/* Joystick geometry still uses the existing analog input and saved size. */
+#touch-controls .touch-stick { width:var(--stick-size,140px);height:var(--stick-size,140px);bottom:max(32px,calc(env(safe-area-inset-bottom) + 24px))!important;border:2px solid #bce1df99;background:radial-gradient(circle,#52878a22,#102c3255);box-shadow:inset 0 0 18px #a9e1e51c,0 0 0 5px #9ed7de12,0 0 18px #8ecbd01c; }
+#touch-controls .touch-stick .stick-rings { position:absolute;inset:19%;border:1px solid #b9dedb44;border-radius:50%; }
+#touch-controls .stick-knob { width:34%;height:34%;left:33%!important;top:33%!important;border:2px solid #e0eef2aa;background:linear-gradient(145deg,#c3d1d5,#778e9c);box-shadow:0 3px 6px #0008,inset 0 0 0 3px #526c7977;transition:transform .08s ease-out; }
+#touch-controls .engaged .stick-knob { transition:none; }
+#touch-controls .touch-stick.engaged { border-color:#d5ffff;box-shadow:0 0 18px #a3e6e855,inset 0 0 20px #b2f2ed22; }
+.stick-directions { position:absolute;inset:0;pointer-events:none;color:#d3e5e199;font-size:13px; }
+.stick-directions i { position:absolute;font-style:normal; }
+.stick-directions i:nth-child(1){left:calc(50% - 6px);top:5%}.stick-directions i:nth-child(2){right:6%;top:calc(50% - 8px)}.stick-directions i:nth-child(3){left:calc(50% - 6px);bottom:5%}.stick-directions i:nth-child(4){left:6%;top:calc(50% - 8px)}
+@media(max-width:700px){
+ .combat-hud .combat-health{width:156px;height:54px;gap:6px;padding:5px}.combat-hud .combat-portrait{width:36px;height:36px}.combat-hud .combat-hp{font-size:12px}.combat-hud .combat-health>div>small{left:-34px;top:33px;font-size:8px}
+ .combat-hud .combat-wave{min-width:108px;padding:6px 10px}.combat-hud .combat-wave b{font-size:16px}.combat-hud .combat-wave span{font-size:11px}
+ .combat-hud .combat-gold{right:20px;top:calc(var(--hud-top) + 53px);padding:4px 9px;font-size:12px}
+ .combat-hud .combat-map-view{right:120px}.combat-hud .combat-pause{right:12px}body:has(.combat-hud) .music-toggle{right:66px}
+ .combat-hud .hud-skill[class],#touch-controls .touch-ability[class],.combat-hud .zawgyi-skill[class]{width:80px!important;height:80px!important;min-height:80px!important;padding:7px!important}
+ .combat-hud .zawgyi-skill-pair,.combat-hud.is-touch .zawgyi-skill-pair{height:80px;gap:20px}
+ .combat-hud .hud-skill .skill-name,.combat-hud .zawgyi-skill>span,#touch-controls .touch-ability>span{font-size:9px!important;width:90px}
+ .combat-hud .zawgyi-skill>small,.combat-hud .hud-skill>small{top:calc(100% + 38px);font-size:8px!important}
+}
+@media(max-width:480px){
+ .combat-hud .combat-health{width:140px}.combat-hud .combat-wave{left:auto;right:12px;transform:none;min-width:110px}
+ .combat-hud .combat-pause,.combat-hud .combat-map-view,body:has(.combat-hud) .music-toggle{top:calc(max(14px,env(safe-area-inset-top)) + 87px)}
+ .combat-hud .combat-gold{top:calc(var(--hud-top) + 59px)}.combat-hud .combat-map-view{right:120px}
+ .combat-hud .combat-boss{top:calc(var(--hud-top) + 139px);width:65vw}.combat-hud .combat-notice{top:calc(var(--hud-top) + 141px)}.combat-hud.has-boss .combat-notice{top:calc(var(--hud-top) + 175px)}
+}
+@media(max-height:500px) and (min-width:481px){
+ .combat-hud{--hud-top:max(8px,env(safe-area-inset-top));--skill-bottom:57px}.combat-hud .combat-health{height:48px;width:175px}.combat-hud .combat-portrait{width:34px;height:34px}.combat-hud .combat-wave{padding:4px 12px}.combat-hud .combat-wave b{font-size:18px}.combat-hud .wave-remaining{font-size:8px}
+ .combat-hud[class] .combat-passive{top:calc(var(--hud-top) + 60px);padding:4px 8px}.combat-hud .combat-notice{top:calc(var(--hud-top) + 75px)}.combat-hud .combat-boss{top:calc(var(--hud-top) + 73px)}.combat-hud.has-boss .combat-notice{top:calc(var(--hud-top) + 107px)}
+ .combat-hud .hud-skill[class],#touch-controls .touch-ability[class],.combat-hud .zawgyi-skill[class]{width:76px!important;height:76px!important;min-height:76px!important}
+ .combat-hud .zawgyi-skill-pair,.combat-hud.is-touch .zawgyi-skill-pair{height:76px;gap:22px}
+ #touch-controls .touch-ability[class]{bottom:57px!important}
+ body:has(.combat-hud) .music-toggle{top:max(8px,env(safe-area-inset-top))}
+}
+@media(prefers-reduced-motion:reduce){#touch-controls .stick-knob{transition:none}}
