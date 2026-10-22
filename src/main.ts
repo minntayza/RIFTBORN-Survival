@@ -27,6 +27,8 @@ import type Phaser from 'phaser';
 import './style.css';
 import './music-preview';
 import './combat-layout.css';
+import './art-direction.css';
+import './mobile-combat.css';
 import type { ArenaScene } from './combat';
 import { HEROES, WEAPONS, ENEMIES, PERMANENT, type HeroId, type WeaponId } from './config';
 import { loadSave, storeSave, purchase, freshSave, compatible } from './save';
@@ -384,7 +386,7 @@ window.addEventListener('blur', () => {
         pause();
 });
 window.addEventListener('beforeunload', () => storeSave(save));
-function toggleMapView(){if(!scene||scene.paused||scene.ended)return;save.settings.mapView=save.settings.mapView===2?1:2;save.settings.mapViewChosen=true;scene.applyMapView();persist();}
+function toggleMapView(){if(!scene||scene.paused||scene.ended)return;save.settings.mapView=save.settings.mapView===2?1:2;save.settings.mapViewChosen=true;scene.applyMapView();hud.querySelector<HTMLElement>('.combat-hud')?.setAttribute('data-map-view',String(save.settings.mapView));persist();}
 // Respond before the periodic HUD render can replace a pressed button.
 hud.addEventListener('pointerdown',e=>{
     if(e.button!==0)return;

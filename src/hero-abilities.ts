@@ -1,3 +1,4 @@
+import {skillIcon} from './skill-icons';
 import {ABILITY_TUNING as T,HEROES,type HeroId} from './config';
 export type AbilityHero='samurai'|'gunner'|'tank';
 export type HeroAbilityId='counter'|'draw'|'mark'|'overdrive'|'beacon'|'breach'|'slam'|'bulwark'|'march';
@@ -18,6 +19,4 @@ export const ABILITY_CHOICES:Record<AbilityHero,readonly HeroAbilityId[]>={samur
 export function validHeroAbilities(hero:AbilityHero,raw:unknown):AbilityPair{const allowed=ABILITY_CHOICES[hero];return Array.isArray(raw)&&raw.length===2&&raw[0]!==raw[1]&&raw.every(id=>allowed.includes(id))?[raw[0],raw[1]]:[allowed[0],allowed[1]];}
 // Same duplicate rule as Zawgyi: selecting the other equipped skill swaps the two slots.
 export function replaceHeroAbility(pair:AbilityPair,slot:0|1,id:HeroAbilityId):AbilityPair{const next:AbilityPair=[...pair],other=slot===0?1:0;if(next[other]===id)next[other]=next[slot];next[slot]=id;return next;}
-export function heroAbilityIcon(id:HeroAbilityId){const colors=id==='draw'||id==='mark'||id==='counter'?['#d9a2c2','#f4d59b']:id==='overdrive'||id==='beacon'||id==='breach'?['#eeb55e','#c6ddf4']:['#83cdbc','#e8d49c'];const path=id==='draw'?'<path d="M44 15A20 20 0 1 0 49 42 17 17 0 0 1 44 15Z"/>':id==='mark'?'<circle cx="32" cy="32" r="13" fill="none" stroke-width="4"/><path d="M32 10v13m0 18v13M10 32h13m18 0h13" fill="none" stroke-width="4"/>':id==='beacon'?'<path d="m32 14 13 16-13 18-13-18Z"/><path d="M12 18 7 26m45-8 5 8M13 44l-5-6m43 6 5-6" fill="none" stroke-width="3"/>':id==='breach'?'<circle cx="30" cy="36" r="13"/><path d="M35 23q-1-12 9-10m-2-5 7 8m-2-7-3 9" fill="none" stroke-width="3"/>':id==='bulwark'?'<path d="m32 12 18 7-3 20-15 14-15-14-3-20Z"/><path d="M28 22v13l9-7v14" fill="none" stroke="#18323a" stroke-width="3"/>':id==='march'?'<path d="m20 14 19 3-2 18 12 8v8H17V38l7-6Z"/>':'<path d="m32 14 5 12 13 5-13 5-5 14-5-14-13-5 13-5Z"/>';
- return `<svg viewBox="0 0 64 64" aria-hidden="true" data-hero-ability="${id}"><circle cx="32" cy="32" r="29" fill="#17313a" stroke="${colors[0]}" stroke-width="2"/><g fill="${colors[0]}" stroke="${colors[1]}" stroke-width="2" stroke-linejoin="round" stroke-linecap="round">${path}</g><circle cx="49" cy="13" r="3" fill="${colors[1]}"/></svg>`;
-}
+export function heroAbilityIcon(id:HeroAbilityId){return skillIcon(id);}

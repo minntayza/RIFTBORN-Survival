@@ -1,0 +1,20 @@
+// Bold cel-shaded symbols on a shared dark backing; no gameplay dependencies.
+export function skillIcon(id:string,hero='') {
+ const sword='<path d="M18 47 45 12 49 8 48 18 23 50Z" fill="#e3edf1"/><path d="m21 44 5 5-4 4-5-5Z" fill="#edc267"/><path d="m16 49 5 4-6 7-5-4Z" fill="#b55257"/>';
+ const bodies:Record<string,string>={
+ dash:'<path d="m6 21 22 1-18 6 18 3-23 6 22 1" fill="#b66aff" stroke="none"/><path d="M32 10 44 7 55 18 51 31 40 34 31 25 25 20Z" fill="#873fcd"/><path d="m37 23 15-4-4 11-10-1Z" fill="#101923"/><path d="m44 25 5-2-2 4Z" fill="#fff2c9" stroke="none"/><path d="m30 29 13 6-7 10 12 5-4 8-20-12 4-7-13 7-5-5Z" fill="#9b52df"/>',
+ draw:`${sword}<g transform="translate(64 0) scale(-1 1)">${sword}</g><path d="m32 7 3 10 10 3-10 3-3 10-3-10-10-3 10-3Z" fill="#ffdf82" stroke="#c78b33"/>`,
+ mark:`<path d="m32 9 17 17-17 17-17-17Z" fill="none" stroke="#f05c57" stroke-width="5"/><path d="M32 2v7M8 26H2m54 0h6" stroke="#f05c57" stroke-width="4"/><g transform="translate(10 9) scale(.8)">${sword}</g>`,
+ counter:`<path d="M48 13A22 22 0 1 0 50 47L39 48A17 17 0 1 1 45 18Z" fill="#ef867e"/><path d="m49 5 5 17-17-4Z" fill="#ffdb91"/>${sword}`,
+ overdrive:'<path d="m10 9 9 10-13 1 8 6-12 3M54 9l-9 10 13 1-8 6 12 3" fill="#ffc34e" stroke="none"/><g fill="#64778a"><path d="m8 24 25 15-6 10-9-5-5 11-9-6 9-13-10-6Z"/><path d="M56 24 31 39l6 10 9-5 5 11 9-6-9-13 10-6Z"/></g><path d="m8 26 20 12m28-12-20 12" stroke="#c8d4da" stroke-width="3"/>',
+ beacon:'<path d="m13 42 17-1 7 14H7Z" fill="#7d8e9b"/><path d="m22 7 10 12-2 22-15-1-1-22Z" fill="#29b7ed"/><path d="m22 7 1 30 9-18m-18-1 9 6 9-5" fill="none" stroke="#b7efff" stroke-width="2"/><path d="m36 30 8 10 12-17m-9 0 11-3-1 11" fill="none" stroke="#63e3e6" stroke-width="4"/>',
+ breach:'<path d="m31 5 5 12 12-8-1 15 14 3-12 9 10 12-17-1-3 14-11-11-12 8 1-16-14-3 11-10-7-12 16 2Z" fill="#ff922c" stroke="none"/><g transform="rotate(35 32 32)"><rect x="19" y="13" width="26" height="39" rx="6" fill="#58697b"/><path d="M18 20h28v6H18zm0 20h28v6H18Z" fill="#283543"/><rect x="26" y="27" width="12" height="11" fill="#ff7756"/></g>',
+ bulwark:'<path d="m32 7 24 11-5 25-19 15-19-15-5-25Z" fill="#358a9d"/><path d="m32 13 17 8-4 19-13 11-13-11-4-19Z" fill="#183b4c" stroke="#9dd5e0"/><path d="M23 38v-9a9 9 0 0 1 18 0v9" fill="none" stroke="#48e0ef" stroke-width="6"/>',
+ march:'<path d="m9 52 13-5 8 5 9-7 17 7-14 2 5 7-15-5-15 5 4-7Z" fill="#edbc55" stroke="none"/><path d="m23 7 22 3-6 22 14 10 3 10-39-2-5-10 9-13Z" fill="#718494"/><path d="m22 29 16 3-1 7-18-4Z" fill="#edc267"/><path d="m16 44 37 2 3 6-39-2Z" fill="#263747"/>',
+ slam:'<path d="m7 53 17-7 8 9 10-10 16 8-18 2-8 7-9-7Z" fill="#efc25e" stroke="none"/><path d="M28 10h8v32h-8Z" fill="#8f6449"/><path d="m13 11 36-2 5 17-40 3Z" fill="#829aa6"/><path d="m16 12 30-1 2 5-31 2Z" fill="#dce5e4" stroke="none"/>',
+ datlone:'<ellipse cx="32" cy="33" rx="27" ry="12" transform="rotate(-25 32 33)" fill="none" stroke="#a25bdf" stroke-width="5"/><circle cx="32" cy="30" r="17" fill="#eeab32"/><path d="M22 37q12 12 23-4-1 17-17 13Z" fill="#bd701c" stroke="none"/><circle cx="29" cy="23" r="7" fill="#ffe48a" stroke="none"/><path d="M9 40q22 6 46-14" fill="none" stroke="#c78bfa" stroke-width="4"/><circle cx="52" cy="10" r="3" fill="#c78bfa" stroke="none"/>',
+ flame:'<path d="M35 7q1 17 10 16l4-7q17 31-10 39Q9 60 13 34q2-10 11-15-3 15 5 15 8-7 6-27Z" fill="#f48c36"/><path d="M32 31q-14 17 0 20 16-2 7-17l-3 7Z" fill="#ffe08a" stroke="none"/><path d="m4 30 8 1m-7 8 6 1" stroke="#cf94fc" stroke-width="3"/>',
+ staffslam:'<ellipse cx="32" cy="48" rx="25" ry="8" fill="none" stroke="#b174ed" stroke-width="4"/><path d="m10 58 13-7 8 5 10-6 14 8" fill="none" stroke="#f4c65f" stroke-width="3"/><path d="M29 7h7v40h-7Z" fill="#d95850"/><path d="M28 8h9v6h-9zm0 30h9v8h-9Z" fill="#ffdc83"/>'
+ };
+ return `<svg viewBox="0 0 64 64" aria-hidden="true" data-skill-icon="${id}" ${hero?`data-ultimate="${hero}"`:''}><circle cx="32" cy="32" r="31" fill="#0b1922"/><g stroke="#07111e" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round">${bodies[id]||bodies.slam}</g></svg>`;
+}

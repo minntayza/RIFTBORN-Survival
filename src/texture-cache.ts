@@ -8,6 +8,6 @@ export function cachedCanvas(key:string,make:()=>HTMLCanvasElement){
 }
 export const decodedImages=new Map<string,HTMLImageElement>();
 
-const sourceUrls=new WeakMap<HTMLImageElement,string>();
-export function rememberImageSource(image:HTMLImageElement,url:string){sourceUrls.set(image,url);}
-export function imageSourceUrl(image:HTMLImageElement){return sourceUrls.get(image)||image.src;}
+const sourceUrls=new WeakMap<HTMLImageElement|HTMLCanvasElement,string>();
+export function rememberImageSource(image:HTMLImageElement|HTMLCanvasElement,url:string){sourceUrls.set(image,url);}
+export function imageSourceUrl(image:HTMLImageElement|HTMLCanvasElement){return sourceUrls.get(image)||('src' in image?image.src:'');}

@@ -1,5 +1,6 @@
 import '../src/style.css';
 import '../src/combat-layout.css';
+import '../src/art-direction.css';
 import Phaser from 'phaser';
 import {ArenaScene} from '../src/combat';
 import {AudioManager} from '../src/audio';

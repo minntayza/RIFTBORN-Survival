@@ -1,0 +1,19 @@
+/* Ink, brass and violet: common visual language for the illustrated survivors. */
+.combat-hud .combat-wave b,.combat-hud .combat-gold b,.combat-hud .skill-name,.combat-hud .zawgyi-skill>span,#touch-controls .touch-ability>span { font-family:Georgia,'Palatino Linotype',serif!important;font-weight:900!important;text-shadow:0 2px 1px #07151b,0 0 8px #07151baa; }
+.combat-hud .combat-wave { border:2px solid #b99c60;border-radius:9px 9px 19px 19px;background:linear-gradient(125deg,#243b3c,#0b1d25 65%);box-shadow:inset 0 0 0 2px #07141c,inset 0 0 0 3px #d9bf8033,0 4px 0 #06111988; }
+.combat-hud .combat-wave b { color:#fff0cf;letter-spacing:1.2px; }
+.combat-hud .combat-health { border-color:#bca16d;box-shadow:inset 0 0 0 2px #081620,0 4px 12px #0006;background:linear-gradient(110deg,#263c3b,#0a1821); }
+.combat-hud .combat-portrait { border-color:#f0d397;box-shadow:0 0 0 2px #131925,inset 0 0 12px #090b19; }
+.combat-hud .combat-gold { display:flex;align-items:center;gap:7px;padding:4px 11px 4px 4px;border:1px solid #af976b;background:linear-gradient(#253d3b,#091a21);box-shadow:inset 0 0 0 2px #07131b; }
+.gold-coin { display:grid;place-items:center;width:28px;height:28px;flex:none;border-radius:50%;color:#fff2bc;font:bold 22px Georgia;line-height:1;border:2px solid #ffe1a0;background:radial-gradient(circle at 34% 26%,#ffe493,#e5a62e 55%,#9b5a13);box-shadow:inset 0 0 0 2px #aa6c1b,0 0 0 2px #49391f,0 2px 3px #0008;text-shadow:0 1px 2px #7d460c; }
+.combat-hud .combat-pause,.combat-hud .combat-map-view,body:has(.combat-hud) .music-toggle { color:#f3d695;border:2px solid #c8a86d;box-shadow:inset 0 0 0 2px #07151e,0 3px 6px #0008;background:radial-gradient(circle at 35% 20%,#294347,#0b1b24); }
+.combat-hud .hud-skill[class],#touch-controls .touch-ability[class],.combat-hud .zawgyi-skill[class] { border-color:#efd491!important;box-shadow:inset 0 0 0 2px #6f4c2c,inset 0 0 22px #160b2a,0 0 0 2px #101926,0 4px 12px #0008!important;background:radial-gradient(circle at 40% 22%,#8350ac,#382053 60%,#15152b)!important; }
+.combat-hud .hud-skill[class].ready,#touch-controls .touch-ability[class].ready,.combat-hud .zawgyi-skill[class].ready { box-shadow:inset 0 0 0 2px #6f4c2c,0 0 0 2px #141927,0 0 18px #b66cff66!important; }
+.home-showcase .art-image,.camp-skill-cards svg,.character-icon .art-image { filter:saturate(1.15) contrast(1.07) drop-shadow(0 5px 4px #06151a55); }
+.panel h2,.home-hub h1,.home-survivor-summary h2 { font-family:Georgia,'Palatino Linotype',serif;font-weight:900;color:#f7e9c6; }
+.primary { background:linear-gradient(#ffe5a1,#dfb75f);border:1px solid #f7d990;box-shadow:inset 0 0 0 2px #be924e55,0 4px 0 #806331;color:#182c2d; }
+@media(max-width:700px){.gold-coin{width:22px;height:22px;font-size:17px}.combat-hud .combat-gold{padding:3px 7px 3px 3px;gap:5px}}
+
+/* Neutral backings preserve each skill's own color and silhouette. */
+.combat-hud .hud-skill[class],#touch-controls .touch-ability[class],.combat-hud .zawgyi-skill[class] { background:#0b1922!important; }
+svg[data-skill-icon] { background:#0b1922;border-radius:50%; }

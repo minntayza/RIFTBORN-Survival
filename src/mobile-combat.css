@@ -1,0 +1,48 @@
+/* Screen-space touch controls. Map view changes only the skill cluster, never the HUD or joystick. */
+body:has(.combat-hud.is-touch){--mobile-skill:80px;--mobile-rise:64px;--mobile-span:148px;--mobile-rim:5px;--mobile-cooldown:20px;--mobile-edge:20px;--mobile-floor:28px}
+body:has(.combat-hud.is-touch[data-map-view="2"]){--mobile-skill:66px;--mobile-rise:53px;--mobile-span:122px;--mobile-rim:3px;--mobile-cooldown:17px}
+.combat-hud.is-touch{--hud-top:max(10px,calc(env(safe-area-inset-top) + 6px))}
+.combat-hud.is-touch .combat-gold,body:has(.combat-hud.is-touch) .music-toggle{display:none!important}
+.combat-hud.is-touch .combat-health{left:max(8px,calc(env(safe-area-inset-left) + 8px));width:112px;height:56px;padding:6px 8px;min-width:0;border-radius:12px;gap:0}
+.combat-hud.is-touch .combat-portrait{display:none}
+.combat-hud.is-touch .combat-health>div{width:100%}
+.combat-hud.is-touch .combat-hp{font:800 12px system-ui;text-align:left}
+.combat-hud.is-touch .combat-hp small{font-size:10px}
+.combat-hud.is-touch .combat-health .health{height:6px;margin:3px 0}
+.combat-hud.is-touch .combat-health .combat-xp{height:4px;margin:3px 26px 0 0}
+.combat-hud.is-touch .combat-health .combat-xp i{background:#55b7ff;box-shadow:none}
+.combat-hud.is-touch .combat-health>div>small{left:auto;right:0;top:auto;bottom:-2px;border:0;background:none;padding:0;font:800 9px system-ui}
+.combat-hud.is-touch .combat-wave{left:50%;right:auto;transform:translateX(-50%);top:var(--hud-top);min-width:0;padding:8px 10px}
+.combat-hud.is-touch .combat-wave b{font-size:13px;letter-spacing:0}
+.combat-hud.is-touch .combat-wave>span,.combat-hud.is-touch .combat-sector{display:none}
+.combat-hud.is-touch .combat-pause,.combat-hud.is-touch .combat-map-view{top:var(--hud-top);width:44px;height:44px}
+.combat-hud.is-touch .combat-pause{right:max(8px,calc(env(safe-area-inset-right) + 8px))}
+.combat-hud.is-touch .combat-map-view{right:max(8px,calc(env(safe-area-inset-right) + 8px));top:calc(var(--hud-top) + 52px)}
+.combat-hud.is-touch .combat-map-view small{display:none}
+.combat-hud.is-touch[class] .combat-passive{top:calc(var(--hud-top) + 64px);left:max(8px,calc(env(safe-area-inset-left) + 8px))!important;width:112px;padding:4px 6px;gap:5px;min-height:22px}
+.combat-hud.is-touch .combat-passive b,.combat-hud.is-touch .combat-passive>small{display:none}
+.combat-hud.is-touch .combat-passive>span{font-size:13px}
+.combat-hud.is-touch .combat-passive .bar{margin:0;height:4px}
+.combat-hud.is-touch .combat-boss{top:calc(var(--hud-top) + 48px);width:min(32vw,260px)}
+.combat-hud.is-touch .combat-boss>span{font-size:9px;letter-spacing:0}
+.combat-hud.is-touch .combat-notice{top:calc(var(--hud-top) + 104px);max-width:65%;font-size:10px}
+.combat-hud.is-touch.has-boss .combat-notice{top:calc(var(--hud-top) + 104px)}
+.combat-hud.is-touch .combat-resource{right:50%;left:auto;transform:translateX(50%);bottom:max(10px,calc(env(safe-area-inset-bottom) + 8px));font-size:11px}
+.combat-hud.is-touch .zawgyi-skill-pair{display:block;width:var(--mobile-span);height:calc(var(--mobile-skill) + var(--mobile-rise));right:calc(env(safe-area-inset-right) + var(--mobile-edge));left:auto;bottom:calc(env(safe-area-inset-bottom) + var(--mobile-floor));pointer-events:none}
+.combat-hud.is-touch .zawgyi-skill-pair .zawgyi-skill:nth-child(n){position:absolute;left:0;right:auto;bottom:0}
+.combat-hud.is-touch .zawgyi-skill-pair .zawgyi-skill:nth-child(2){left:auto;right:0;bottom:var(--mobile-rise)}
+.combat-hud.is-touch.controls-right .zawgyi-skill-pair{right:auto!important;left:calc(env(safe-area-inset-left) + var(--mobile-edge))!important}
+.combat-hud.is-touch.controls-right .zawgyi-skill-pair .zawgyi-skill:first-child{left:auto;right:0}
+.combat-hud.is-touch.controls-right .zawgyi-skill-pair .zawgyi-skill:nth-child(2){left:0;right:auto}
+.combat-hud.is-touch .zawgyi-skill[class],body:has(.combat-hud.is-touch) #touch-controls .touch-ability[class]{width:var(--mobile-skill)!important;height:var(--mobile-skill)!important;min-height:var(--mobile-skill)!important;padding:7px!important;min-width:44px;border-width:2px!important;background:#142029!important;box-shadow:inset 0 0 0 1px #81683d,0 2px 5px #0006!important;transition:width .16s ease,height .16s ease,min-height .16s ease,bottom .16s ease}
+.combat-hud.is-touch .zawgyi-skill[class]::before,body:has(.combat-hud.is-touch) #touch-controls .touch-ability[class]::before{inset:calc(0px - var(--mobile-rim));mask:radial-gradient(farthest-side,transparent calc(100% - 2px),#000 calc(100% - 1px))}
+.combat-hud.is-touch .zawgyi-skill>b,body:has(.combat-hud.is-touch) #touch-controls .touch-ability>b{font-size:var(--mobile-cooldown)!important}
+.combat-hud.is-touch .zawgyi-skill>small,.combat-hud.is-touch .zawgyi-skill>span,body:has(.combat-hud.is-touch) #touch-controls .touch-ability>span{display:none!important}
+.combat-hud.is-touch .zawgyi-skill.skill-active{border-color:#b3e3d2!important}
+body:has(.combat-hud.is-touch) #touch-controls .touch-ability[class]{right:calc(env(safe-area-inset-right) + var(--mobile-edge));bottom:calc(env(safe-area-inset-bottom) + var(--mobile-floor) + 12px)!important}
+body:has(.combat-hud.is-touch) #touch-controls.right-handed .touch-ability[class]{right:auto!important;left:calc(env(safe-area-inset-left) + var(--mobile-edge))!important}
+body:has(.combat-hud.is-touch) #touch-controls .touch-stick{bottom:calc(env(safe-area-inset-bottom) + var(--mobile-floor))!important;max-width:calc(50vw - 32px);max-height:calc(50vw - 32px);opacity:.55}
+body:has(.combat-hud.is-touch) #touch-controls .touch-stick.engaged{opacity:.85}
+@media(orientation:landscape) and (max-height:500px){body:has(.combat-hud.is-touch){--mobile-floor:20px;--mobile-edge:24px;--mobile-skill:74px;--mobile-rise:57px;--mobile-span:136px}body:has(.combat-hud.is-touch[data-map-view="2"]){--mobile-skill:61px;--mobile-rise:47px;--mobile-span:112px}}
+@media(max-width:360px){.combat-hud.is-touch .combat-health{width:98px}.combat-hud.is-touch .combat-wave{padding:8px 6px}.combat-hud.is-touch .combat-wave b{font-size:12px}}
+@media(prefers-reduced-motion:reduce){.combat-hud.is-touch .zawgyi-skill[class],body:has(.combat-hud.is-touch) #touch-controls .touch-ability[class]{transition:none!important}}
