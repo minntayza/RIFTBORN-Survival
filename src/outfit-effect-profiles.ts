@@ -1,3 +1,4 @@
+import {skillIcon} from './skill-icons';
 import {samuraiPortrait} from './samurai-art';
 import {ninjaSkinPortrait} from './ninja-cosmetics';
 import {gunnerSkinPortrait} from './gunner-cosmetics';
@@ -14,4 +15,8 @@ export function outfitEffectProfile(save:Save,hero:HeroId):OutfitProfile|undefin
  const theme=id.split(':').at(-1)!,style=styles[`${hero}:${theme}`];if(!style)return;
  return {id,hero,theme,motif:style[0],color:style[1],accent:style[2],name:names[hero][['sakura','jade','starlight'].indexOf(theme)]};
 }
-export function outfitUltimateIcon(_save:Save,_hero:HeroId,base:string){return base;}
+export function outfitUltimateIcon(save:Save,hero:HeroId,base:string){
+ const profile=outfitEffectProfile(save,hero),id=base.match(/data-skill-icon="([^"]+)"/)?.[1];
+ if(!profile||!id)return base;
+ return skillIcon(id,hero,profile.theme);
+}

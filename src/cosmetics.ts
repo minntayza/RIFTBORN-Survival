@@ -1,3 +1,4 @@
+import {tankWeaponSetAsset,tankWeaponTheme} from './tank-weapon-designs';
 import {HEROES,WEAPONS,PLAYTEST,type HeroId,type WeaponId} from './config';
 import type {Save} from './save';
 export const FINISHES=[{id:'sakura',name:'Sakura',color:0xffa9d6,filter:'sepia(.4) saturate(1.6) hue-rotate(285deg)',price:120},{id:'jade',name:'Jade',color:0x91f4cb,filter:'sepia(.5) saturate(1.8) hue-rotate(95deg)',price:160},{id:'starlight',name:'Starlight',color:0xc2b0ff,filter:'sepia(.5) saturate(1.8) hue-rotate(205deg)',price:200}] as const;
@@ -9,7 +10,7 @@ export const TANK_SKINS={sakura:{name:'Royal Bulwark',asset:'/assets/cosmetics/t
 export const COSMETICS=([['character',HEROES],['weapon',WEAPONS]] as const).flatMap(([kind,targets])=>Object.entries(targets).filter(([id])=>id!=='zawgyi'&&id!=='mysticstaff').flatMap(([target,value])=>FINISHES.map(f=>{
  const hero=kind==='character'?target:WEAPONS[target as WeaponId].hero;
  const design=hero==='tank'?TANK_SKINS[f.id]:hero==='gunner'?GUNNER_SKINS[f.id]:hero==='ninja'?NINJA_SKINS[f.id]:hero==='samurai'?(kind==='character'?SAMURAI_SKINS[f.id]:SAMURAI_WEAPON_SKINS[f.id]):undefined;
- return {...f,id:`${kind}:${target}:${f.id}`,kind,target,name:design?(kind==='character'?design.name:`${design.name} ${value.name}`):`${f.name} ${value.name}`,asset:hero==='tank'&&kind==='character'?`/assets/cosmetics/tank-v3/${f.id==='sakura'?'royal':f.id==='jade'?'forge':'polar'}.png`:design?.asset};
+ return {...f,id:`${kind}:${target}:${f.id}`,kind,target,name:design?(kind==='character'?design.name:`${design.name} ${value.name}`):`${f.name} ${value.name}`,asset:hero==='tank'&&kind==='weapon'?tankWeaponSetAsset(tankWeaponTheme(f.id)):(hero==='samurai'||hero==='gunner')&&kind==='character'?`/assets/cosmetics/survivors-v2/${hero==='samurai'?(f.id==='sakura'?'blossom':f.id==='jade'?'fox':'moon'):(f.id==='sakura'?'outlaw':f.id==='jade'?'street':'courier')}-atlas.png`:hero==='tank'&&kind==='character'?`/assets/cosmetics/tank-v3/${f.id==='sakura'?'royal':f.id==='jade'?'forge':'polar'}.png`:design?.asset};
 })));
 export function equippedWeaponSkin(s:Save,weapon:WeaponId){return COSMETICS.find(c=>c.id===s.cosmetics.equipped[`weapon:${weapon}`])?.asset;}
 export function equippedSkin(s:Save,hero:HeroId=s.hero){return COSMETICS.find(c=>c.id===s.cosmetics.equipped[`character:${hero}`])?.asset;}

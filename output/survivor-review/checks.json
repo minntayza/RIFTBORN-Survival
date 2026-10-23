@@ -1,0 +1,632 @@
+[
+  {
+    "o": "blossom",
+    "w": "nodachi",
+    "skill": "Perfect Counter",
+    "view": 1,
+    "status": "blossom / nodachi · Perfect Counter · 0.28s · Paused\nMark hits 0/4 · Ammo 12/12 · Reload 0.00 · Outfit effects 1/24 · View 1×"
+  },
+  {
+    "o": "blossom",
+    "w": "nodachi",
+    "skill": "Perfect Draw",
+    "view": 1,
+    "status": "blossom / nodachi · Perfect Draw · 0.30s · Paused\nMark hits 0/4 · Ammo 12/12 · Reload 0.00 · Outfit effects 2/24 · View 1×"
+  },
+  {
+    "o": "blossom",
+    "w": "nodachi",
+    "skill": "Duelist’s Mark",
+    "view": 1,
+    "status": "blossom / nodachi · Duelist’s Mark · 2.20s · Paused\nMark hits 4/4 · Ammo 12/12 · Reload 0.00 · Outfit effects 1/24 · View 1×"
+  },
+  {
+    "o": "blossom",
+    "w": "nodachi",
+    "skill": "Perfect Counter",
+    "view": 2,
+    "status": "blossom / nodachi · Perfect Counter · 0.28s · Paused\nMark hits 0/4 · Ammo 12/12 · Reload 0.00 · Outfit effects 1/24 · View 2×"
+  },
+  {
+    "o": "blossom",
+    "w": "nodachi",
+    "skill": "Perfect Draw",
+    "view": 2,
+    "status": "blossom / nodachi · Perfect Draw · 0.30s · Paused\nMark hits 0/4 · Ammo 12/12 · Reload 0.00 · Outfit effects 2/24 · View 2×"
+  },
+  {
+    "o": "blossom",
+    "w": "nodachi",
+    "skill": "Duelist’s Mark",
+    "view": 2,
+    "status": "blossom / nodachi · Duelist’s Mark · 2.20s · Paused\nMark hits 4/4 · Ammo 12/12 · Reload 0.00 · Outfit effects 1/24 · View 2×"
+  },
+  {
+    "o": "blossom",
+    "w": "cursed",
+    "skill": "Perfect Counter",
+    "view": 1,
+    "status": "blossom / cursed · Perfect Counter · 0.28s · Paused\nMark hits 0/4 · Ammo 12/12 · Reload 0.00 · Outfit effects 1/24 · View 1×"
+  },
+  {
+    "o": "blossom",
+    "w": "cursed",
+    "skill": "Perfect Draw",
+    "view": 1,
+    "status": "blossom / cursed · Perfect Draw · 0.30s · Paused\nMark hits 0/4 · Ammo 12/12 · Reload 0.00 · Outfit effects 2/24 · View 1×"
+  },
+  {
+    "o": "blossom",
+    "w": "cursed",
+    "skill": "Duelist’s Mark",
+    "view": 1,
+    "status": "blossom / cursed · Duelist’s Mark · 2.20s · Paused\nMark hits 4/4 · Ammo 12/12 · Reload 0.00 · Outfit effects 1/24 · View 1×"
+  },
+  {
+    "o": "blossom",
+    "w": "cursed",
+    "skill": "Perfect Counter",
+    "view": 2,
+    "status": "blossom / cursed · Perfect Counter · 0.28s · Paused\nMark hits 0/4 · Ammo 12/12 · Reload 0.00 · Outfit effects 1/24 · View 2×"
+  },
+  {
+    "o": "blossom",
+    "w": "cursed",
+    "skill": "Perfect Draw",
+    "view": 2,
+    "status": "blossom / cursed · Perfect Draw · 0.30s · Paused\nMark hits 0/4 · Ammo 12/12 · Reload 0.00 · Outfit effects 2/24 · View 2×"
+  },
+  {
+    "o": "blossom",
+    "w": "cursed",
+    "skill": "Duelist’s Mark",
+    "view": 2,
+    "status": "blossom / cursed · Duelist’s Mark · 2.20s · Paused\nMark hits 4/4 · Ammo 12/12 · Reload 0.00 · Outfit effects 1/24 · View 2×"
+  },
+  {
+    "o": "blossom",
+    "w": "naginata",
+    "skill": "Perfect Counter",
+    "view": 1,
+    "status": "blossom / naginata · Perfect Counter · 0.28s · Paused\nMark hits 0/4 · Ammo 12/12 · Reload 0.00 · Outfit effects 1/24 · View 1×"
+  },
+  {
+    "o": "blossom",
+    "w": "naginata",
+    "skill": "Perfect Draw",
+    "view": 1,
+    "status": "blossom / naginata · Perfect Draw · 0.30s · Paused\nMark hits 0/4 · Ammo 12/12 · Reload 0.00 · Outfit effects 2/24 · View 1×"
+  },
+  {
+    "o": "blossom",
+    "w": "naginata",
+    "skill": "Duelist’s Mark",
+    "view": 1,
+    "status": "blossom / naginata · Duelist’s Mark · 2.20s · Paused\nMark hits 4/4 · Ammo 12/12 · Reload 0.00 · Outfit effects 1/24 · View 1×"
+  },
+  {
+    "o": "blossom",
+    "w": "naginata",
+    "skill": "Perfect Counter",
+    "view": 2,
+    "status": "blossom / naginata · Perfect Counter · 0.28s · Paused\nMark hits 0/4 · Ammo 12/12 · Reload 0.00 · Outfit effects 1/24 · View 2×"
+  },
+  {
+    "o": "blossom",
+    "w": "naginata",
+    "skill": "Perfect Draw",
+    "view": 2,
+    "status": "blossom / naginata · Perfect Draw · 0.30s · Paused\nMark hits 0/4 · Ammo 12/12 · Reload 0.00 · Outfit effects 2/24 · View 2×"
+  },
+  {
+    "o": "blossom",
+    "w": "naginata",
+    "skill": "Duelist’s Mark",
+    "view": 2,
+    "status": "blossom / naginata · Duelist’s Mark · 2.20s · Paused\nMark hits 4/4 · Ammo 12/12 · Reload 0.00 · Outfit effects 1/24 · View 2×"
+  },
+  {
+    "o": "fox",
+    "w": "nodachi",
+    "skill": "Perfect Counter",
+    "view": 1,
+    "status": "fox / nodachi · Perfect Counter · 0.28s · Paused\nMark hits 0/4 · Ammo 12/12 · Reload 0.00 · Outfit effects 1/24 · View 1×"
+  },
+  {
+    "o": "fox",
+    "w": "nodachi",
+    "skill": "Perfect Draw",
+    "view": 1,
+    "status": "fox / nodachi · Perfect Draw · 0.30s · Paused\nMark hits 0/4 · Ammo 12/12 · Reload 0.00 · Outfit effects 2/24 · View 1×"
+  },
+  {
+    "o": "fox",
+    "w": "nodachi",
+    "skill": "Duelist’s Mark",
+    "view": 1,
+    "status": "fox / nodachi · Duelist’s Mark · 2.20s · Paused\nMark hits 4/4 · Ammo 12/12 · Reload 0.00 · Outfit effects 1/24 · View 1×"
+  },
+  {
+    "o": "fox",
+    "w": "nodachi",
+    "skill": "Perfect Counter",
+    "view": 2,
+    "status": "fox / nodachi · Perfect Counter · 0.28s · Paused\nMark hits 0/4 · Ammo 12/12 · Reload 0.00 · Outfit effects 1/24 · View 2×"
+  },
+  {
+    "o": "fox",
+    "w": "nodachi",
+    "skill": "Perfect Draw",
+    "view": 2,
+    "status": "fox / nodachi · Perfect Draw · 0.30s · Paused\nMark hits 0/4 · Ammo 12/12 · Reload 0.00 · Outfit effects 2/24 · View 2×"
+  },
+  {
+    "o": "fox",
+    "w": "nodachi",
+    "skill": "Duelist’s Mark",
+    "view": 2,
+    "status": "fox / nodachi · Duelist’s Mark · 2.20s · Paused\nMark hits 4/4 · Ammo 12/12 · Reload 0.00 · Outfit effects 1/24 · View 2×"
+  },
+  {
+    "o": "fox",
+    "w": "cursed",
+    "skill": "Perfect Counter",
+    "view": 1,
+    "status": "fox / cursed · Perfect Counter · 0.28s · Paused\nMark hits 0/4 · Ammo 12/12 · Reload 0.00 · Outfit effects 1/24 · View 1×"
+  },
+  {
+    "o": "fox",
+    "w": "cursed",
+    "skill": "Perfect Draw",
+    "view": 1,
+    "status": "fox / cursed · Perfect Draw · 0.30s · Paused\nMark hits 0/4 · Ammo 12/12 · Reload 0.00 · Outfit effects 2/24 · View 1×"
+  },
+  {
+    "o": "fox",
+    "w": "cursed",
+    "skill": "Duelist’s Mark",
+    "view": 1,
+    "status": "fox / cursed · Duelist’s Mark · 2.20s · Paused\nMark hits 4/4 · Ammo 12/12 · Reload 0.00 · Outfit effects 1/24 · View 1×"
+  },
+  {
+    "o": "fox",
+    "w": "cursed",
+    "skill": "Perfect Counter",
+    "view": 2,
+    "status": "fox / cursed · Perfect Counter · 0.28s · Paused\nMark hits 0/4 · Ammo 12/12 · Reload 0.00 · Outfit effects 1/24 · View 2×"
+  },
+  {
+    "o": "fox",
+    "w": "cursed",
+    "skill": "Perfect Draw",
+    "view": 2,
+    "status": "fox / cursed · Perfect Draw · 0.30s · Paused\nMark hits 0/4 · Ammo 12/12 · Reload 0.00 · Outfit effects 2/24 · View 2×"
+  },
+  {
+    "o": "fox",
+    "w": "cursed",
+    "skill": "Duelist’s Mark",
+    "view": 2,
+    "status": "fox / cursed · Duelist’s Mark · 2.20s · Paused\nMark hits 4/4 · Ammo 12/12 · Reload 0.00 · Outfit effects 1/24 · View 2×"
+  },
+  {
+    "o": "fox",
+    "w": "naginata",
+    "skill": "Perfect Counter",
+    "view": 1,
+    "status": "fox / naginata · Perfect Counter · 0.28s · Paused\nMark hits 0/4 · Ammo 12/12 · Reload 0.00 · Outfit effects 1/24 · View 1×"
+  },
+  {
+    "o": "fox",
+    "w": "naginata",
+    "skill": "Perfect Draw",
+    "view": 1,
+    "status": "fox / naginata · Perfect Draw · 0.30s · Paused\nMark hits 0/4 · Ammo 12/12 · Reload 0.00 · Outfit effects 2/24 · View 1×"
+  },
+  {
+    "o": "fox",
+    "w": "naginata",
+    "skill": "Duelist’s Mark",
+    "view": 1,
+    "status": "fox / naginata · Duelist’s Mark · 2.20s · Paused\nMark hits 4/4 · Ammo 12/12 · Reload 0.00 · Outfit effects 1/24 · View 1×"
+  },
+  {
+    "o": "fox",
+    "w": "naginata",
+    "skill": "Perfect Counter",
+    "view": 2,
+    "status": "fox / naginata · Perfect Counter · 0.28s · Paused\nMark hits 0/4 · Ammo 12/12 · Reload 0.00 · Outfit effects 1/24 · View 2×"
+  },
+  {
+    "o": "fox",
+    "w": "naginata",
+    "skill": "Perfect Draw",
+    "view": 2,
+    "status": "fox / naginata · Perfect Draw · 0.30s · Paused\nMark hits 0/4 · Ammo 12/12 · Reload 0.00 · Outfit effects 2/24 · View 2×"
+  },
+  {
+    "o": "fox",
+    "w": "naginata",
+    "skill": "Duelist’s Mark",
+    "view": 2,
+    "status": "fox / naginata · Duelist’s Mark · 2.20s · Paused\nMark hits 4/4 · Ammo 12/12 · Reload 0.00 · Outfit effects 1/24 · View 2×"
+  },
+  {
+    "o": "moon",
+    "w": "nodachi",
+    "skill": "Perfect Counter",
+    "view": 1,
+    "status": "moon / nodachi · Perfect Counter · 0.28s · Paused\nMark hits 0/4 · Ammo 12/12 · Reload 0.00 · Outfit effects 1/24 · View 1×"
+  },
+  {
+    "o": "moon",
+    "w": "nodachi",
+    "skill": "Perfect Draw",
+    "view": 1,
+    "status": "moon / nodachi · Perfect Draw · 0.30s · Paused\nMark hits 0/4 · Ammo 12/12 · Reload 0.00 · Outfit effects 2/24 · View 1×"
+  },
+  {
+    "o": "moon",
+    "w": "nodachi",
+    "skill": "Duelist’s Mark",
+    "view": 1,
+    "status": "moon / nodachi · Duelist’s Mark · 2.20s · Paused\nMark hits 4/4 · Ammo 12/12 · Reload 0.00 · Outfit effects 1/24 · View 1×"
+  },
+  {
+    "o": "moon",
+    "w": "nodachi",
+    "skill": "Perfect Counter",
+    "view": 2,
+    "status": "moon / nodachi · Perfect Counter · 0.28s · Paused\nMark hits 0/4 · Ammo 12/12 · Reload 0.00 · Outfit effects 1/24 · View 2×"
+  },
+  {
+    "o": "moon",
+    "w": "nodachi",
+    "skill": "Perfect Draw",
+    "view": 2,
+    "status": "moon / nodachi · Perfect Draw · 0.30s · Paused\nMark hits 0/4 · Ammo 12/12 · Reload 0.00 · Outfit effects 2/24 · View 2×"
+  },
+  {
+    "o": "moon",
+    "w": "nodachi",
+    "skill": "Duelist’s Mark",
+    "view": 2,
+    "status": "moon / nodachi · Duelist’s Mark · 2.20s · Paused\nMark hits 4/4 · Ammo 12/12 · Reload 0.00 · Outfit effects 1/24 · View 2×"
+  },
+  {
+    "o": "moon",
+    "w": "cursed",
+    "skill": "Perfect Counter",
+    "view": 1,
+    "status": "moon / cursed · Perfect Counter · 0.28s · Paused\nMark hits 0/4 · Ammo 12/12 · Reload 0.00 · Outfit effects 1/24 · View 1×"
+  },
+  {
+    "o": "moon",
+    "w": "cursed",
+    "skill": "Perfect Draw",
+    "view": 1,
+    "status": "moon / cursed · Perfect Draw · 0.30s · Paused\nMark hits 0/4 · Ammo 12/12 · Reload 0.00 · Outfit effects 2/24 · View 1×"
+  },
+  {
+    "o": "moon",
+    "w": "cursed",
+    "skill": "Duelist’s Mark",
+    "view": 1,
+    "status": "moon / cursed · Duelist’s Mark · 2.20s · Paused\nMark hits 4/4 · Ammo 12/12 · Reload 0.00 · Outfit effects 1/24 · View 1×"
+  },
+  {
+    "o": "moon",
+    "w": "cursed",
+    "skill": "Perfect Counter",
+    "view": 2,
+    "status": "moon / cursed · Perfect Counter · 0.28s · Paused\nMark hits 0/4 · Ammo 12/12 · Reload 0.00 · Outfit effects 1/24 · View 2×"
+  },
+  {
+    "o": "moon",
+    "w": "cursed",
+    "skill": "Perfect Draw",
+    "view": 2,
+    "status": "moon / cursed · Perfect Draw · 0.30s · Paused\nMark hits 0/4 · Ammo 12/12 · Reload 0.00 · Outfit effects 2/24 · View 2×"
+  },
+  {
+    "o": "moon",
+    "w": "cursed",
+    "skill": "Duelist’s Mark",
+    "view": 2,
+    "status": "moon / cursed · Duelist’s Mark · 2.20s · Paused\nMark hits 4/4 · Ammo 12/12 · Reload 0.00 · Outfit effects 1/24 · View 2×"
+  },
+  {
+    "o": "moon",
+    "w": "naginata",
+    "skill": "Perfect Counter",
+    "view": 1,
+    "status": "moon / naginata · Perfect Counter · 0.28s · Paused\nMark hits 0/4 · Ammo 12/12 · Reload 0.00 · Outfit effects 1/24 · View 1×"
+  },
+  {
+    "o": "moon",
+    "w": "naginata",
+    "skill": "Perfect Draw",
+    "view": 1,
+    "status": "moon / naginata · Perfect Draw · 0.30s · Paused\nMark hits 0/4 · Ammo 12/12 · Reload 0.00 · Outfit effects 2/24 · View 1×"
+  },
+  {
+    "o": "moon",
+    "w": "naginata",
+    "skill": "Duelist’s Mark",
+    "view": 1,
+    "status": "moon / naginata · Duelist’s Mark · 2.20s · Paused\nMark hits 4/4 · Ammo 12/12 · Reload 0.00 · Outfit effects 1/24 · View 1×"
+  },
+  {
+    "o": "moon",
+    "w": "naginata",
+    "skill": "Perfect Counter",
+    "view": 2,
+    "status": "moon / naginata · Perfect Counter · 0.28s · Paused\nMark hits 0/4 · Ammo 12/12 · Reload 0.00 · Outfit effects 1/24 · View 2×"
+  },
+  {
+    "o": "moon",
+    "w": "naginata",
+    "skill": "Perfect Draw",
+    "view": 2,
+    "status": "moon / naginata · Perfect Draw · 0.30s · Paused\nMark hits 0/4 · Ammo 12/12 · Reload 0.00 · Outfit effects 2/24 · View 2×"
+  },
+  {
+    "o": "moon",
+    "w": "naginata",
+    "skill": "Duelist’s Mark",
+    "view": 2,
+    "status": "moon / naginata · Duelist’s Mark · 2.20s · Paused\nMark hits 4/4 · Ammo 12/12 · Reload 0.00 · Outfit effects 1/24 · View 2×"
+  },
+  {
+    "o": "outlaw",
+    "w": "pistols",
+    "skill": "Overdrive",
+    "view": 1,
+    "status": "outlaw / pistols · Overdrive · 0.24s · Paused\nMark hits 0/4 · Ammo 8/12 · Reload 0.00 · Outfit effects 2/24 · View 1×"
+  },
+  {
+    "o": "outlaw",
+    "w": "pistols",
+    "skill": "Ricochet Beacon",
+    "view": 1,
+    "status": "outlaw / pistols · Ricochet Beacon · 0.80s · Paused\nMark hits 0/4 · Ammo 5/12 · Reload 0.00 · Outfit effects 2/24 · View 1×"
+  },
+  {
+    "o": "outlaw",
+    "w": "pistols",
+    "skill": "Breach Charge",
+    "view": 1,
+    "status": "outlaw / pistols · Breach Charge · 1.20s · Paused\nMark hits 0/4 · Ammo 1/12 · Reload 0.00 · Outfit effects 1/24 · View 1×"
+  },
+  {
+    "o": "outlaw",
+    "w": "pistols",
+    "skill": "Overdrive",
+    "view": 2,
+    "status": "outlaw / pistols · Overdrive · 0.24s · Paused\nMark hits 0/4 · Ammo 8/12 · Reload 0.00 · Outfit effects 2/24 · View 2×"
+  },
+  {
+    "o": "outlaw",
+    "w": "pistols",
+    "skill": "Ricochet Beacon",
+    "view": 2,
+    "status": "outlaw / pistols · Ricochet Beacon · 0.80s · Paused\nMark hits 0/4 · Ammo 5/12 · Reload 0.00 · Outfit effects 2/24 · View 2×"
+  },
+  {
+    "o": "outlaw",
+    "w": "pistols",
+    "skill": "Breach Charge",
+    "view": 2,
+    "status": "outlaw / pistols · Breach Charge · 1.20s · Paused\nMark hits 0/4 · Ammo 1/12 · Reload 0.00 · Outfit effects 1/24 · View 2×"
+  },
+  {
+    "o": "outlaw",
+    "w": "shotgun",
+    "skill": "Overdrive",
+    "view": 1,
+    "status": "outlaw / shotgun · Overdrive · 0.24s · Paused\nMark hits 0/4 · Ammo 4/6 · Reload 0.00 · Outfit effects 1/24 · View 1×"
+  },
+  {
+    "o": "outlaw",
+    "w": "shotgun",
+    "skill": "Ricochet Beacon",
+    "view": 1,
+    "status": "outlaw / shotgun · Ricochet Beacon · 0.80s · Paused\nMark hits 0/4 · Ammo 2/6 · Reload 0.00 · Outfit effects 1/24 · View 1×"
+  },
+  {
+    "o": "outlaw",
+    "w": "shotgun",
+    "skill": "Breach Charge",
+    "view": 1,
+    "status": "outlaw / shotgun · Breach Charge · 1.20s · Paused\nMark hits 0/4 · Ammo 0/6 · Reload 1.14 · Outfit effects 1/24 · View 1×"
+  },
+  {
+    "o": "outlaw",
+    "w": "shotgun",
+    "skill": "Overdrive",
+    "view": 2,
+    "status": "outlaw / shotgun · Overdrive · 0.24s · Paused\nMark hits 0/4 · Ammo 4/6 · Reload 0.00 · Outfit effects 1/24 · View 2×"
+  },
+  {
+    "o": "outlaw",
+    "w": "shotgun",
+    "skill": "Ricochet Beacon",
+    "view": 2,
+    "status": "outlaw / shotgun · Ricochet Beacon · 0.80s · Paused\nMark hits 0/4 · Ammo 2/6 · Reload 0.00 · Outfit effects 1/24 · View 2×"
+  },
+  {
+    "o": "outlaw",
+    "w": "shotgun",
+    "skill": "Breach Charge",
+    "view": 2,
+    "status": "outlaw / shotgun · Breach Charge · 1.20s · Paused\nMark hits 0/4 · Ammo 0/6 · Reload 1.14 · Outfit effects 1/24 · View 2×"
+  },
+  {
+    "o": "outlaw",
+    "w": "smg",
+    "skill": "Overdrive",
+    "view": 1,
+    "status": "outlaw / smg · Overdrive · 0.24s · Paused\nMark hits 0/4 · Ammo 24/28 · Reload 0.00 · Outfit effects 2/24 · View 1×"
+  },
+  {
+    "o": "outlaw",
+    "w": "smg",
+    "skill": "Ricochet Beacon",
+    "view": 1,
+    "status": "outlaw / smg · Ricochet Beacon · 0.80s · Paused\nMark hits 0/4 · Ammo 18/28 · Reload 0.00 · Outfit effects 3/24 · View 1×"
+  },
+  {
+    "o": "outlaw",
+    "w": "smg",
+    "skill": "Breach Charge",
+    "view": 1,
+    "status": "outlaw / smg · Breach Charge · 1.20s · Paused\nMark hits 0/4 · Ammo 12/28 · Reload 0.00 · Outfit effects 1/24 · View 1×"
+  },
+  {
+    "o": "outlaw",
+    "w": "smg",
+    "skill": "Overdrive",
+    "view": 2,
+    "status": "outlaw / smg · Overdrive · 0.24s · Paused\nMark hits 0/4 · Ammo 24/28 · Reload 0.00 · Outfit effects 2/24 · View 2×"
+  },
+  {
+    "o": "outlaw",
+    "w": "smg",
+    "skill": "Ricochet Beacon",
+    "view": 2,
+    "status": "outlaw / smg · Ricochet Beacon · 0.80s · Paused\nMark hits 0/4 · Ammo 18/28 · Reload 0.00 · Outfit effects 3/24 · View 2×"
+  },
+  {
+    "o": "outlaw",
+    "w": "smg",
+    "skill": "Breach Charge",
+    "view": 2,
+    "status": "outlaw / smg · Breach Charge · 1.20s · Paused\nMark hits 0/4 · Ammo 12/28 · Reload 0.00 · Outfit effects 1/24 · View 2×"
+  },
+  {
+    "o": "street",
+    "w": "pistols",
+    "skill": "Overdrive",
+    "view": 1,
+    "status": "street / pistols · Overdrive · 0.24s · Paused\nMark hits 0/4 · Ammo 8/12 · Reload 0.00 · Outfit effects 2/24 · View 1×"
+  },
+  {
+    "o": "street",
+    "w": "pistols",
+    "skill": "Ricochet Beacon",
+    "view": 1,
+    "status": "street / pistols · Ricochet Beacon · 0.80s · Paused\nMark hits 0/4 · Ammo 5/12 · Reload 0.00 · Outfit effects 2/24 · View 1×"
+  },
+  {
+    "o": "street",
+    "w": "pistols",
+    "skill": "Breach Charge",
+    "view": 1,
+    "status": "street / pistols · Breach Charge · 1.20s · Paused\nMark hits 0/4 · Ammo 1/12 · Reload 0.00 · Outfit effects 1/24 · View 1×"
+  },
+  {
+    "o": "street",
+    "w": "pistols",
+    "skill": "Overdrive",
+    "view": 2,
+    "status": "street / pistols · Overdrive · 0.24s · Paused\nMark hits 0/4 · Ammo 8/12 · Reload 0.00 · Outfit effects 2/24 · View 2×"
+  },
+  {
+    "o": "street",
+    "w": "pistols",
+    "skill": "Ricochet Beacon",
+    "view": 2,
+    "status": "street / pistols · Ricochet Beacon · 0.80s · Paused\nMark hits 0/4 · Ammo 5/12 · Reload 0.00 · Outfit effects 2/24 · View 2×"
+  },
+  {
+    "o": "street",
+    "w": "pistols",
+    "skill": "Breach Charge",
+    "view": 2,
+    "status": "street / pistols · Breach Charge · 1.20s · Paused\nMark hits 0/4 · Ammo 1/12 · Reload 0.00 · Outfit effects 1/24 · View 2×"
+  },
+  {
+    "o": "street",
+    "w": "shotgun",
+    "skill": "Overdrive",
+    "view": 1,
+    "status": "street / shotgun · Overdrive · 0.24s · Paused\nMark hits 0/4 · Ammo 4/6 · Reload 0.00 · Outfit effects 1/24 · View 1×"
+  },
+  {
+    "o": "street",
+    "w": "shotgun",
+    "skill": "Ricochet Beacon",
+    "view": 1,
+    "status": "street / shotgun · Ricochet Beacon · 0.80s · Paused\nMark hits 0/4 · Ammo 2/6 · Reload 0.00 · Outfit effects 1/24 · View 1×"
+  },
+  {
+    "o": "street",
+    "w": "shotgun",
+    "skill": "Breach Charge",
+    "view": 1,
+    "status": "street / shotgun · Breach Charge · 1.20s · Paused\nMark hits 0/4 · Ammo 0/6 · Reload 1.14 · Outfit effects 1/24 · View 1×"
+  },
+  {
+    "o": "street",
+    "w": "shotgun",
+    "skill": "Overdrive",
+    "view": 2,
+    "status": "street / shotgun · Overdrive · 0.24s · Paused\nMark hits 0/4 · Ammo 4/6 · Reload 0.00 · Outfit effects 1/24 · View 2×"
+  },
+  {
+    "o": "street",
+    "w": "shotgun",
+    "skill": "Ricochet Beacon",
+    "view": 2,
+    "status": "street / shotgun · Ricochet Beacon · 0.80s · Paused\nMark hits 0/4 · Ammo 2/6 · Reload 0.00 · Outfit effects 1/24 · View 2×"
+  },
+  {
+    "o": "street",
+    "w": "shotgun",
+    "skill": "Breach Charge",
+    "view": 2,
+    "status": "street / shotgun · Breach Charge · 1.20s · Paused\nMark hits 0/4 · Ammo 0/6 · Reload 1.14 · Outfit effects 1/24 · View 2×"
+  },
+  {
+    "o": "street",
+    "w": "smg",
+    "skill": "Overdrive",
+    "view": 1,
+    "status": "street / smg · Overdrive · 0.24s · Paused\nMark hits 0/4 · Ammo 24/28 · Reload 0.00 · Outfit effects 2/24 · View 1×"
+  },
+  {
+    "o": "street",
+    "w": "smg",
+    "skill": "Ricochet Beacon",
+    "view": 1,
+    "status": "street / smg · Ricochet Beacon · 0.80s · Paused\nMark hits 0/4 · Ammo 18/28 · Reload 0.00 · Outfit effects 3/24 · View 1×"
+  },
+  {
+    "o": "street",
+    "w": "smg",
+    "skill": "Breach Charge",
+    "view": 1,
+    "status": "street / smg · Breach Charge · 1.20s · Paused\nMark hits 0/4 · Ammo 12/28 · Reload 0.00 · Outfit effects 1/24 · View 1×"
+  },
+  {
+    "o": "street",
+    "w": "smg",
+    "skill": "Overdrive",
+    "view": 2,
+    "status": "street / smg · Overdrive · 0.24s · Paused\nMark hits 0/4 · Ammo 24/28 · Reload 0.00 · Outfit effects 2/24 · View 2×"
+  },
+  {
+    "o": "street",
+    "w": "smg",
+    "skill": "Ricochet Beacon",
+    "view": 2,
+    "status": "street / smg · Ricochet Beacon · 0.80s · Paused\nMark hits 0/4 · Ammo 18/28 · Reload 0.00 · Outfit effects 3/24 · View 2×"
+  },
+  {
+    "o": "street",
+    "w": "smg",
+    "skill": "Breach Charge",
+    "view": 2,
+    "status": "street / smg · Breach Charge · 1.20s · Paused\nMark hits 0/4 · Ammo 12/28 · Reload 0.00 · Outfit effects 1/24 · View 2×"
+  }
+]

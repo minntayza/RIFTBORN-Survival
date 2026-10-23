@@ -1,3 +1,4 @@
+import {TANK_SLAM_RADIUS} from './tank-active-motion';
 import {applyArtDirection} from './art-direction';
 import {HeroAbilityCombat} from './hero-ability-combat';
 import {isAbilityHero} from './hero-abilities';
@@ -620,7 +621,7 @@ export class ArenaScene extends Phaser.Scene {
         }
         if(COMBAT_CACHE_KILLS.includes(this.stats.kills)&&!this.combatCaches.has(this.stats.kills)){this.combatCaches.add(this.stats.kills);this.xp+=Math.ceil(this.xpNeed*.45);this.notifyCombat(`${this.stats.kills} KILLS · COMBAT CACHE · +XP`);this.impactRing(this.x,this.y,55,0xb4c8a3);this.audio.play('buy');}
 
-        if(this.stats.kills%5===0){if(this.evolved('damage')){this.impactRing(this.x,this.y,95,0xb898b9);for(const n of this.enemies)if(n.active&&Math.hypot(n.x-this.x,n.y-this.y)<95)this.hit(n,15,0,false,false);}if(this.evolved('magazine')){const before=this.ammo;this.ammo=Math.min(this.maxAmmo,this.ammo+2);if(this.hero==='gunner'&&this.ammo>before)this.visuals.gunnerSkills.refill(this.x,this.y,this.elapsed);}}
+        if(this.stats.kills%5===0){if(this.evolved('damage')){this.impactRing(this.x,this.y,95,0xb898b9);for(const n of this.enemies)if(n.active&&Math.hypot(n.x-this.x,n.y-this.y)<95)this.hit(n,15,0,false,false);}if(this.evolved('magazine')){const before=this.ammo;this.ammo=Math.min(this.maxAmmo,this.ammo+2);if(this.hero==='gunner'&&this.ammo>before)this.visuals.gunnerSkills.refill(this.x,this.y,this.elapsed);this.heroAbilities?.survivorFx?.event('reload',this,this.angle);}}
 
         this.burst(e.x,e.y,e.faction==='robot'?parseInt(ROBOTS[ROBOT_ROLES[e.type]].color.slice(1),16):ENEMIES[e.type].color,14);
         this.drop(e.x, e.y, ENEMIES[e.type].xp, false);
@@ -657,6 +658,7 @@ export class ArenaScene extends Phaser.Scene {
         b.hit.clear();
         Object.assign(b, { active: true, x, y, vx: Math.cos(a) * (hostile ? 180 : kind==='wind'?460:650), vy: Math.sin(a) * (hostile ? 180 : kind==='wind'?460:650), damage, hostile, pierce, explosive, last, kind, source, beaconRedirected:false,reflected:false,piercingRound:!hostile&&pierce>0,bounces:0,life: hostile ? 5 : 1 });
         if(source==='Cane Spark'){b.vx=Math.cos(a)*390;b.vy=Math.sin(a)*390;b.life=.67;}
+        if(this.hero==='gunner'&&this.overdrive>0&&!hostile&&kind==='round'&&source==='Poison shot')this.heroAbilities?.survivorFx?.event('shot',b,a);
         return b;
     }
     windSlash(damage:number,origin={x:this.x,y:this.y},aim=this.angle){const launch=this.hero==='samurai'?samuraiStormLaunch(this.x,this.y,aim):origin;this.shoot(launch.x,launch.y,aim,damage,false,4,false,false,'wind');if(this.hero==='samurai')this.audio.play('storm-blade');}
@@ -701,7 +703,7 @@ export class ArenaScene extends Phaser.Scene {
             this.burst(muzzle.tip.x,muzzle.tip.y,WEAPON_EFFECTS[this.weapon].color,this.weapon==='shotgun'?7:2);
             this.particle(muzzle.grip.x,muzzle.grip.y,0xb19770,70,2,.22);
             this.cosmeticFx?.muzzle(cosmeticEffectProfile(this.save,this.weapon),muzzle.tip.x,muzzle.tip.y,this.angle,this.elapsed);
-            this.visuals.gunnerSkills.muzzle(muzzle.tip.x,muzzle.tip.y,this.angle,this.elapsed,last&&this.u('explosive')?0xffaa87:this.u('pierce')?0x9de8f5:0xffdfa2);
+            if(!this.heroAbilities?.survivorFx||this.overdrive<=0)this.visuals.gunnerSkills.muzzle(muzzle.tip.x,muzzle.tip.y,this.angle,this.elapsed,last&&this.u('explosive')?0xffaa87:this.u('pierce')?0x9de8f5:0xffdfa2);
 
             const n = this.weapon === 'shotgun' ? 5 : 1;
             for (let i = 0; i < n; i++)
@@ -761,12 +763,12 @@ export class ArenaScene extends Phaser.Scene {
         this.invulnFromBite=false;
         this.ability=cooldownValue(HEROES[this.hero].cooldown,1,this.u('cooldown')*.15)*(this.options.build==='mobility'?.9:1);
         this.dash=0;this.counter=0;
-        this.outfitFx?.begin(outfitEffectProfile(this.save,this.hero),this.x,this.y,dx||dy?Math.atan2(dy,dx):this.angle,this.elapsed);
+        if(this.hero!=='tank'&&!this.heroAbilities?.survivorFx)this.outfitFx?.begin(outfitEffectProfile(this.save,this.hero),this.x,this.y,dx||dy?Math.atan2(dy,dx):this.angle,this.elapsed);
         if(this.hero==='samurai'){this.counter=.6+this.u('counter')*.3;this.audio.play('lotus-guard');return;}
         if(this.hero==='gunner'){this.ammo=this.maxAmmo;this.reload=0;this.overdrive=3;this.coveringClock=0;this.attack=0;this.audio.play('overdrive');this.banner('OVERDRIVE · RAPID FIRE',0xb7ad8d);return;}
         if(this.hero==='tank'){
-            const range=155,duration=2;
-            this.slash(WEAPONS[this.weapon].damage*1.6*(1+this.u('rush')*.25),range,Math.PI*2,this.angle,false);if(!outfitEffectProfile(this.save,this.hero))this.visuals.tankSkills.slam(this.x,this.y,range,this.u('rush'),this.elapsed);this.audio.play('tank-slam');
+            const range=TANK_SLAM_RADIUS,duration=2;
+            this.slash(WEAPONS[this.weapon].damage*1.6*(1+this.u('rush')*.25),range,Math.PI*2,this.angle,false);if(!this.heroAbilities?.tankVisual)this.visuals.tankSkills.slam(this.x,this.y,range,this.u('rush'),this.elapsed);this.audio.play('tank-slam');
             if(this.hasSynergy('aftershock')){if(this.firePatches.length>=20)this.firePatches.shift();this.firePatches.push({x:this.x,y:this.y,life:3});this.notifyCombat('BURNING AFTERSHOCK · GROUND IGNITED');}
             for(const e of this.enemies)if(e.active&&Math.hypot(e.x-this.x,e.y-this.y)<range+e.r)e.slow=duration;
             this.invuln=.25;return;
@@ -788,7 +790,7 @@ export class ArenaScene extends Phaser.Scene {
             if(this.hasSynergy('reversal')){const incoming=this.bullets.filter(b=>b.active&&b.hostile&&Math.hypot(b.x-this.x,b.y-this.y)<180).slice(0,5);const shots=incoming.map(b=>({angle:Math.atan2(-b.vy,-b.vx),damage:b.damage}));for(const b of incoming)b.active=false;const pose=weaponPose(this.weapon,this.x,this.y,a,0,false);for(const shot of shots)this.shoot(pose.grip.x,pose.grip.y,shot.angle,shot.damage*1.5,false,1,false,false,'round','Steel Reversal');if(shots.length)this.notifyCombat(`STEEL REVERSAL · ${shots.length} SHOTS RETURNED`);}
 
             const counterRadius=210;
-            this.outfitFx?.counter(outfitEffectProfile(this.save,this.hero),this.x,this.y,this.elapsed);
+            if(this.heroAbilities?.survivorFx)this.heroAbilities.survivorFx.event('counter',this,this.angle);else this.outfitFx?.counter(outfitEffectProfile(this.save,this.hero),this.x,this.y,this.elapsed);
             if(!outfitEffectProfile(this.save,this.hero))this.visuals.samuraiSkills.counter(this.x,this.y,counterRadius,this.u('counter'),this.elapsed);
             this.slash(WEAPONS[this.weapon].damage * 2.5*(this.evolved('counter')?1.25:1),counterRadius,Math.PI*2,this.angle,false);
 
@@ -831,6 +833,7 @@ export class ArenaScene extends Phaser.Scene {
         if (this.hp <= 0) {
             this.hp = 0;
             this.ended = true;
+            this.heroAbilities?.clear();
             this.stats.time = this.elapsed;
             this.onEnd();
         }
@@ -936,7 +939,7 @@ export class ArenaScene extends Phaser.Scene {
         this.stamina = Math.min(100 * (1 + this.u('stamina') * .4), this.stamina + (blocking ? -2 : this.evolved('stamina')?30:20) * dt);
         if (this.reload > 0) {
             this.reload -= dt;
-            if (this.reload <= 0){this.ammo=this.maxAmmo;if(this.hero==='gunner'){this.openingShots=3;this.identityProcs++;this.visuals.gunnerSkills.refill(this.x,this.y,this.elapsed);this.audio.play('reload-pop');}if(this.evolved('reload'))this.speedBurst=1.5;}
+            if (this.reload <= 0){this.ammo=this.maxAmmo;if(this.hero==='gunner'){this.openingShots=3;this.identityProcs++;this.visuals.gunnerSkills.refill(this.x,this.y,this.elapsed);this.heroAbilities?.survivorFx?.event('reload',this,this.angle);this.audio.play('reload-pop');}if(this.evolved('reload'))this.speedBurst=1.5;}
         }
         const k = this.keys;
         let dx = Number(k.D.isDown || k.RIGHT.isDown) - Number(k.A.isDown || k.LEFT.isDown), dy = Number(k.S.isDown || k.DOWN.isDown) - Number(k.W.isDown || k.UP.isDown);
@@ -1001,7 +1004,7 @@ export class ArenaScene extends Phaser.Scene {
             this.tick = 0;
             this.heal(this.u('regen')*(this.lifePulse>0?3:1));
             if (this.u('fire'))
-                this.slash(9 * this.u('fire'), 100, Math.PI * 2);
+                this.slash(9 * this.u('fire'), 100, Math.PI * 2, this.angle, false);
             if (this.clone > 0){this.visuals.phantomStrike(this.elapsed);this.slash(this.evolved('clone')?52:35, 170, Math.PI * 2);}
         }
         if (this.u('orbit')) {
@@ -1453,7 +1456,7 @@ export class ArenaScene extends Phaser.Scene {
         const color = HEROES[this.hero].color;
         g.fillStyle(0x040b12, .6);
         g.fillEllipse(this.x, this.y + 17, 44, 18);
-        this.visuals.render(this.enemies, this.hero, this.weapon, this.x, this.y, this.angle, this.elapsed, this.swing, this.dash, this.invuln, this.hero === 'tank' && this.weapon!=='hammer' && this.attacking && this.stamina > 0, this.counter, this.ammo,this.attackSequence,1+this.u('range')*.25,1+this.u('wide')*.25,{reload:this.reload,reloadDuration:this.reloadDuration,overdrive:this.overdrive});
+        this.visuals.render(this.enemies, this.hero, this.weapon, this.x, this.y, this.angle, this.elapsed, this.swing, this.dash, this.invuln, this.hero === 'tank' && this.weapon!=='hammer' && this.attacking && this.stamina > 0, this.counter, this.ammo,this.attackSequence,1+this.u('range')*.25,1+this.u('wide')*.25,{reload:this.reload,reloadDuration:this.reloadDuration,overdrive:this.overdrive},this.heroAbilities?.tankPresentation(),this.heroAbilities?.survivorPresentation());
         this.visuals.passiveSkills(this.hero,this.x,this.y,this.angle,this.elapsed,this.u('fire'),this.evolved('fire'),this.clone,this.evolved('clone'),this.tick);
         if (this.u('orbit')) {
             for(const offset of this.evolved('orbit')?[0,Math.PI]:[0]){const a = this.elapsed * 3+offset;
@@ -1474,7 +1477,7 @@ export class ArenaScene extends Phaser.Scene {
         this.zawgyi?.render(this.elapsed);
         this.heroAbilities?.render();
         this.cosmeticFx?.render(this.elapsed,this.bullets,cosmeticEffectProfile(this.save,this.weapon),this.save.settings.mapView===2,window.matchMedia('(prefers-reduced-motion: reduce)').matches);
-        this.outfitFx?.render(outfitEffectProfile(this.save,this.hero),{x:this.x,y:this.y,angle:this.angle,time:this.elapsed,dash:this.dash,counter:this.counter,overdrive:this.overdrive,reduced:window.matchMedia('(prefers-reduced-motion: reduce)').matches,wide:this.save.settings.mapView===2});
+        this.outfitFx?.render(this.heroAbilities?.survivorFx?undefined:outfitEffectProfile(this.save,this.hero),{x:this.x,y:this.y,angle:this.angle,time:this.elapsed,dash:this.dash,counter:this.counter,overdrive:this.overdrive,reduced:window.matchMedia('(prefers-reduced-motion: reduce)').matches,wide:this.save.settings.mapView===2});
         this.visuals.applyCosmetics(cosmeticColor(this.save,'character',this.hero),cosmeticColor(this.save,'weapon',this.weapon),this.invuln>0&&this.dash<=0);
         if(this.hero==='ninja'&&!outfitEffectProfile(this.save,this.hero))this.visuals.ninjaUltimate(this.x,this.y,this.dashX,this.dashY,this.elapsed,this.dash>0,!!this.u('trail'),this.evolved('trail'));
         if(this.dash>0&&this.hero!=='ninja'&&!(this.hero==='samurai'&&this.u('dragon-slash'))){g.lineStyle(5,color,.5);g.lineBetween(this.x,this.y,this.x-this.dashX*65,this.y-this.dashY*65);}

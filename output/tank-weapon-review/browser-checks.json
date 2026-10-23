@@ -1,0 +1,56 @@
+[
+  {
+    "theme": "royal",
+    "id": "hammer",
+    "texture": " · PASS texture present",
+    "abilities": "slam, bulwark, march activated at 1x and 2x"
+  },
+  {
+    "theme": "royal",
+    "id": "shield",
+    "texture": " · PASS texture present",
+    "abilities": "slam, bulwark, march activated at 1x and 2x"
+  },
+  {
+    "theme": "royal",
+    "id": "spiked",
+    "texture": " · PASS texture present",
+    "abilities": "slam, bulwark, march activated at 1x and 2x"
+  },
+  {
+    "theme": "forge",
+    "id": "hammer",
+    "texture": " · PASS texture present",
+    "abilities": "slam, bulwark, march activated at 1x and 2x"
+  },
+  {
+    "theme": "forge",
+    "id": "shield",
+    "texture": " · PASS texture present",
+    "abilities": "slam, bulwark, march activated at 1x and 2x"
+  },
+  {
+    "theme": "forge",
+    "id": "spiked",
+    "texture": " · PASS texture present",
+    "abilities": "slam, bulwark, march activated at 1x and 2x"
+  },
+  {
+    "theme": "polar",
+    "id": "hammer",
+    "texture": " · PASS texture present",
+    "abilities": "slam, bulwark, march activated at 1x and 2x"
+  },
+  {
+    "theme": "polar",
+    "id": "shield",
+    "texture": " · PASS texture present",
+    "abilities": "slam, bulwark, march activated at 1x and 2x"
+  },
+  {
+    "theme": "polar",
+    "id": "spiked",
+    "texture": " · PASS texture present",
+    "abilities": "slam, bulwark, march activated at 1x and 2x"
+  }
+]

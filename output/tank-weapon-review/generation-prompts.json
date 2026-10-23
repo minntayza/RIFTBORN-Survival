@@ -1,0 +1,68 @@
+{
+  "tool": "Built-in image_gen",
+  "assets": [
+    {
+      "theme": "royal",
+      "id": "hammer",
+      "source": "/Users/mintayza/.codex/generated_images/01a15ecb-92ae-7f63-b1e5-ec2ab44fcf66/exec-1c0970ee-38b2-440e-9aae-1e127a3b40d0.png",
+      "prompt": "Use case: stylized-concept. Asset type: one production-ready transparent 2D cartoon weapon sprite for Zombie Last Stand. The reference image is ONLY a style and outfit palette reference; do not include any character, hands or limbs. Match its bold dark outline, simple flat cel shading and clean deliberate highlights. Pure 2D illustrated game art with very few large readable armor shapes, instantly clear at 48 pixels. Single isolated weapon on genuine transparent background. Center the complete weapon with at least 12% clear padding on all sides. Orthographic readable side/front silhouette, NOT isometric. No text, labels, UI, scene, ground, cast shadow, glow outside the silhouette or background. No photorealism, 3D rendering, gradients masquerading as metal, metallic noise, engravings, excessive decoration or bloom. Ivory steel, rich gold trim and royal blue. Compact vertical battlement-shaped hammer head at the RIGHT, a bold simple lion face crest at its center. Blue wrapped handle extends horizontally LEFT from head center. Noble sturdy protective. No spikes on hammer.",
+      "asset": "/assets/cosmetics/tank-weapons-v2/royal-hammer.png"
+    },
+    {
+      "theme": "forge",
+      "id": "hammer",
+      "source": "/Users/mintayza/.codex/generated_images/01a15ecb-92ae-7f63-b1e5-ec2ab44fcf66/exec-852413e4-bd1b-4cca-83ff-fc321f56e125.png",
+      "prompt": "Use case: stylized-concept. Asset type: one production-ready transparent 2D cartoon weapon sprite for Zombie Last Stand. The reference image is ONLY a style and outfit palette reference; do not include any character, hands or limbs. Match its bold dark outline, simple flat cel shading and clean deliberate highlights. Pure 2D illustrated game art with very few large readable armor shapes, instantly clear at 48 pixels. Single isolated weapon on genuine transparent background. Center the complete weapon with at least 12% clear padding on all sides. Orthographic readable side/front silhouette, NOT isometric. No text, labels, UI, scene, ground, cast shadow, glow outside the silhouette or background. No photorealism, 3D rendering, gradients masquerading as metal, metallic noise, engravings, excessive decoration or bloom. Dark forged iron with copper trim and a brown leather grip. Heavy geometric rectangular forge hammer head at the RIGHT, one bold orange diamond forge rune, only two narrow orange glowing seams. Handle extends horizontally LEFT from head center. Broad squat block silhouette, not a round barrel. No flames.",
+      "asset": "/assets/cosmetics/tank-weapons-v2/forge-hammer.png"
+    },
+    {
+      "theme": "polar",
+      "id": "hammer",
+      "source": "/Users/mintayza/.codex/generated_images/01a15ecb-92ae-7f63-b1e5-ec2ab44fcf66/exec-c52013f3-cd2e-48e8-8719-570cf4461bbf.png",
+      "prompt": "Use case: stylized-concept. Asset type: one production-ready transparent 2D cartoon weapon sprite for Zombie Last Stand. The reference image is ONLY a style and outfit palette reference; do not include any character, hands or limbs. Match its bold dark outline, simple flat cel shading and clean deliberate highlights. Pure 2D illustrated game art with very few large readable armor shapes, instantly clear at 48 pixels. Single isolated weapon on genuine transparent background. Center the complete weapon with at least 12% clear padding on all sides. Orthographic readable side/front silhouette, NOT isometric. No text, labels, UI, scene, ground, cast shadow, glow outside the silhouette or background. No photorealism, 3D rendering, gradients masquerading as metal, metallic noise, engravings, excessive decoration or bloom. Navy steel, silver edges and restrained icy blue. Broad silver angular rectangular hammer head at the RIGHT with a protected central blue ice crystal held between metal armor brackets. Navy wrapped handle extends horizontally LEFT from head center. Head silhouette like a broad icebreaker block with beveled shoulders, no enormous exposed crystal spikes.",
+      "asset": "/assets/cosmetics/tank-weapons-v2/polar-hammer.png"
+    },
+    {
+      "theme": "royal",
+      "id": "shield",
+      "source": "/Users/mintayza/.codex/generated_images/01a15ecb-92ae-7f63-b1e5-ec2ab44fcf66/exec-e7fd6192-9f43-4557-bccd-6f88aa46b0e2.png",
+      "prompt": "Use case: stylized-concept. Asset type: one production-ready transparent 2D cartoon weapon sprite for Zombie Last Stand. The reference image is ONLY a style and outfit palette reference; do not include any character, hands or limbs. Match its bold dark outline, simple flat cel shading and clean deliberate highlights. Pure 2D illustrated game art with very few large readable armor shapes, instantly clear at 48 pixels. Single isolated weapon on genuine transparent background. Center the complete weapon with at least 12% clear padding on all sides. Orthographic readable side/front silhouette, NOT isometric. No text, labels, UI, scene, ground, cast shadow, glow outside the silhouette or background. No photorealism, 3D rendering, gradients masquerading as metal, metallic noise, engravings, excessive decoration or bloom. A ROUND circular shield, face-on, ivory steel with rich gold rim, a bold central gold lion emblem on a royal-blue inset. Noble protective silhouette, chunky smooth rim, four restrained gold reinforcing tabs. NO spikes.",
+      "asset": "/assets/cosmetics/tank-weapons-v2/royal-shield.png"
+    },
+    {
+      "theme": "forge",
+      "id": "shield",
+      "source": "/Users/mintayza/.codex/generated_images/01a15ecb-92ae-7f63-b1e5-ec2ab44fcf66/exec-053ede12-0357-43de-835c-4bd4c5a1f0f0.png",
+      "prompt": "Use case: stylized-concept. Asset type: one production-ready transparent 2D cartoon weapon sprite for Zombie Last Stand. The reference image is ONLY a style and outfit palette reference; do not include any character, hands or limbs. Match its bold dark outline, simple flat cel shading and clean deliberate highlights. Pure 2D illustrated game art with very few large readable armor shapes, instantly clear at 48 pixels. Single isolated weapon on genuine transparent background. Center the complete weapon with at least 12% clear padding on all sides. Orthographic readable side/front silhouette, NOT isometric. No text, labels, UI, scene, ground, cast shadow, glow outside the silhouette or background. No photorealism, 3D rendering, gradients masquerading as metal, metallic noise, engravings, excessive decoration or bloom. A ROUND circular furnace-door shield, face-on. Dark forged iron panels, chunky copper rim, central clear anvil/diamond forge emblem, a few copper rivets and just two restrained orange heat seams. Broad circular furnace-door hinge tabs. NO spikes or flames.",
+      "asset": "/assets/cosmetics/tank-weapons-v2/forge-shield.png"
+    },
+    {
+      "theme": "polar",
+      "id": "shield",
+      "source": "/Users/mintayza/.codex/generated_images/01a15ecb-92ae-7f63-b1e5-ec2ab44fcf66/exec-4e4fa01b-c2f1-4d3d-bc78-4e44d33cddd0.png",
+      "prompt": "Use case: stylized-concept. Asset type: one production-ready transparent 2D cartoon weapon sprite for Zombie Last Stand. The reference image is ONLY a style and outfit palette reference; do not include any character, hands or limbs. Match its bold dark outline, simple flat cel shading and clean deliberate highlights. Pure 2D illustrated game art with very few large readable armor shapes, instantly clear at 48 pixels. Single isolated weapon on genuine transparent background. Center the complete weapon with at least 12% clear padding on all sides. Orthographic readable side/front silhouette, NOT isometric. No text, labels, UI, scene, ground, cast shadow, glow outside the silhouette or background. No photorealism, 3D rendering, gradients masquerading as metal, metallic noise, engravings, excessive decoration or bloom. A ROUND circular shield, face-on. Navy steel center with one bold icy-blue snowflake crest surrounded by layered silver armor rings. Four silver angular reinforcing tabs, restrained icy blue highlights. Powerful shield made primarily of metal. NO spikes.",
+      "asset": "/assets/cosmetics/tank-weapons-v2/polar-shield.png"
+    },
+    {
+      "theme": "royal",
+      "id": "spiked",
+      "source": "/Users/mintayza/.codex/generated_images/01a15ecb-92ae-7f63-b1e5-ec2ab44fcf66/exec-c9ac13b6-65ff-4e14-b565-4a9e7eff9c30.png",
+      "prompt": "Use case: stylized-concept. Asset type: one production-ready transparent 2D cartoon weapon sprite for Zombie Last Stand. The reference image is ONLY a style and outfit palette reference; do not include any character, hands or limbs. Match its bold dark outline, simple flat cel shading and clean deliberate highlights. Pure 2D illustrated game art with very few large readable armor shapes, instantly clear at 48 pixels. Single isolated weapon on genuine transparent background. Center the complete weapon with at least 12% clear padding on all sides. Orthographic readable side/front silhouette, NOT isometric. No text, labels, UI, scene, ground, cast shadow, glow outside the silhouette or background. No photorealism, 3D rendering, gradients masquerading as metal, metallic noise, engravings, excessive decoration or bloom. A SPIKED shield face-on, tall heraldic angular kite shield silhouette with ivory armor plates, rich gold rim and royal-blue center with bold lion crest. Four or six SHORT deliberate gold-edged metal spikes project from the rim. Clean noble heraldic silhouette, not a round shield.",
+      "asset": "/assets/cosmetics/tank-weapons-v2/royal-spiked.png"
+    },
+    {
+      "theme": "forge",
+      "id": "spiked",
+      "source": "/Users/mintayza/.codex/generated_images/01a15ecb-92ae-7f63-b1e5-ec2ab44fcf66/exec-932cd34a-8a4e-4e6c-833a-2b5b47d69b94.png",
+      "prompt": "Use case: stylized-concept. Asset type: one production-ready transparent 2D cartoon weapon sprite for Zombie Last Stand. The reference image is ONLY a style and outfit palette reference; do not include any character, hands or limbs. Match its bold dark outline, simple flat cel shading and clean deliberate highlights. Pure 2D illustrated game art with very few large readable armor shapes, instantly clear at 48 pixels. Single isolated weapon on genuine transparent background. Center the complete weapon with at least 12% clear padding on all sides. Orthographic readable side/front silhouette, NOT isometric. No text, labels, UI, scene, ground, cast shadow, glow outside the silhouette or background. No photorealism, 3D rendering, gradients masquerading as metal, metallic noise, engravings, excessive decoration or bloom. A SPIKED shield face-on, broad squat octagonal iron shield silhouette made of dark iron plates, thick copper edge, six CHUNKY short forged pyramidal studs around a central clear orange diamond forge rune. Riveted seams, leather backing only barely visible, restrained orange heat lines, no flames, not a round or kite shield.",
+      "asset": "/assets/cosmetics/tank-weapons-v2/forge-spiked.png"
+    },
+    {
+      "theme": "polar",
+      "id": "spiked",
+      "source": "/Users/mintayza/.codex/generated_images/01a15ecb-92ae-7f63-b1e5-ec2ab44fcf66/exec-606c4e41-bfb4-4fcc-83a2-ba539518b9a0.png",
+      "prompt": "Use case: stylized-concept. Asset type: one production-ready transparent 2D cartoon weapon sprite for Zombie Last Stand. The reference image is ONLY a style and outfit palette reference; do not include any character, hands or limbs. Match its bold dark outline, simple flat cel shading and clean deliberate highlights. Pure 2D illustrated game art with very few large readable armor shapes, instantly clear at 48 pixels. Single isolated weapon on genuine transparent background. Center the complete weapon with at least 12% clear padding on all sides. Orthographic readable side/front silhouette, NOT isometric. No text, labels, UI, scene, ground, cast shadow, glow outside the silhouette or background. No photorealism, 3D rendering, gradients masquerading as metal, metallic noise, engravings, excessive decoration or bloom. A SPIKED shield face-on, tall angular hexagonal navy steel shield silhouette with layered silver edges, central readable ice-blue snowflake crest and six SHORT ice-crystal points protected by silver collars at its rim. Metal is the main structure; not an all-crystal shield. Restrained frost highlights, no snow particles.",
+      "asset": "/assets/cosmetics/tank-weapons-v2/polar-spiked.png"
+    }
+  ]
+}

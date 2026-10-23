@@ -33,3 +33,19 @@ svg[data-skill-icon] { background:#0b1922;border-radius:50%; }
 .armoury-panel .shop-wallets>.coin,.armoury-panel .shop-wallets>.petal-wallet{display:inline-flex;align-items:center;justify-content:center;gap:7px;min-height:44px;margin:0;padding:10px 14px;border:1px solid #b7a67566;border-radius:10px;background:#142830;color:#efdaa1;font:800 13px system-ui;white-space:nowrap}
 .armoury-panel .shop-wallets>.petal-wallet{border-color:#c08ba466;color:#efc5df;background:#2c2435}
 @media(max-width:560px){.armoury-panel .shop-top .shop-wallets{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.armoury-panel .shop-wallets>.coin,.armoury-panel .shop-wallets>.petal-wallet{min-width:0;padding:10px 8px;font-size:12px}}
+/* Simplified illustrated skills: restrained frames keep the silhouettes dominant. */
+.combat-hud .hud-skill[class]::before,#touch-controls .touch-ability[class]::before,.combat-hud .zawgyi-skill[class]::before{background:conic-gradient(from -90deg,#e5c77c var(--cooldown-progress,100%),#26343b 0)!important;inset:-4px}
+.combat-hud .hud-skill[class],#touch-controls .touch-ability[class],.combat-hud .zawgyi-skill[class]{box-shadow:inset 0 0 0 1px #80663a,0 2px 5px #0006!important}
+[data-skill-icon] image{pointer-events:none}
+/* Outfit color treatments retain every ability's approved silhouette. */
+[data-ultimate="samurai"][data-icon-theme="sakura"] image{filter:hue-rotate(325deg) saturate(.85)}
+[data-ultimate="samurai"][data-icon-theme="jade"] image{filter:hue-rotate(32deg)}
+[data-ultimate="samurai"][data-icon-theme="starlight"] image{filter:hue-rotate(235deg) saturate(.7)}
+[data-ultimate="ninja"][data-icon-theme="sakura"] image{filter:saturate(.45)}
+[data-ultimate="ninja"][data-icon-theme="jade"] image{filter:hue-rotate(300deg)}
+[data-ultimate="ninja"][data-icon-theme="starlight"] image{filter:hue-rotate(315deg) saturate(1.2)}
+[data-ultimate="gunner"][data-icon-theme="jade"] image{filter:hue-rotate(125deg)}
+[data-ultimate="gunner"][data-icon-theme="starlight"] image{filter:hue-rotate(190deg) saturate(.7)}
+[data-ultimate="tank"][data-icon-theme="sakura"]:not([data-skill-icon="slam"]) image{filter:hue-rotate(175deg) saturate(.7)}
+[data-ultimate="tank"][data-icon-theme="jade"]:not([data-skill-icon="slam"]) image{filter:hue-rotate(190deg)}
+[data-ultimate="tank"][data-icon-theme="starlight"]:not([data-skill-icon="slam"]) image{filter:hue-rotate(15deg) saturate(.65)}

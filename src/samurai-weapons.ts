@@ -18,8 +18,8 @@ export function samuraiWeaponMetrics(id:SamuraiWeapon){
  const a=SAMURAI_WEAPON_ART[id],dx=(a.sourceTip.x-a.sourceGrip.x)*a.width/a.rect[2],dy=(a.sourceTip.y-a.sourceGrip.y)*a.height/a.rect[3];
  return {grip:{x:a.origin.x-64,y:a.origin.y-64},tip:{x:a.origin.x-dy-64,y:a.origin.y+dx-64}};
 }
-export function samuraiWeaponCanvas(image:HTMLImageElement,id:SamuraiWeapon){
- const a=cosmeticWeaponArt(imageSourceUrl(image),id),[x,y,w,h]=a.rect,c=document.createElement('canvas');c.width=c.height=128;const g=c.getContext('2d')!;
+export function samuraiWeaponCanvas(image:HTMLImageElement,id:SamuraiWeapon,resolution=512){
+ const a=cosmeticWeaponArt(imageSourceUrl(image),id),[x,y,w,h]=a.rect,c=document.createElement('canvas');c.width=c.height=resolution;const g=c.getContext('2d')!;g.scale(resolution/128,resolution/128);g.imageSmoothingQuality='high';
  g.translate(a.origin.x,a.origin.y);g.rotate(Math.PI/2);
  g.drawImage(image,x,y,w,h,-(a.sourceGrip.x-x)*a.width/w,-(a.sourceGrip.y-y)*a.height/h,a.width,a.height);return c;
 }

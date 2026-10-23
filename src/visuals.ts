@@ -1,3 +1,8 @@
+import {colorfulCharacter,outlinedWeapon} from './equipment-presentation';
+import {survivorArmOverscan} from './survivor-redesign';
+import {gameplayArtwork} from './gameplay-art';
+import {isRedesignedSurvivor,survivorShoulder,survivorEquipmentPose,survivorArmPose} from './survivor-redesign';
+import {tankSkillWeaponPose,tankMotionPoint,type TankMotion} from './tank-active-motion';
 import {tankEquipmentPose,tankArmPose,isRedesignedTank} from './tank-redesign';
 import {ZawgyiRig} from './zawgyi-rig';
 import {tankOutfitShoulder} from './tank-arm-art';
@@ -328,7 +333,6 @@ export class ArenaVisuals {
                 const a=i/(level*2)*Math.PI*2-time*.3,r=65+Math.sin(time*3+i)*8;
                 g.fillStyle(0xffbd77,.5);g.fillCircle(x+Math.cos(a)*r,y+Math.sin(a)*r,1.5);
             }
-            if(pulse>0)for(let i=0;i<level+2;i++){const a=i*Math.PI*2/(level+2)+rotation;g.lineStyle(fullFire?3:2,0xffcf87,pulse*.45);g.beginPath();g.arc(x,y,96,a,a+.3+level*.06);g.strokePath();}
         }
         if(clone>this.allyRemaining+.1)this.allyBorn=time;this.allyRemaining=clone;
         this.allySprite?.setVisible(clone>0);this.allyWeapon?.setVisible(clone>0);
@@ -370,6 +374,7 @@ export class ArenaVisuals {
     private tankOutfit=false;
     private tankOutfitUrl='';
     constructor(private scene: Phaser.Scene,skin=false,ninjaSkin=false,gunnerSkin=false,tankSkin=false) {this.tankOutfit=tankSkin;
+        const addArt=(key:string,canvas:HTMLCanvasElement)=>scene.textures.addCanvas(key,gameplayArtwork(/^(tank|gunner|samurai|ninja)-(hammer|shield|spiked|pistols|shotgun|smg|nodachi|cursed|naginata|katana|dual|kama)$/.test(key)?outlinedWeapon(canvas):colorfulCharacter(canvas),256));
         this.ninjaArmFx=scene.add.graphics().setDepth(3.15);
         this.shieldFx=scene.add.graphics().setDepth(.9);
         this.attackFx=scene.add.graphics().setDepth(3.3);
@@ -381,33 +386,33 @@ export class ArenaVisuals {
         for (const id of Object.keys(WEAPONS) as WeaponId[])
             if(!scene.textures.exists(`weapon-${id}`))scene.textures.addCanvas(`weapon-${id}`, weaponCanvas(id));
         const connectedSource=scene.textures.get(CONNECTED_ARMS.key).getSourceImage() as HTMLImageElement;
-        for(const hero of (Object.keys(HEROES) as HeroId[]).filter(h=>h!=='zawgyi'))for(let i=0;i<2;i++)if(!scene.textures.exists(`connected-${hero}-${i}`))scene.textures.addCanvas(`connected-${hero}-${i}`,skin&&hero==='samurai'?samuraiSkinArm(scene.textures.get(SAMURAI_ATLAS.key).getSourceImage() as HTMLImageElement,i):ninjaSkin&&hero==='ninja'?ninjaSkinArm(scene.textures.get(NINJA_SKIN_KEY).getSourceImage() as HTMLImageElement,i):gunnerSkin&&hero==='gunner'?gunnerSkinArm(scene.textures.get(GUNNER_ATLAS.key).getSourceImage() as HTMLImageElement,i):tankSkin&&hero==='tank'?tankSkinArm(scene.textures.get(TANK_ATLAS.key).getSourceImage() as HTMLImageElement,i):connectedArmCanvas(connectedSource,hero,i));
+        for(const hero of (Object.keys(HEROES) as HeroId[]).filter(h=>h!=='zawgyi'))for(let i=0;i<2;i++)if(!scene.textures.exists(`connected-${hero}-${i}`))addArt(`connected-${hero}-${i}`,skin&&hero==='samurai'?samuraiSkinArm(scene.textures.get(SAMURAI_ATLAS.key).getSourceImage() as HTMLImageElement,i):ninjaSkin&&hero==='ninja'?ninjaSkinArm(scene.textures.get(NINJA_SKIN_KEY).getSourceImage() as HTMLImageElement,i):gunnerSkin&&hero==='gunner'?gunnerSkinArm(scene.textures.get(GUNNER_ATLAS.key).getSourceImage() as HTMLImageElement,i):tankSkin&&hero==='tank'?tankSkinArm(scene.textures.get(TANK_ATLAS.key).getSourceImage() as HTMLImageElement,i):connectedArmCanvas(connectedSource,hero,i));
         const tankSource=scene.textures.get(TANK_ATLAS.key).getSourceImage() as HTMLImageElement;this.tankOutfitUrl=imageSourceUrl(tankSource);
         for(const part of ['upper','forearm','hand','otherHand'] as const)if(!scene.textures.exists(`tank-${part}`))scene.textures.addCanvas(`tank-${part}`,tankPart(tankSource,part));
-        if(!scene.textures.exists('cute-tank-full'))scene.textures.addCanvas('cute-tank-full',tankCanvas(tankSource,0,true));
+        if(!scene.textures.exists('cute-tank-full'))addArt('cute-tank-full',tankCanvas(tankSource,0,true));
         const tankWeapons=scene.textures.get(TANK_WEAPONS_ATLAS.key).getSourceImage() as HTMLImageElement;
-        for(const id of TANK_WEAPONS)if(!scene.textures.exists(`tank-${id}`))scene.textures.addCanvas(`tank-${id}`,tankWeaponCanvas(tankWeapons,id));
+        for(const id of TANK_WEAPONS)if(!scene.textures.exists(`tank-${id}`))addArt(`tank-${id}`,tankWeaponCanvas(tankWeapons,id));
         const gunnerSource=scene.textures.get(GUNNER_ATLAS.key).getSourceImage() as HTMLImageElement;
         for(const part of ['upper','forearm','hand','otherHand'] as const)if(!scene.textures.exists(`gunner-${part}`))scene.textures.addCanvas(`gunner-${part}`,gunnerPart(gunnerSource,part));
-        if(!scene.textures.exists('cute-gunner-full'))scene.textures.addCanvas('cute-gunner-full',gunnerCanvas(gunnerSource,0,false));
+        if(!scene.textures.exists('cute-gunner-full'))addArt('cute-gunner-full',gunnerCanvas(gunnerSource,0,false));
         const guns=scene.textures.get(GUNNER_WEAPONS_ATLAS.key).getSourceImage() as HTMLImageElement;
-        for(const id of GUNNER_WEAPONS)if(!scene.textures.exists(`gunner-${id}`))scene.textures.addCanvas(`gunner-${id}`,gunnerWeaponCanvas(guns,id));
+        for(const id of GUNNER_WEAPONS)if(!scene.textures.exists(`gunner-${id}`))addArt(`gunner-${id}`,gunnerWeaponCanvas(guns,id));
         const samuraiWeapons=scene.textures.get(SAMURAI_WEAPONS_ATLAS.key).getSourceImage() as HTMLImageElement;
-        for(const id of SAMURAI_WEAPONS)if(!scene.textures.exists(`samurai-${id}`))scene.textures.addCanvas(`samurai-${id}`,samuraiWeaponCanvas(samuraiWeapons,id));
+        for(const id of SAMURAI_WEAPONS)if(!scene.textures.exists(`samurai-${id}`))addArt(`samurai-${id}`,samuraiWeaponCanvas(samuraiWeapons,id));
         const samuraiSource=scene.textures.get(SAMURAI_ATLAS.key).getSourceImage() as HTMLImageElement;
         for(const part of ['upper','forearm','hand','otherHand'] as const)if(!scene.textures.exists(`samurai-${part}`))scene.textures.addCanvas(`samurai-${part}`,samuraiPart(samuraiSource,part));
-        if(!scene.textures.exists('cute-samurai-full'))scene.textures.addCanvas('cute-samurai-full',samuraiCanvas(samuraiSource,0,true));
+        if(!scene.textures.exists('cute-samurai-full'))addArt('cute-samurai-full',samuraiCanvas(samuraiSource,0,true));
         const attackSource=scene.textures.get(NINJA_ATTACK_ATLAS.key).getSourceImage() as HTMLImageElement;
         for(const part of ['upper','forearm','hand'] as const){
             if(!scene.textures.exists(`ninja-${part}`))scene.textures.addCanvas(`ninja-${part}`,ninjaAttackPart(attackSource,part));
         }
         const ninjaWeapons=scene.textures.get(NINJA_WEAPONS_ATLAS.key).getSourceImage() as HTMLImageElement;
         const ninjaWeaponSkin=scene.textures.exists('ninja-cosmetic-weapons')?scene.textures.get('ninja-cosmetic-weapons').getSourceImage() as HTMLImageElement:undefined;
-        for(const id of ['dual','kama'] as const)if(!scene.textures.exists(`ninja-${id}`))scene.textures.addCanvas(`ninja-${id}`,ninjaWeaponSkin?ninjaSkinWeaponCanvas(ninjaWeaponSkin,id):ninjaWeaponCanvas(ninjaWeapons,id));
-        if(!scene.textures.exists('ninja-katana'))scene.textures.addCanvas('ninja-katana',ninjaWeaponSkin?ninjaSkinWeaponCanvas(ninjaWeaponSkin,'katana'):ninjaSwordCanvas(attackSource));
+        for(const id of ['dual','kama'] as const)if(!scene.textures.exists(`ninja-${id}`))addArt(`ninja-${id}`,ninjaWeaponSkin?ninjaSkinWeaponCanvas(ninjaWeaponSkin,id):ninjaWeaponCanvas(ninjaWeapons,id));
+        if(!scene.textures.exists('ninja-katana'))addArt('ninja-katana',ninjaWeaponSkin?ninjaSkinWeaponCanvas(ninjaWeaponSkin,'katana'):ninjaSwordCanvas(attackSource));
         for(let side=0;side<2;side++)for(const part of ['upper','forearm','hand'] as const)this.ninjaBones.push(scene.add.image(0,0,`ninja-${part}`).setVisible(false).setDepth(part==='hand'?3.21:3.14));
         const cuteSource=scene.textures.get(CUTE_ATLAS.key).getSourceImage() as HTMLImageElement;
-        if(!scene.textures.exists('cute-ninja-full'))scene.textures.addCanvas('cute-ninja-full',ninjaSkin?ninjaSkinCanvas(scene.textures.get(NINJA_SKIN_KEY).getSourceImage() as HTMLImageElement,0,true):cuteCanvas(cuteSource,'ninja',0,0,true));
+        if(!scene.textures.exists('cute-ninja-full'))addArt('cute-ninja-full',ninjaSkin?ninjaSkinCanvas(scene.textures.get(NINJA_SKIN_KEY).getSourceImage() as HTMLImageElement,0,true):cuteCanvas(cuteSource,'ninja',0,0,true));
         for(const part of ['leftArm','rightArm'] as const){
             const key=`cute-ninja-${part}`;if(!scene.textures.exists(key))scene.textures.addCanvas(key,cuteArmCanvas(cuteSource,part));
             this.cuteArms.push(scene.add.image(0,0,key).setVisible(false).setDepth(3.2));
@@ -420,7 +425,7 @@ export class ArenaVisuals {
     prepareTexture(key:string){
         const textures=this.scene.textures;if(textures.exists(key))return;
         const sourceKey=key.startsWith('cute-tank-')?TANK_ATLAS.key:key.startsWith('cute-gunner-')?GUNNER_ATLAS.key:key.startsWith('cute-samurai-')?SAMURAI_ATLAS.key:key.startsWith('cute-ninja-')?(textures.exists(NINJA_SKIN_KEY)?NINJA_SKIN_KEY:CUTE_ATLAS.key):undefined;
-        const cacheKey=sourceKey?`${key}:${imageSourceUrl(textures.get(sourceKey).getSourceImage() as HTMLImageElement)}`:key;
+        const cacheKey=sourceKey?`${key}:hd256-color-facing-v4:${imageSourceUrl(textures.get(sourceKey).getSourceImage() as HTMLImageElement)}`:key;
         const canvas=cachedCanvas(cacheKey,()=>{
             if(key.endsWith('-small')){const full=key.slice(0,-6);this.prepareTexture(full);return minifiedZombieCanvas(textures.get(full).getSourceImage() as HTMLCanvasElement);}
             const frame=Number(key.slice(key.lastIndexOf('-')+1));
@@ -445,7 +450,7 @@ export class ArenaVisuals {
             if(isCuteHorde(id))return hordeCanvas(textures.get(hordeAtlas(id).key).getSourceImage() as HTMLImageElement,id,frame);
             return zombieSpriteLocation(id)?zombieWalkCanvases(textures.get(CUTE_ATLAS.key).getSourceImage() as HTMLImageElement,id)![frame]:actorCanvas('enemy',id,frame);
         });
-        textures.addCanvas(key,canvas);
+        textures.addCanvas(key,/^cute-(tank|gunner|samurai|ninja)-/.test(key)?gameplayArtwork(colorfulCharacter(canvas)):canvas);
     }
     defeat() { this.hero.setRotation(this.hero.rotation + 1.2).setAlpha(.5).setScale(.5); this.weapon.setVisible(false); this.offhand.setVisible(false);this.cuteArms.forEach(arm=>arm.setVisible(false));this.ninjaArmFx.clear();this.ninjaBones.forEach(bone=>bone.setVisible(false)); }
     death(e: EnemyVisual, time: number) { const key=e.faction==='robot'?(e.type==='spitter'?'cute-pulse-0':`robot-unit-${e.type}-0`):(e.type==='basic'?'cute-wanderer-0':`enemy-${e.type}-0`);const size=e.r*3.4*zombieVisualScale(e.type,this.scene.cameras.main.zoom);let slot = this.ghosts.find(s => s.expires <= time); if (!slot) {
@@ -455,43 +460,59 @@ export class ArenaVisuals {
         slot = { image: this.scene.add.image(0, 0, key).setDepth(1), size, expires: 0 };
         this.ghosts.push(slot);
     } this.prepareTexture(key);slot.size=size;slot.expires = time + .55; slot.image.setTexture(key).setPosition(e.x, e.y).setRotation(.7).setDisplaySize(size,size).setAlpha(.7).setTint(0x778b81).setVisible(true); }
-    render(enemies: EnemyVisual[], hero: HeroId, weapon: WeaponId, x: number, y: number, angle: number, time: number, swing: number, dash: number, invuln: number, blocking: boolean, counter: number, ammo: number, sequence=0,reach=1,arcScale=1,gunnerState?:GunnerState) {
+    render(enemies: EnemyVisual[], hero: HeroId, weapon: WeaponId, x: number, y: number, angle: number, time: number, swing: number, dash: number, invuln: number, blocking: boolean, counter: number, ammo: number, sequence=0,reach=1,arcScale=1,gunnerState?:GunnerState,tankMotion?:TankMotion,survivorMotion?:{brace:boolean;gesture:number;sweep?:number}) {
         this.renderSmoke(time);
         this.renderCriticalHits(time);
         const moved = Math.hypot(x - this.lastX, y - this.lastY) > .2, frame = moved ? 1 + Math.floor(time * 10) % 2 : 0;
         this.lastX = x;
         this.lastY = y;
         if(hero!=='zawgyi'){
+        const survivorOutfitUrl=(hero==='samurai'||hero==='gunner')?imageSourceUrl(this.scene.textures.get(hero==='samurai'?SAMURAI_ATLAS.key:GUNNER_ATLAS.key).getSourceImage() as HTMLImageElement):'',survivorRedesigned=isRedesignedSurvivor(survivorOutfitUrl);
         const articulatedHero=hero==='ninja'||hero==='samurai'||hero==='gunner'||hero==='tank',weaponRig=hero==='samurai'?'samurai':hero==='tank'?'tank':hero==='ninja';
-        if(hero==='tank')this.prepareTexture(`cute-tank-${moved?1+Math.floor(time*10)%24:0}`);
+        const tankFrame=tankMotion&&tankMotion.frame>=0?tankMotion.frame:moved?1+Math.floor(time*10)%24:0;
+        if(hero==='tank')this.prepareTexture(`cute-tank-${tankFrame}`);
         if(hero==='gunner')this.prepareTexture(`cute-gunner-${moved?1+Math.floor(time*10)%24:0}`);
         if(hero==='samurai')this.prepareTexture(`cute-samurai-${moved?1+Math.floor(time*10)%24:0}`);
         if(hero==='ninja')this.prepareTexture(`cute-ninja-${moved?1+Math.floor(time*10)%24:0}`);
-        this.hero.setTexture(hero==='tank'?`cute-tank-${moved?1+Math.floor(time*10)%24:0}`:hero==='gunner'?`cute-gunner-${moved?1+Math.floor(time*10)%24:0}`:hero==='samurai'?`cute-samurai-${moved?1+Math.floor(time*10)%24:0}`:hero==='ninja'?`cute-ninja-${moved?1+Math.floor(time*10)%24:0}`:`hero-${hero}-${frame}`).setPosition(x, y).setRotation(articulatedHero?0:angle).setFlipX(hero==='samurai'?samuraiFlipX(angle):articulatedHero&&Math.cos(angle)<0).setAlpha(1);
+        this.hero.setTexture(hero==='tank'?`cute-tank-${tankFrame}`:hero==='gunner'?`cute-gunner-${moved?1+Math.floor(time*10)%24:0}`:hero==='samurai'?`cute-samurai-${moved?1+Math.floor(time*10)%24:0}`:hero==='ninja'?`cute-ninja-${moved?1+Math.floor(time*10)%24:0}`:`hero-${hero}-${frame}`).setPosition(x, y).setRotation(articulatedHero?0:angle).setFlipX(hero==='samurai'&&!survivorRedesigned?samuraiFlipX(angle):articulatedHero&&Math.cos(angle)<0).setAlpha(1);
         this.hero.setDisplaySize(78,articulatedHero?78:78+Math.sin(time*3)*.8);
         this.hero.clearTint();
         // Protection is communicated by skill state, never by washing out the outfit.
         const duration=WEAPON_EFFECTS[weapon].duration,progress=Math.max(0,Math.min(1,swing/duration)),phase=1-progress,active=swing>0;
-        let pose=hero==='gunner'&&isGunnerWeapon(weapon)?gunnerWeaponPose(weapon,x,y,angle,phase,active&&(weapon!=='pistols'||sequence%2===0),false,gunnerState):weaponPose(weapon,x,y,angle,phase,active&&(weapon!=='pistols'||sequence%2===0),sequence,false,blocking,reach,arcScale,weaponRig);
+        let gunnerHeld=hero==='gunner'&&isGunnerWeapon(weapon)?gunnerWeaponPose(weapon,x,y,angle,phase,active&&(weapon!=='pistols'||sequence%2===0),false,gunnerState):undefined;
+        let pose=gunnerHeld||weaponPose(weapon,x,y,angle,phase,active&&(weapon!=='pistols'||sequence%2===0),sequence,false,blocking,reach,arcScale,weaponRig);
         if(hero==='tank')pose=tankEquipmentPose(pose,x,y,Math.cos(angle)<0?-1:1,this.tankOutfitUrl,weapon==='hammer');
-        this.weapon.setDepth(hero==='tank'&&isRedesignedTank(this.tankOutfitUrl)&&weapon==='hammer'&&pose.tip.y<y-10?2.99:3.2).setTexture(hero==='tank'?`tank-${weapon}`:hero==='gunner'?`gunner-${weapon}`:hero==='samurai'?`samurai-${weapon}`:hero==='ninja'?`ninja-${weapon}`:`weapon-${weapon}`).setOrigin(pose.originX,pose.originY).setDisplaySize(pose.size,hero==='samurai'?pose.size/reach:pose.size).setPosition(pose.grip.x,pose.grip.y).setRotation(pose.rotation).setFlipY(pose.flipY).setAlpha(1);
+        if(hero==='tank'&&tankMotion)pose=tankSkillWeaponPose(pose,x,y,angle,this.tankOutfitUrl,weapon==='hammer',tankMotion);
+        if(survivorMotion&&(hero==='samurai'||hero==='gunner')){if(gunnerHeld){gunnerHeld=survivorEquipmentPose(gunnerHeld,'gunner',angle,survivorMotion);pose=gunnerHeld;}else pose=survivorEquipmentPose(pose,'samurai',angle,survivorMotion);}
+        this.weapon.setDepth(3.22).setTexture(hero==='tank'?`tank-${weapon}`:hero==='gunner'?`gunner-${weapon}`:hero==='samurai'?`samurai-${weapon}`:hero==='ninja'?`ninja-${weapon}`:`weapon-${weapon}`).setOrigin(pose.originX,pose.originY).setDisplaySize(pose.size,hero==='samurai'?pose.size/reach:pose.size).setPosition(pose.grip.x,pose.grip.y).setRotation(pose.rotation).setFlipY(pose.flipY).setAlpha(1);
         const dual=weapon==='dual'||weapon==='pistols';this.offhand.setVisible(dual);
         const other=hero==='gunner'&&isGunnerWeapon(weapon)?gunnerWeaponPose(weapon,x,y,angle,phase,active&&(weapon!=='pistols'||sequence%2!==0),true,gunnerState):weaponPose(weapon,x,y,angle,phase,active&&(weapon!=='pistols'||sequence%2!==0),sequence,true,false,reach,arcScale,weaponRig);
-        if(dual)this.offhand.setTexture(hero==='gunner'?`gunner-${weapon}`:hero==='ninja'?`ninja-${weapon}`:`weapon-${weapon}`).setOrigin(other.originX,other.originY).setDisplaySize(other.size,other.size).setPosition(other.grip.x,other.grip.y).setRotation(other.rotation).setFlipY(other.flipY);
+        if(dual)this.offhand.setDepth(3.22).setTexture(hero==='gunner'?`gunner-${weapon}`:hero==='ninja'?`ninja-${weapon}`:`weapon-${weapon}`).setOrigin(other.originX,other.originY).setDisplaySize(other.size,other.size).setPosition(other.grip.x,other.grip.y).setRotation(other.rotation).setFlipY(other.flipY);
         this.cuteArms.forEach(arm=>arm.setVisible(false));
         this.ninjaArmFx.clear();this.ninjaBones.forEach(bone=>bone.setVisible(false));
         if(articulatedHero){
             const g=this.ninjaArmFx,flip=Math.cos(angle)<0?-1:1;
             for(let index=0;index<2;index++){
-                if(!connectedArmVisible(hero,index)&&!(hero==='gunner'&&!dual||hero==='tank'&&(weapon==='hammer'||isRedesignedTank(this.tankOutfitUrl))))continue;
-                const shoulder=hero==='tank'&&this.tankOutfit?tankOutfitShoulder(x,y,index,flip,this.tankOutfitUrl):{x:x+(index===0?8:-9)*flip,y:y+5};
-                const target=index===0?pose.grip:hero==='samurai'||hero==='tank'&&weapon==='hammer'?samuraiSupportHand(pose.grip,pose.rotation):hero==='gunner'&&!dual&&isGunnerWeapon(weapon)?gunnerSupportHand(gunnerWeaponPose(weapon,x,y,angle,phase,active,false,gunnerState),gunnerState):dual?other.grip:{x:x-12*flip,y:y+21};
+                if(!connectedArmVisible(hero,index)&&!(hero==='gunner'&&(!dual||isRedesignedSurvivor(imageSourceUrl(this.scene.textures.get(GUNNER_ATLAS.key).getSourceImage() as HTMLImageElement)))||hero==='tank'&&(weapon==='hammer'||isRedesignedTank(this.tankOutfitUrl)||!!tankMotion&&(tankMotion.slam>0||tankMotion.brace||tankMotion.march))))continue;
+                const shoulder=survivorRedesigned?survivorShoulder(x,y,index,flip,survivorOutfitUrl):hero==='tank'&&this.tankOutfit?tankOutfitShoulder(x,y,index,flip,this.tankOutfitUrl):{x:x+(index===0?8:-9)*flip,y:y+5};
+                const target=index===0?pose.grip:hero==='samurai'||hero==='tank'&&weapon==='hammer'?samuraiSupportHand(pose.grip,pose.rotation):hero==='gunner'&&!dual&&isGunnerWeapon(weapon)?gunnerSupportHand(gunnerHeld||gunnerWeaponPose(weapon,x,y,angle,phase,active,false,gunnerState),gunnerState):dual?other.grip:{x:x-12*flip,y:y+21};
                 const resting=index===1&&!dual&&hero!=='samurai'&&hero!=='gunner'&&weapon!=='hammer';
                 const held=resting?shoulderGrip(shoulder,Math.PI/2,18):target;
-                const p=hero==='tank'&&isRedesignedTank(this.tankOutfitUrl)?tankArmPose(index,shoulder,held,flip):connectedArmPose(hero,index,shoulder,held,flip);
+                const p=survivorRedesigned?survivorArmPose(hero==='samurai'?'samurai':'gunner',index,shoulder,held,flip,survivorOutfitUrl):hero==='tank'&&isRedesignedTank(this.tankOutfitUrl)?tankArmPose(index,shoulder,held,flip):connectedArmPose(hero,index,shoulder,held,flip);
                 this.ninjaBones[index*3].setTexture(`connected-${hero}-${index}`).setFlipX(p.flipX).setVisible(true).setOrigin(p.originX,p.originY).setPosition(p.x,p.y).setDisplaySize(p.width,p.height).setRotation(p.rotation).setDepth(hero==='tank'&&(weapon!=='hammer'||isRedesignedTank(this.tankOutfitUrl))||hero==='gunner'&&!dual?3.19:3.21).setAlpha(this.hero.alpha);
+                // Weapons stay above sleeves and torso. Only the glove covers its grip.
+                if(!resting){
+                    const hand=this.ninjaBones[index*3+2],texture=this.scene.textures.get(`connected-${hero}-${index}`),source=texture.getSourceImage();
+                    const start=hero==='gunner'&&survivorRedesigned?.76/survivorArmOverscan(survivorOutfitUrl,'gunner',index):.76;
+                    hand.setTexture(`connected-${hero}-${index}`).setCrop(0,source.height*start,source.width,source.height*(1-start)).setFlipX(p.flipX).setVisible(true).setOrigin(p.originX,p.originY).setPosition(p.x,p.y).setDisplaySize(p.width,p.height).setRotation(p.rotation).setDepth(3.23).setAlpha(this.hero.alpha);
+                }
 
             }
+        }
+        if(hero==='tank'&&tankMotion?.lean){
+            const lean=tankMotion.lean;
+            for(const image of [this.hero,this.weapon,...this.ninjaBones])if(image.visible){const p=tankMotionPoint(image,x,y,lean);image.setPosition(p.x,p.y).setRotation(image.rotation+lean);}
+            pose={...pose,grip:tankMotionPoint(pose.grip,x,y,lean),tip:tankMotionPoint(pose.tip,x,y,lean),rotation:pose.rotation+lean};
         }
         if(hero==='gunner'){
             const g=this.ninjaArmFx,face=Math.cos(angle)<0?-1:1;
@@ -523,7 +544,7 @@ export class ArenaVisuals {
                 this.afterimages.push(s);
             }
             s.expires = time + .22;
-            s.image.setTexture(hero==='tank'?'cute-tank-full':hero==='gunner'?'cute-gunner-full':hero==='samurai'?'cute-samurai-full':hero==='ninja'?'cute-ninja-full':`hero-${hero}-${frame}`).setPosition(x, y).setDisplaySize(78, 78).setRotation(articulatedHero?0:angle).setFlipX(hero==='samurai'?samuraiFlipX(angle):(hero==='ninja'||hero==='gunner'||hero==='tank')&&Math.cos(angle)<0).setTint(HEROES[hero].color).setVisible(true);
+            s.image.setTexture(hero==='tank'?'cute-tank-full':hero==='gunner'?'cute-gunner-full':hero==='samurai'?'cute-samurai-full':hero==='ninja'?'cute-ninja-full':`hero-${hero}-${frame}`).setPosition(x, y).setDisplaySize(78, 78).setRotation(articulatedHero?0:angle).setFlipX(hero==='samurai'&&!isRedesignedSurvivor(imageSourceUrl(this.scene.textures.get(SAMURAI_ATLAS.key).getSourceImage() as HTMLImageElement))?samuraiFlipX(angle):(hero==='ninja'||hero==='gunner'||hero==='tank'||hero==='samurai')&&Math.cos(angle)<0).setTint(HEROES[hero].color).setVisible(true);
         }
         }else{this.hero.setVisible(false);this.weapon.setVisible(false);this.offhand.setVisible(false);this.cuteArms.forEach(a=>a.setVisible(false));this.ninjaBones.forEach(a=>a.setVisible(false));this.attackFx.clear();(this.zawgyiRig??=new ZawgyiRig(this.scene)).render(x,y,angle,time,moved,swing,sequence,this.zawgyiLift,invuln,this.zawgyiSlam);}
         for (const s of this.afterimages) {
