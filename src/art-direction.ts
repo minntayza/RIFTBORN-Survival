@@ -1,5 +1,5 @@
 import type Phaser from 'phaser';
-import {rememberImageSource} from './texture-cache';
+import {rememberImageSource,imageSourceUrl} from './texture-cache';
 const artwork = new Map<string, HTMLCanvasElement>();
 /** Bake color and lighting once into canvas textures, never into the render loop. */
 export function applyArtDirection(scene: Phaser.Scene) {
@@ -8,7 +8,7 @@ export function applyArtDirection(scene: Phaser.Scene) {
     const texture = scene.textures.get(key), source = texture.getSourceImage();
     if (!(source instanceof HTMLImageElement)) continue;
     const environment = ['city-asphalt','park-ground','city-wreck'].includes(key) || key.startsWith('robot-');
-    const cacheKey=`${key}:${source.src}`;
+    const sourceUrl=imageSourceUrl(source),cacheKey=`${key}:${sourceUrl}`;
     let canvas = artwork.get(cacheKey);
     if (!canvas) {
       canvas = document.createElement('canvas');canvas.width=source.width;canvas.height=source.height;
@@ -30,7 +30,7 @@ export function applyArtDirection(scene: Phaser.Scene) {
           ctx.strokeStyle=i%3?'#345847':'#48634b';ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(x-3,y);ctx.lineTo(x-5,y-h);ctx.moveTo(x,y);ctx.lineTo(x+1,y-h-2);ctx.moveTo(x+2,y);ctx.lineTo(x+5,y-h+1);ctx.stroke();
         }
       }
-      rememberImageSource(canvas,source.src);
+      rememberImageSource(canvas,sourceUrl);
       artwork.set(cacheKey,canvas);
       if(artwork.size>64)artwork.delete(artwork.keys().next().value!);
     }

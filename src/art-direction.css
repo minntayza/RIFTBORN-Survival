@@ -17,3 +17,19 @@
 /* Neutral backings preserve each skill's own color and silhouette. */
 .combat-hud .hud-skill[class],#touch-controls .touch-ability[class],.combat-hud .zawgyi-skill[class] { background:#0b1922!important; }
 svg[data-skill-icon] { background:#0b1922;border-radius:50%; }
+
+/* Share the gameplay coin medallion across wallets, prices and run summaries. */
+.gold-coin.currency-coin{display:inline-grid;vertical-align:middle;width:20px;height:20px;font-size:15px;margin-right:3px;text-transform:none;letter-spacing:0}
+.hub-wallet:has(.currency-coin){align-items:center}.hub-wallet b:has(.currency-coin),.shop-top .coin{display:inline-flex;align-items:center;gap:5px}
+.hub-wallet .gold-coin.currency-coin{width:24px;height:24px;font-size:18px}
+@media(max-width:560px){.hub-wallet .gold-coin.currency-coin{width:20px;height:20px;font-size:15px}}
+
+/* Petals use the same minted silhouette and rim as Gold, with a distinct flower face. */
+.gold-coin.petal-coin{color:#fff0fa;border-color:#ffe0f1;background:radial-gradient(circle at 34% 26%,#ffe1f2,#d17aac 55%,#8a376e);box-shadow:inset 0 0 0 2px #a44980,0 0 0 2px #493046,0 2px 3px #0008;text-shadow:0 1px 2px #722650}
+.petal-wallet{display:inline-flex;align-items:center;gap:5px}
+
+/* A single balanced currency row above the shop categories. */
+.armoury-panel .shop-top .shop-wallets{display:flex;align-items:stretch;justify-content:flex-end;gap:10px;flex-wrap:wrap}
+.armoury-panel .shop-wallets>.coin,.armoury-panel .shop-wallets>.petal-wallet{display:inline-flex;align-items:center;justify-content:center;gap:7px;min-height:44px;margin:0;padding:10px 14px;border:1px solid #b7a67566;border-radius:10px;background:#142830;color:#efdaa1;font:800 13px system-ui;white-space:nowrap}
+.armoury-panel .shop-wallets>.petal-wallet{border-color:#c08ba466;color:#efc5df;background:#2c2435}
+@media(max-width:560px){.armoury-panel .shop-top .shop-wallets{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.armoury-panel .shop-wallets>.coin,.armoury-panel .shop-wallets>.petal-wallet{min-width:0;padding:10px 8px;font-size:12px}}

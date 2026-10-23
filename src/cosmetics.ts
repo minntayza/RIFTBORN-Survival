@@ -9,7 +9,7 @@ export const TANK_SKINS={sakura:{name:'Royal Bulwark',asset:'/assets/cosmetics/t
 export const COSMETICS=([['character',HEROES],['weapon',WEAPONS]] as const).flatMap(([kind,targets])=>Object.entries(targets).filter(([id])=>id!=='zawgyi'&&id!=='mysticstaff').flatMap(([target,value])=>FINISHES.map(f=>{
  const hero=kind==='character'?target:WEAPONS[target as WeaponId].hero;
  const design=hero==='tank'?TANK_SKINS[f.id]:hero==='gunner'?GUNNER_SKINS[f.id]:hero==='ninja'?NINJA_SKINS[f.id]:hero==='samurai'?(kind==='character'?SAMURAI_SKINS[f.id]:SAMURAI_WEAPON_SKINS[f.id]):undefined;
- return {...f,id:`${kind}:${target}:${f.id}`,kind,target,name:design?(kind==='character'?design.name:`${design.name} ${value.name}`):`${f.name} ${value.name}`,asset:design?.asset};
+ return {...f,id:`${kind}:${target}:${f.id}`,kind,target,name:design?(kind==='character'?design.name:`${design.name} ${value.name}`):`${f.name} ${value.name}`,asset:hero==='tank'&&kind==='character'?`/assets/cosmetics/tank-v3/${f.id==='sakura'?'royal':f.id==='jade'?'forge':'polar'}.png`:design?.asset};
 })));
 export function equippedWeaponSkin(s:Save,weapon:WeaponId){return COSMETICS.find(c=>c.id===s.cosmetics.equipped[`weapon:${weapon}`])?.asset;}
 export function equippedSkin(s:Save,hero:HeroId=s.hero){return COSMETICS.find(c=>c.id===s.cosmetics.equipped[`character:${hero}`])?.asset;}
@@ -19,8 +19,10 @@ export function equipCosmetic(s:Save,id:string){
  const c=COSMETICS.find(c=>c.id===id);if(!c||!s.cosmetics.owned.includes(id))return false;
  if(c.kind==='weapon'){
   const weapon=c.target as WeaponId,hero=WEAPONS[weapon].hero as HeroId;
-  if(!s.weapons.includes(weapon)||!s.heroes.includes(hero))return false;
-  s.hero=hero;s.weapon=weapon;
+  if(s.weapons.includes(weapon)&&s.heroes.includes(hero)){s.hero=hero;s.weapon=weapon;}
+ }else{
+  const hero=c.target as HeroId,weapon=s.weapons.find(w=>WEAPONS[w].hero===hero);
+  if(s.heroes.includes(hero)&&weapon){s.hero=hero;if(WEAPONS[s.weapon].hero!==hero)s.weapon=weapon;}
  }
  s.cosmetics.equipped[`${c.kind}:${c.target}`]=id;return true;
 }

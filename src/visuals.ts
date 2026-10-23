@@ -1,3 +1,4 @@
+import {tankEquipmentPose,tankArmPose,isRedesignedTank} from './tank-redesign';
 import {ZawgyiRig} from './zawgyi-rig';
 import {tankOutfitShoulder} from './tank-arm-art';
 import {tankSkinArm} from './tank-cosmetics';
@@ -367,6 +368,7 @@ export class ArenaVisuals {
     private lastX = 600;
     private lastY = 380;
     private tankOutfit=false;
+    private tankOutfitUrl='';
     constructor(private scene: Phaser.Scene,skin=false,ninjaSkin=false,gunnerSkin=false,tankSkin=false) {this.tankOutfit=tankSkin;
         this.ninjaArmFx=scene.add.graphics().setDepth(3.15);
         this.shieldFx=scene.add.graphics().setDepth(.9);
@@ -380,7 +382,7 @@ export class ArenaVisuals {
             if(!scene.textures.exists(`weapon-${id}`))scene.textures.addCanvas(`weapon-${id}`, weaponCanvas(id));
         const connectedSource=scene.textures.get(CONNECTED_ARMS.key).getSourceImage() as HTMLImageElement;
         for(const hero of (Object.keys(HEROES) as HeroId[]).filter(h=>h!=='zawgyi'))for(let i=0;i<2;i++)if(!scene.textures.exists(`connected-${hero}-${i}`))scene.textures.addCanvas(`connected-${hero}-${i}`,skin&&hero==='samurai'?samuraiSkinArm(scene.textures.get(SAMURAI_ATLAS.key).getSourceImage() as HTMLImageElement,i):ninjaSkin&&hero==='ninja'?ninjaSkinArm(scene.textures.get(NINJA_SKIN_KEY).getSourceImage() as HTMLImageElement,i):gunnerSkin&&hero==='gunner'?gunnerSkinArm(scene.textures.get(GUNNER_ATLAS.key).getSourceImage() as HTMLImageElement,i):tankSkin&&hero==='tank'?tankSkinArm(scene.textures.get(TANK_ATLAS.key).getSourceImage() as HTMLImageElement,i):connectedArmCanvas(connectedSource,hero,i));
-        const tankSource=scene.textures.get(TANK_ATLAS.key).getSourceImage() as HTMLImageElement;
+        const tankSource=scene.textures.get(TANK_ATLAS.key).getSourceImage() as HTMLImageElement;this.tankOutfitUrl=imageSourceUrl(tankSource);
         for(const part of ['upper','forearm','hand','otherHand'] as const)if(!scene.textures.exists(`tank-${part}`))scene.textures.addCanvas(`tank-${part}`,tankPart(tankSource,part));
         if(!scene.textures.exists('cute-tank-full'))scene.textures.addCanvas('cute-tank-full',tankCanvas(tankSource,0,true));
         const tankWeapons=scene.textures.get(TANK_WEAPONS_ATLAS.key).getSourceImage() as HTMLImageElement;
@@ -470,8 +472,9 @@ export class ArenaVisuals {
         this.hero.clearTint();
         // Protection is communicated by skill state, never by washing out the outfit.
         const duration=WEAPON_EFFECTS[weapon].duration,progress=Math.max(0,Math.min(1,swing/duration)),phase=1-progress,active=swing>0;
-        const pose=hero==='gunner'&&isGunnerWeapon(weapon)?gunnerWeaponPose(weapon,x,y,angle,phase,active&&(weapon!=='pistols'||sequence%2===0),false,gunnerState):weaponPose(weapon,x,y,angle,phase,active&&(weapon!=='pistols'||sequence%2===0),sequence,false,blocking,reach,arcScale,weaponRig);
-        this.weapon.setTexture(hero==='tank'?`tank-${weapon}`:hero==='gunner'?`gunner-${weapon}`:hero==='samurai'?`samurai-${weapon}`:hero==='ninja'?`ninja-${weapon}`:`weapon-${weapon}`).setOrigin(pose.originX,pose.originY).setDisplaySize(pose.size,hero==='samurai'?pose.size/reach:pose.size).setPosition(pose.grip.x,pose.grip.y).setRotation(pose.rotation).setFlipY(pose.flipY).setAlpha(1);
+        let pose=hero==='gunner'&&isGunnerWeapon(weapon)?gunnerWeaponPose(weapon,x,y,angle,phase,active&&(weapon!=='pistols'||sequence%2===0),false,gunnerState):weaponPose(weapon,x,y,angle,phase,active&&(weapon!=='pistols'||sequence%2===0),sequence,false,blocking,reach,arcScale,weaponRig);
+        if(hero==='tank')pose=tankEquipmentPose(pose,x,y,Math.cos(angle)<0?-1:1,this.tankOutfitUrl,weapon==='hammer');
+        this.weapon.setDepth(hero==='tank'&&isRedesignedTank(this.tankOutfitUrl)&&weapon==='hammer'&&pose.tip.y<y-10?2.99:3.2).setTexture(hero==='tank'?`tank-${weapon}`:hero==='gunner'?`gunner-${weapon}`:hero==='samurai'?`samurai-${weapon}`:hero==='ninja'?`ninja-${weapon}`:`weapon-${weapon}`).setOrigin(pose.originX,pose.originY).setDisplaySize(pose.size,hero==='samurai'?pose.size/reach:pose.size).setPosition(pose.grip.x,pose.grip.y).setRotation(pose.rotation).setFlipY(pose.flipY).setAlpha(1);
         const dual=weapon==='dual'||weapon==='pistols';this.offhand.setVisible(dual);
         const other=hero==='gunner'&&isGunnerWeapon(weapon)?gunnerWeaponPose(weapon,x,y,angle,phase,active&&(weapon!=='pistols'||sequence%2!==0),true,gunnerState):weaponPose(weapon,x,y,angle,phase,active&&(weapon!=='pistols'||sequence%2!==0),sequence,true,false,reach,arcScale,weaponRig);
         if(dual)this.offhand.setTexture(hero==='gunner'?`gunner-${weapon}`:hero==='ninja'?`ninja-${weapon}`:`weapon-${weapon}`).setOrigin(other.originX,other.originY).setDisplaySize(other.size,other.size).setPosition(other.grip.x,other.grip.y).setRotation(other.rotation).setFlipY(other.flipY);
@@ -480,13 +483,13 @@ export class ArenaVisuals {
         if(articulatedHero){
             const g=this.ninjaArmFx,flip=Math.cos(angle)<0?-1:1;
             for(let index=0;index<2;index++){
-                if(!connectedArmVisible(hero,index))continue;
-                const shoulder=hero==='tank'&&this.tankOutfit?tankOutfitShoulder(x,y,index,flip):{x:x+(index===0?8:-9)*flip,y:y+5};
+                if(!connectedArmVisible(hero,index)&&!(hero==='gunner'&&!dual||hero==='tank'&&(weapon==='hammer'||isRedesignedTank(this.tankOutfitUrl))))continue;
+                const shoulder=hero==='tank'&&this.tankOutfit?tankOutfitShoulder(x,y,index,flip,this.tankOutfitUrl):{x:x+(index===0?8:-9)*flip,y:y+5};
                 const target=index===0?pose.grip:hero==='samurai'||hero==='tank'&&weapon==='hammer'?samuraiSupportHand(pose.grip,pose.rotation):hero==='gunner'&&!dual&&isGunnerWeapon(weapon)?gunnerSupportHand(gunnerWeaponPose(weapon,x,y,angle,phase,active,false,gunnerState),gunnerState):dual?other.grip:{x:x-12*flip,y:y+21};
                 const resting=index===1&&!dual&&hero!=='samurai'&&hero!=='gunner'&&weapon!=='hammer';
                 const held=resting?shoulderGrip(shoulder,Math.PI/2,18):target;
-                const p=connectedArmPose(hero,index,shoulder,held,flip);
-                this.ninjaBones[index*3].setTexture(`connected-${hero}-${index}`).setFlipX(p.flipX).setVisible(true).setOrigin(p.originX,p.originY).setPosition(p.x,p.y).setDisplaySize(p.width,p.height).setRotation(p.rotation).setDepth(hero==='tank'&&weapon!=='hammer'?3.19:3.21).setAlpha(this.hero.alpha);
+                const p=hero==='tank'&&isRedesignedTank(this.tankOutfitUrl)?tankArmPose(index,shoulder,held,flip):connectedArmPose(hero,index,shoulder,held,flip);
+                this.ninjaBones[index*3].setTexture(`connected-${hero}-${index}`).setFlipX(p.flipX).setVisible(true).setOrigin(p.originX,p.originY).setPosition(p.x,p.y).setDisplaySize(p.width,p.height).setRotation(p.rotation).setDepth(hero==='tank'&&(weapon!=='hammer'||isRedesignedTank(this.tankOutfitUrl))||hero==='gunner'&&!dual?3.19:3.21).setAlpha(this.hero.alpha);
 
             }
         }

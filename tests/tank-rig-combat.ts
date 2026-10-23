@@ -1,0 +1,25 @@
+import Phaser from 'phaser';
+import '../src/style.css';
+import '../src/combat-layout.css';
+import '../src/art-direction.css';
+import {ArenaScene} from '../src/combat';
+import {freshSave} from '../src/save';
+import {AudioManager} from '../src/audio';
+import {combatHud} from '../src/combat-hud';
+const params=new URLSearchParams(location.search),outfit=params.get('outfit')||'forge',finish=outfit==='royal'?'sakura':outfit==='polar'?'starlight':'jade';
+const weapon=params.get('weapon')==='shield'?'shield':params.get('weapon')==='spiked'?'spiked':'hammer';
+const save=freshSave();save.hero='tank';save.weapon=weapon;save.heroes.push('tank');save.weapons.push(weapon);save.settings.mapView=1;save.settings.sound=false;save.settings.music=false;save.cosmetics.owned=[`character:tank:${finish}`,`weapon:${weapon}:${finish}`];save.cosmetics.equipped['character:tank']=`character:tank:${finish}`;save.cosmetics.equipped[`weapon:${weapon}`]=`weapon:${weapon}:${finish}`;
+const audio=new AudioManager();audio.sound=false;audio.music=false;
+let walking=false,attacking=false,facing=1,phase=.5;
+const s=new ArenaScene(save,audio,()=>{},()=>{},()=>{});
+s.onArenaReady=()=>{
+ s.plan=[];s.paused=true;s.angle=0;s.render();
+ const panel=document.querySelector('#rig-status')!;panel.innerHTML=`<strong>${outfit} · Actual ArenaScene</strong> <button id="face">Face left</button> <button id="walk">Walk</button> <button id="attack">Attack</button> <button id="scale">2× map</button> <select aria-label="Attack phase" id="phase"><option value=".5">Strike</option><option value=".24">Windup</option><option value=".8">Recovery</option></select> <a href="?outfit=royal">Royal</a> <a href="?outfit=forge">Forge</a> <a href="?outfit=polar">Polar</a> <a href="?outfit=${outfit}&weapon=shield">Shield</a> <a href="?outfit=${outfit}&weapon=spiked">Spiked</a> <a href="?outfit=${outfit}&weapon=hammer">Hammer</a><p id="pose-state"></p>`;
+ panel.querySelector('#face')!.addEventListener('click',e=>{facing=-facing;(e.target as HTMLElement).textContent=facing===1?'Face left':'Face right';});
+ panel.querySelector('#walk')!.addEventListener('click',e=>{walking=!walking;(e.target as HTMLElement).textContent=walking?'Rest':'Walk';});
+ panel.querySelector('#attack')!.addEventListener('click',e=>{attacking=!attacking;(e.target as HTMLElement).textContent=attacking?'Stop attack':'Attack';});
+ panel.querySelector('#phase')!.addEventListener('change',e=>{phase=Number((e.target as HTMLSelectElement).value);});
+ panel.querySelector('#scale')!.addEventListener('click',e=>{save.settings.mapView=save.settings.mapView===1?2:1;s.applyMapView();(e.target as HTMLElement).textContent=save.settings.mapView===1?'2× map':'1× map';});
+ setInterval(()=>{s.elapsed+=.075;s.angle=facing===1?0:Math.PI;s.x+=walking?facing*.6:0;s.swing=attacking?.46*(1-phase):0;s.render();document.querySelector('#hud')!.innerHTML=combatHud(s,false);document.querySelector('#pose-state')!.textContent=`${walking?'Walking':'Rest'} · Facing ${facing===1?'right':'left'} · ${attacking?'Attacking':'Idle'} · ${save.settings.mapView}× map`;},75);
+};
+new Phaser.Game({type:Phaser.AUTO,parent:'game',width:innerWidth,height:innerHeight,scene:[s],scale:{mode:Phaser.Scale.RESIZE},audio:{noAudio:true},banner:false});

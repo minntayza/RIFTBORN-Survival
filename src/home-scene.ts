@@ -1,3 +1,4 @@
+import {tankEquipmentPose,tankArmPose,isRedesignedTank} from './tank-redesign';
 import {drawZawgyi} from './zawgyi-rig-art';
 import {ZAWGYI_ART} from './zawgyi';
 import {tankArmAsset,registerTankArmArtwork,tankOutfitShoulder} from './tank-arm-art';
@@ -46,12 +47,12 @@ export async function startHomeScene(canvas:HTMLCanvasElement,hero:HeroId,weapon
  const weaponAtlas=hero==='samurai'?{...SAMURAI_WEAPONS_ATLAS,url:weaponSkin||SAMURAI_WEAPONS_ATLAS.url}:hero==='gunner'?{...GUNNER_WEAPONS_ATLAS,url:weaponSkin||GUNNER_WEAPONS_ATLAS.url}:hero==='tank'?{...TANK_WEAPONS_ATLAS,url:weaponSkin||TANK_WEAPONS_ATLAS.url}:weaponSkin?{key:'ninja-skin',url:weaponSkin}:weapon==='katana'?NINJA_ATTACK_ATLAS:NINJA_WEAPONS_ATLAS;
  const [bodyImage,weaponImage,connectedImage,tankArms]=await Promise.all([load(bodyAtlas.url),load(weaponAtlas.url),load(CONNECTED_ARMS.url),hero==='tank'&&skin?load(tankArmAsset(skin)):Promise.resolve(undefined)]);if(tankArms&&skin)registerTankArmArtwork(tankArms,tankArmAsset(skin));
  if(!canvas.isConnected)return;
- const heroFrame=(i:number)=>cachedFrame(`${hero}:${i}:${colors.character}:${skin||'base'}`,()=>tintArtwork(hero==='samurai'?samuraiCanvas(bodyImage,i+1):hero==='gunner'?gunnerCanvas(bodyImage,i+1):hero==='tank'?tankCanvas(bodyImage,i+1):skin?ninjaSkinCanvas(bodyImage,i+1):cuteCanvas(bodyImage,'ninja',i/24,1,false),colors.character));
+ const heroFrame=(i:number)=>cachedFrame(`${hero}:${i}:${colors.character}:${skin||'base'}`,()=>tintArtwork(hero==='samurai'?samuraiCanvas(bodyImage,i+1):hero==='gunner'?gunnerCanvas(bodyImage,i+1,false,512):hero==='tank'?tankCanvas(bodyImage,i+1,false,512):skin?ninjaSkinCanvas(bodyImage,i+1):cuteCanvas(bodyImage,'ninja',i/24,1,false),colors.character));
 
  const dual=weapon==='dual'||weapon==='pistols';
- const equipment=cachedFrame(`weapon:${weapon}:${colors.weapon}:${weaponSkin||'base'}`,()=>tintArtwork(isSamuraiWeapon(weapon)?samuraiWeaponCanvas(weaponImage,weapon):isGunnerWeapon(weapon)?gunnerWeaponCanvas(weaponImage,weapon):isTankWeapon(weapon)?tankWeaponCanvas(weaponImage,weapon):weaponSkin?ninjaSkinWeaponCanvas(weaponImage,weapon as 'katana'|'dual'|'kama'):weapon==='katana'?ninjaSwordCanvas(weaponImage):ninjaWeaponCanvas(weaponImage,weapon==='dual'?'dual':'kama'),colors.weapon));
- const arms=[0,1].map(i=>cachedFrame(`connected:${hero}:${i}:${colors.character}:${skin||'base'}`,()=>tintArtwork(skin&&hero==='samurai'?samuraiSkinArm(bodyImage,i):skin&&hero==='ninja'?ninjaSkinArm(bodyImage,i):skin&&hero==='gunner'?gunnerSkinArm(bodyImage,i):skin&&hero==='tank'?tankSkinArm(bodyImage,i):connectedArmCanvas(connectedImage,hero,i),colors.character)));
- const staging=document.createElement('canvas');staging.width=1000;staging.height=800;const g=staging.getContext('2d')!;canvas.width=portrait?420:600;canvas.height=420;
+ const equipment=cachedFrame(`weapon:${weapon}:${colors.weapon}:${weaponSkin||'base'}`,()=>tintArtwork(isSamuraiWeapon(weapon)?samuraiWeaponCanvas(weaponImage,weapon):isGunnerWeapon(weapon)?gunnerWeaponCanvas(weaponImage,weapon,512):isTankWeapon(weapon)?tankWeaponCanvas(weaponImage,weapon,512):weaponSkin?ninjaSkinWeaponCanvas(weaponImage,weapon as 'katana'|'dual'|'kama'):weapon==='katana'?ninjaSwordCanvas(weaponImage):ninjaWeaponCanvas(weaponImage,weapon==='dual'?'dual':'kama'),colors.weapon));
+ const arms=[0,1].map(i=>cachedFrame(`connected:${hero}:${i}:${colors.character}:${skin||'base'}`,()=>tintArtwork(skin&&hero==='samurai'?samuraiSkinArm(bodyImage,i):skin&&hero==='ninja'?ninjaSkinArm(bodyImage,i):skin&&hero==='gunner'?gunnerSkinArm(bodyImage,i,4):skin&&hero==='tank'?tankSkinArm(bodyImage,i):connectedArmCanvas(connectedImage,hero,i),colors.character)));
+ const staging=document.createElement('canvas');staging.width=1000;staging.height=800;const g=staging.getContext('2d')!;canvas.width=(portrait?420:600)*2;canvas.height=840;g.imageSmoothingEnabled=true;g.imageSmoothingQuality='high';canvas.getContext('2d')!.imageSmoothingQuality='high';
  const sprite=(im:CanvasImageSource,x:number,y:number,w:number,h:number,rotation=0,ox=.5,oy=.5,flipX=false,flipY=false)=>{g.save();g.translate(x,y);g.rotate(rotation);g.scale(flipX?-1:1,flipY?-1:1);g.drawImage(im,-w*ox,-h*oy,w,h);g.restore();};
  const draw=()=>{if(!canvas.isConnected)return;g.clearRect(0,0,staging.width,staging.height);
  const frame=0;
@@ -59,21 +60,32 @@ export async function startHomeScene(canvas:HTMLCanvasElement,hero:HeroId,weapon
  g.save();g.translate(500,400);g.scale(3.8,3.8);
  g.fillStyle='#07151870';g.beginPath();g.ellipse(0,31,26,7,0,0,Math.PI*2);g.fill();sprite(heroFrame(frame),0,0,78,78,0,.5,.5,hero==='samurai');
  const active=false,phase=0,mode=hero==='samurai'?'samurai':hero==='tank'?'tank':hero==='ninja';
- const pose=hero==='gunner'&&isGunnerWeapon(weapon)?gunnerWeaponPose(weapon,0,0,0,phase,active):weaponPose(weapon,0,0,0,phase,active,0,false,false,1,1,mode);
+ let pose=hero==='gunner'&&isGunnerWeapon(weapon)?gunnerWeaponPose(weapon,0,0,0,phase,active):weaponPose(weapon,0,0,0,phase,active,0,false,false,1,1,mode);
+ if(hero==='tank')pose=tankEquipmentPose(pose,0,0,1,skin||'',weapon==='hammer');
  const other=hero==='gunner'&&isGunnerWeapon(weapon)?gunnerWeaponPose(weapon,0,0,0,phase,false,true):weaponPose(weapon,0,0,0,phase,active,0,true,false,1,1,mode);
  if(dual)sprite(equipment,other.grip.x,other.grip.y,other.size,other.size,other.rotation,other.originX,other.originY,false,other.flipY);
  if(hero==='ninja')sprite(equipment,pose.grip.x,pose.grip.y,pose.size,pose.size,pose.rotation,pose.originX,pose.originY,false,pose.flipY);
  const handDraws:{image:HTMLCanvasElement;p:ReturnType<typeof heroArmSprite>}[]=[];
  for(let i=0;i<2;i++){
- if(!connectedArmVisible(hero,i))continue;
- const shoulder=hero==='tank'&&skin?tankOutfitShoulder(0,0,i):{x:i===0?8:-9,y:5},target=i===0?pose.grip:hero==='samurai'||hero==='tank'&&weapon==='hammer'?samuraiSupportHand(pose.grip,pose.rotation):hero==='gunner'&&!dual&&isGunnerWeapon(weapon)?gunnerSupportHand(gunnerWeaponPose(weapon,0,0,0,phase,active)):dual?other.grip:{x:-12,y:21};
+ if(!connectedArmVisible(hero,i)&&!(hero==='gunner'&&!dual||hero==='tank'&&(weapon==='hammer'||isRedesignedTank(skin||''))))continue;
+ const shoulder=hero==='tank'&&skin?tankOutfitShoulder(0,0,i,1,skin):{x:i===0?8:-9,y:5},target=i===0?pose.grip:hero==='samurai'||hero==='tank'&&weapon==='hammer'?samuraiSupportHand(pose.grip,pose.rotation):hero==='gunner'&&!dual&&isGunnerWeapon(weapon)?gunnerSupportHand(gunnerWeaponPose(weapon,0,0,0,phase,active)):dual?other.grip:{x:-12,y:21};
  const resting=i===1&&!dual&&hero!=='samurai'&&hero!=='gunner'&&weapon!=='hammer';
- const p=connectedArmPose(hero,i,shoulder,resting?shoulderGrip(shoulder,Math.PI/2,18):target);
+ const held=resting?shoulderGrip(shoulder,Math.PI/2,18):target;
+ const p=hero==='tank'&&isRedesignedTank(skin||'')?tankArmPose(i,shoulder,held):connectedArmPose(hero,i,shoulder,held);
  if(hero==='tank'&&weapon!=='hammer')sprite(arms[i],p.x,p.y,p.width,p.height,p.rotation,p.originX,p.originY);else handDraws.push({image:arms[i],p});
 
  }
  if(hero!=='ninja')sprite(equipment,pose.grip.x,pose.grip.y,pose.size,pose.size,pose.rotation,pose.originX,pose.originY,false,pose.flipY);
  for(const {image,p} of handDraws)sprite(image,p.x,p.y,p.width,p.height,p.rotation,p.originX,p.originY);
+ // Long-gun sleeves pass behind the receiver; only glove ends wrap over grips.
+ if(hero==='gunner'&&!dual||hero==='tank'&&weapon==='hammer'&&isRedesignedTank(skin||'')){
+  sprite(equipment,pose.grip.x,pose.grip.y,pose.size,pose.size,pose.rotation,pose.originX,pose.originY,false,pose.flipY);
+  for(const {image,p} of handDraws){
+   g.save();g.translate(p.x,p.y);g.rotate(p.rotation);
+   g.beginPath();g.rect(-p.width*p.originX,p.height*(.76-p.originY),p.width,p.height*.24);g.clip();
+   g.drawImage(image,-p.width*p.originX,-p.height*p.originY,p.width,p.height);g.restore();
+  }
+ }
 
  g.restore();fitPreview(staging,canvas);canvas.dataset.ready='true';
  };draw();

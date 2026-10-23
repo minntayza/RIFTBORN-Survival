@@ -1,0 +1,11 @@
+import {tankArmPose,redesignedTankCanvas,redesignedTankArm,tankRig,registerTankRigAtlas,TANK_RIG_ATLAS} from '../src/tank-redesign';
+import {rememberImageSource} from '../src/texture-cache';
+import {connectedArmPose} from '../src/connected-arms';
+const atlas=new Image();atlas.src=TANK_RIG_ATLAS;await atlas.decode();registerTankRigAtlas(atlas);
+let moving=true;document.querySelector('#motion')!.addEventListener('click',e=>{moving=!moving;(e.target as HTMLElement).textContent=moving?'Pause animation':'Play animation';});
+for(const name of ['royal','forge','polar']){const url=`/assets/cosmetics/tank-v3/${name}.png`,image=new Image();image.src=url;await image.decode();rememberImageSource(image,url);const card=document.createElement('article'),canvas=document.createElement('canvas');canvas.width=canvas.height=512;card.innerHTML=`<h2>${name}</h2>`;card.append(canvas);document.querySelector('main')!.append(card);const frames=Array.from({length:24},(_,i)=>redesignedTankCanvas(image,i+1,false,512)),arms=[redesignedTankArm(image,0),redesignedTankArm(image,1)],rig=tankRig(url),g=canvas.getContext('2d')!;
+ const exported=document.createElement('textarea');exported.id=`${name}-export`;exported.hidden=true;exported.textContent=redesignedTankCanvas(image,0,true,1024).toDataURL();card.append(exported);
+ const hash=(frame:HTMLCanvasElement,y:number,height:number)=>{const pixels=frame.getContext('2d')!.getImageData(0,y,512,height).data;let sum=0;for(const n of pixels)sum=(Math.imul(sum,31)+n)|0;return sum;};
+ const steady=new Set(frames.map(c=>hash(c,0,300))).size===1,walking=new Set(frames.map(c=>hash(c,340,172))).size>1;const result=document.createElement('p');result.textContent=`${steady&&walking?'PASS':'FAIL'} · Stable head / animated legs`;card.append(result);
+ function render(ms:number){g.clearRect(0,0,512,512);g.drawImage(frames[moving?Math.floor(ms/100)%24:0],0,0);g.save();g.scale(4,4);for(let i=0;i<2;i++){const [x,y]=rig.arms[i].pivot,a=(i===0?1:-1)*.15+(moving?Math.sin(ms/650+i)*.3:0),target={x:x+Math.sin(a)*34,y:y+Math.cos(a)*34},p=tankArmPose(i,{x,y},target);g.save();g.translate(p.x,p.y);g.rotate(p.rotation);g.drawImage(arms[i],-p.width*p.originX,-p.height*p.originY,p.width,p.height);g.restore();}g.restore();requestAnimationFrame(render);}requestAnimationFrame(render);
+}
