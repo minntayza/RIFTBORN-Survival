@@ -34,3 +34,12 @@ document.addEventListener('visibilitychange', () => {
 render();
 document.body.append(toggle);
 if (enabled) void track.play().catch(() => {});
+
+let musicScene='menu',musicFade=0;
+/** Reuse the existing track and mute choice; only blend its level between scenes. */
+export function setMusicScene(scene:'menu'|'camp'|'siege'){
+ if(scene===musicScene)return;musicScene=scene;cancelAnimationFrame(musicFade);
+ const start=track.volume,target=scene==='camp'?.2:scene==='siege'?.28:.25,born=performance.now();
+ const blend=(now:number)=>{const t=Math.min(1,(now-born)/600);track.volume=start+(target-start)*t;if(t<1)musicFade=requestAnimationFrame(blend);};
+ musicFade=requestAnimationFrame(blend);
+}

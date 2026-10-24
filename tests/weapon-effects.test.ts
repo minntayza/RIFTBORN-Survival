@@ -11,3 +11,16 @@ test('shotgun recoil is stronger than SMG and shields bash forward',()=>{const g
 
 test('melee only hits the visible sweep, not the old broad range',()=>{assert.equal(meleeContact('katana',0,0,0,{x:105,y:0},5),false);assert.equal(meleeContact('katana',0,0,0,{x:50,y:15},12),true);assert.equal(meleeContact('katana',0,0,0,{x:-55,y:0},12),false);});
 test('reach upgrades extend the same visual blade used by hit detection',()=>{const p=weaponPose('naginata',0,0,0,.55,true,0,false,false,1.5);assert.ok(p.size>WEAPON_EFFECTS.naginata.size);assert.equal(meleeContact('naginata',0,0,0,p.tip,2,0,1.5),true);});
+
+test('shorter Samurai blades keep grips and width while reducing contact reach',async()=>{
+ const {SAMURAI_WEAPON_ART,samuraiWeaponMetrics,samuraiWeaponPortrait}=await import('../src/samurai-weapons');
+ for(const [id,range] of [['nodachi',124],['cursed',112],['naginata',152]] as const){
+  assert.equal(WEAPONS[id].range,range);
+  const art=SAMURAI_WEAPON_ART[id],m=samuraiWeaponMetrics(id);
+  assert.equal(m.grip.x,art.origin.x-64);
+  const originalLength=-(art.sourceTip.y-art.sourceGrip.y)*art.height/art.rect[3];
+  assert.ok(Math.abs(m.tip.x-m.grip.x-originalLength*.8)<1e-8);
+  assert.ok(samuraiWeaponPortrait(id).includes('height="92.80000000000001"')||samuraiWeaponPortrait(id).includes('height="92.8"'));
+  for(const aim of [0,Math.PI]){const p=weaponPose(id,0,0,aim,.55,true,0,false,false,1,1,'samurai');assert.equal(meleeContact(id,0,0,aim,p.tip,2,0,1,1,'samurai'),true);const distant={x:p.grip.x+(p.tip.x-p.grip.x)*1.6,y:p.grip.y+(p.tip.y-p.grip.y)*1.6};assert.equal(meleeContact(id,0,0,aim,distant,1,0,1,1,'samurai'),false);}
+ }
+});

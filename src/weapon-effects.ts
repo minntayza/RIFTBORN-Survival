@@ -1,7 +1,7 @@
 import {pairedGrip,shoulderGrip} from './hero-arm';
 import {ninjaForwardArm} from './ninja-rig';
 import {isTankWeapon,tankWeaponMetrics} from './tank-weapons';
-import {isSamuraiWeapon,samuraiWeaponMetrics} from './samurai-weapons';
+import {isSamuraiWeapon,samuraiWeaponMetrics,SAMURAI_WEAPON_LENGTH} from './samurai-weapons';
 import {samuraiSwing} from './samurai-motion';
 import {ninjaWeaponSwing,ninjaRecovery} from './ninja-arm';
 import type {WeaponId} from './config';
@@ -46,7 +46,8 @@ export function weaponPose(id:WeaponId,x:number,y:number,aim:number,phase:number
  const samurai=articulated==='samurai'&&isSamuraiWeapon(id)?samuraiWeaponMetrics(id):undefined;
  const tank=articulated==='tank'&&isTankWeapon(id)?tankWeaponMetrics(id):undefined;
  const gripPoint=tank?.grip??samurai?.grip??(articulated==='samurai'?{x:g.grip.x+4,y:g.grip.y}:g.grip);
- const tipPoint=tank?.tip??samurai?.tip??(articulated&&id==='kama'?{x:-3,y:-43}:g.tip);
+ const defaultTip=isSamuraiWeapon(id)?{x:gripPoint.x+(g.tip.x-gripPoint.x)*SAMURAI_WEAPON_LENGTH,y:g.tip.y}:g.tip;
+ const tipPoint=tank?.tip??samurai?.tip??(articulated&&id==='kama'?{x:-3,y:-43}:defaultTip);
  const thickness=articulated==='samurai'?size/reach:size;
  const local={x:(tipPoint.x-gripPoint.x)*size/128,y:(tipPoint.y-gripPoint.y)*thickness/128*samuraiFacing};
  const tip={x:grip.x+Math.cos(rotation)*local.x-Math.sin(rotation)*local.y,y:grip.y+Math.sin(rotation)*local.x+Math.cos(rotation)*local.y};

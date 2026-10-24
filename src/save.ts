@@ -86,7 +86,7 @@ export function storeSave(s:Save){try{
  // Keep a separately recoverable last-known-good copy. Never rotate corrupt data.
  if(unpackProgress(old))localStorage.setItem(PROGRESS_KEY+'.backup',old!);
  else localStorage.setItem(PROGRESS_KEY+'.backup',next);
- localStorage.setItem(PROGRESS_KEY,next);return true;
+ localStorage.setItem(PROGRESS_KEY,next);if(typeof window!=='undefined')window.dispatchEvent(new Event('zls-progress-saved'));return true;
  }catch{return false;}}
 export function purchase(s: Save, kind: 'heroes' | 'weapons' | 'permanent', id: string): boolean { let cost = 0; if (kind === 'heroes') {
     if (!Object.hasOwn(HEROES, id) || s.heroes.includes(id as HeroId))

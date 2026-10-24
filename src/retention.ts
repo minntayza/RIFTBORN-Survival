@@ -3,7 +3,7 @@ export type RunMode='endless'|'short'|'daily';
 export type BuildId='assault'|'mobility'|'guard';
 export type TechniqueId='standard'|'swift'|'fortified';
 export type BossConfig = { type: 'commander' | 'boss'; faction: 'zombie' | 'robot' };
-export type RunOptions={mode:RunMode;build:BuildId;technique:TechniqueId;seed?:number;date?:string;hero?:HeroId;weapon?:WeaponId;dailyBosses?:{wave5:BossConfig;wave10:BossConfig}};
+export type RunOptions={practice?:boolean;mode:RunMode;build:BuildId;technique:TechniqueId;seed?:number;date?:string;hero?:HeroId;weapon?:WeaponId;dailyBosses?:{wave5:BossConfig;wave10:BossConfig}};
 export const BUILDS=[
  {id:'assault' as const,name:'Assault',icon:'⚔',description:'+10% damage. Build piercing, critical hits, and area attacks.'},
  {id:'mobility' as const,name:'Mobility',icon:'↗',description:'+8% speed and 10% faster abilities. Build movement and technique.'},

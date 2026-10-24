@@ -1,5 +1,6 @@
 import {imageSourceUrl} from './texture-cache';
 export const SAMURAI_WEAPONS_ATLAS={key:'samurai-weapons-v1',url:'/assets/characters/samurai-weapons-v1.webp'};
+export const SAMURAI_WEAPON_LENGTH=.8;
 export const SAMURAI_WEAPONS=['nodachi','cursed','naginata'] as const;
 export type SamuraiWeapon=typeof SAMURAI_WEAPONS[number];
 export const isSamuraiWeapon=(id:string):id is SamuraiWeapon=>(SAMURAI_WEAPONS as readonly string[]).includes(id);
@@ -16,14 +17,14 @@ const cosmeticWeaponArt=(imageUrl:string,id:SamuraiWeapon)=>{
 /** Local contact coordinates come from the same source anchors used to draw the sprite. */
 export function samuraiWeaponMetrics(id:SamuraiWeapon){
  const a=SAMURAI_WEAPON_ART[id],dx=(a.sourceTip.x-a.sourceGrip.x)*a.width/a.rect[2],dy=(a.sourceTip.y-a.sourceGrip.y)*a.height/a.rect[3];
- return {grip:{x:a.origin.x-64,y:a.origin.y-64},tip:{x:a.origin.x-dy-64,y:a.origin.y+dx-64}};
+ return {grip:{x:a.origin.x-64,y:a.origin.y-64},tip:{x:a.origin.x-dy*SAMURAI_WEAPON_LENGTH-64,y:a.origin.y+dx*.82-64}};
 }
 export function samuraiWeaponCanvas(image:HTMLImageElement,id:SamuraiWeapon,resolution=512){
  const a=cosmeticWeaponArt(imageSourceUrl(image),id),[x,y,w,h]=a.rect,c=document.createElement('canvas');c.width=c.height=resolution;const g=c.getContext('2d')!;g.scale(resolution/128,resolution/128);g.imageSmoothingQuality='high';
- g.translate(a.origin.x,a.origin.y);g.rotate(Math.PI/2);
+ g.translate(a.origin.x,a.origin.y);g.rotate(Math.PI/2);g.scale(.82,SAMURAI_WEAPON_LENGTH);
  g.drawImage(image,x,y,w,h,-(a.sourceGrip.x-x)*a.width/w,-(a.sourceGrip.y-y)*a.height/h,a.width,a.height);return c;
 }
 export function samuraiWeaponPortrait(id:SamuraiWeapon,url=SAMURAI_WEAPONS_ATLAS.url){
- const a=cosmeticWeaponArt(url,id),[x,y,w,h]=a.rect,drawHeight=116,drawWidth=drawHeight*a.width/a.height;
- return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" role="img" aria-label="${id==='nodachi'?'Nodachi':id==='cursed'?'Cursed Blade':'Naginata'} Samurai weapon illustration"><svg x="${64-drawWidth/2}" y="6" width="${drawWidth}" height="${drawHeight}" viewBox="${x} ${y} ${w} ${h}" preserveAspectRatio="none" overflow="hidden"><image href="${url}" width="1536" height="1024"/></svg></svg>`;
+ const a=cosmeticWeaponArt(url,id),[x,y,w,h]=a.rect,drawHeight=116*SAMURAI_WEAPON_LENGTH,drawWidth=116*a.width/a.height*.82;
+ return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" role="img" aria-label="${id==='nodachi'?'Nodachi':id==='cursed'?'Cursed Blade':'Naginata'} Samurai weapon illustration"><svg x="${64-drawWidth/2}" y="${(128-drawHeight)/2}" width="${drawWidth}" height="${drawHeight}" viewBox="${x} ${y} ${w} ${h}" preserveAspectRatio="none" overflow="hidden"><image href="${url}" width="1536" height="1024"/></svg></svg>`;
 }

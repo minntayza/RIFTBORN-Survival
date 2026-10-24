@@ -63,6 +63,16 @@ type EnemyVisual = {
     max: number;
 };
 export class ArenaVisuals {
+    private campDepths=new WeakMap<Phaser.GameObjects.Image|Phaser.GameObjects.Graphics,{base:number;applied:number}>();
+    /** Sort a complete rig from its ground position, never from individual hands. */
+    campLayer(y:number,campY:number){
+        const offset=y>=campY+60?0:-1.8;
+        for(const part of [this.hero,this.weapon,this.offhand,...this.ninjaBones,...this.cuteArms,...this.weaponEchoes,this.ninjaArmFx,this.attackFx,this.accents]){
+            const prior=this.campDepths.get(part),base=prior&&part.depth===prior.applied?prior.base:part.depth;
+            part.setDepth(base+offset);this.campDepths.set(part,{base,applied:base+offset});
+        }
+        this.zawgyiRig?.campLayer(offset);
+    }
     zawgyiLift=0;
     zawgyiSlam=-1;
     private zawgyiRig?:ZawgyiRig;
@@ -601,7 +611,8 @@ export class ArenaVisuals {
                 const texture=`skill-${robot?'robot':'zombie'}-${e.type}-${e.skillAction}-${f}${small?'-small':''}`;this.prepareTexture(texture);
                 sprite.setTexture(texture).setRotation(0).setFlipX((e.type==='boss'||e.type==='commander')?(e.targetX??x)<e.x:x<e.x);
             }
-            sprite.setDepth(2+Math.atan((e.y+e.r)/1000)*.1);
+            const camp=(this.scene as Phaser.Scene&{camp?:{y:number}}).camp;
+            sprite.setDepth((camp&&e.y>=camp.y+60?2.7:2)+Math.atan((e.y+e.r)/1000)*.1);
             if(e.type==='rifle'&&!robot){
                 let hands=this.rifleHands.get(e);if(!hands){hands=this.scene.add.image(e.x,e.y,'enemy-rifle-hands');this.rifleHands.set(e,hands);}
                 const handPose=rifleHandPose(e.shotKick??0,flip?-1:1);
