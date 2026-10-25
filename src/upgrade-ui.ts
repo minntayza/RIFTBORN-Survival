@@ -1,17 +1,26 @@
+import {zawgyiCardArt} from './zawgyi-card-art';
 import {artImage,heroFigureImage} from './art';
 import {upgradeRole,UPGRADES,type Upgrade} from './upgrades';
 import {CARD_EVOLUTIONS} from './card-evolutions';
 import type {HeroId,WeaponId} from './config';
 const UPGRADE_ICONS:Record<string,string>={health:'\u2665',speed:'\u2197',crit:'\u2726',magnet:'\u25ce',regen:'\u271a',ward:'\u25c7',fire:'\u2600',orbit:'\u2737',damage:'\u2694',wide:'\u25d4',double:'\u2161',cooldown:'\u27a4',trail:'\u25b0',clone:'\u2667',smoke:'\u25c9','dragon-slash':'\u2668',range:'\u2194',bleed:'\u2022',counter:'\u25c8',wind:'\u224b',magazine:'\u25a3',pierce:'\u2192',ricochet:'\u2311',explosive:'\u2739',reload:'\u21bb',stamina:'\u25a3',block:'\u25d2',reflect:'\u21c4',spikes:'\u2737',rush:'\u25c9',heal:'\u271a'};
 const FULL_CARD_IDS:Partial<Record<HeroId,readonly string[]>>={
+ zawgyi:['twindatlone','lotusflame','earthshaker','elixir','celestial'],
  ninja:['health','speed','crit','magnet','regen','ward','fire','orbit','damage','wide','double','cooldown','trail','clone','smoke'],
  samurai:['health','speed','crit','magnet','regen','ward','fire','orbit','damage','cooldown','range','bleed','counter','wind','dragon-slash'],
  gunner:['health','speed','crit','magnet','regen','ward','fire','orbit','damage','cooldown','magazine','pierce','ricochet','explosive','reload'],
  tank:['health','speed','crit','magnet','regen','ward','fire','orbit','damage','cooldown','stamina','block','reflect','spikes','rush']
 };
 const upgradeIcon=(u:Upgrade)=>UPGRADE_ICONS[u.evolves||u.id]||'\u2726';
-export function upgradeVisual(u:Upgrade,hero:HeroId,weapon:WeaponId){
+export function upgradeVisual(u:Upgrade,hero:HeroId,weapon:WeaponId):string{
  const baseId=u.evolves||u.id;
+ if(u.evolves){
+  // Evolutions share the regular cards' full illustration treatment, never the tiny actor fallback.
+  const specialArt:Record<string,string>={celestial:'zawgyi-ruby-sun-evolution-v1.png',twindatlone:'zawgyi-royal-evolution-v2.png',lotusflame:'zawgyi-azure-evolution-v1.png',orbit:'phantom-blades-v2.png'};
+  const art=specialArt[baseId]?`<div class="upgrade-demo upgrade-concept-demo" role="img" aria-label="${u.name} evolution artwork"><img class="upgrade-reference-art" src="/assets/card-concepts/${specialArt[baseId]}" alt=""/></div>`:upgradeVisual({...u,id:baseId,evolves:undefined},hero,weapon);
+  return art.replace('upgrade-concept-demo','upgrade-concept-demo evolution-illustration').replace('</div>','<span class="evolution-art-badge">✦ EVOLUTION</span></div>');
+ }
+ const mysticArt=zawgyiCardArt(baseId);if(mysticArt)return `<div class="upgrade-demo upgrade-concept-demo" role="img" aria-label="${u.name} effect artwork">${mysticArt}</div>`;
  if(!u.evolves&&baseId==='wide')return `<div class="upgrade-demo upgrade-concept-demo" role="img" aria-label="${u.name} effect artwork"><img class="upgrade-reference-art" src="/assets/card-concepts/crescent-cut-v1.png" alt=""/></div>`;
  if(baseId==='trail')return `<div class="upgrade-demo upgrade-concept-demo" role="img" aria-label="${u.name} Moon Blossom dash artwork"><img class="upgrade-reference-art" src="/assets/card-concepts/moon-blossom-dash.svg" alt=""/></div>`;
  const concepts:Record<string,[number,number]>={damage:[160,80],health:[590,80],double:[1010,80],orbit:[160,536],speed:[590,536],regen:[1010,536]};
@@ -24,12 +33,12 @@ export function upgradeVisual(u:Upgrade,hero:HeroId,weapon:WeaponId){
 }
 export function upgradeValues(u:Upgrade,level:number){
  if(u.evolves)return {before:'MAXED',after:'EVOLVE'};
- const values:Record<string,(n:number)=>string>={smoke:n=>`BLINDING SMOKE ${n}`, 'dragon-slash':n=>`${n*25}% FIRE DAMAGE`,health:n=>`+${Math.round((1.15**n-1)*100)}% HP`,speed:n=>`+${n*8}% speed`,crit:n=>`${5+n*7}% critical`,magnet:n=>`+${n*30}% reach`,regen:n=>`${n} HP/sec`,damage:n=>`+${n*12}% damage`,cooldown:n=>`−${n*15}% cooldown`,range:n=>`+${n*25}% reach`,wide:n=>`+${n*25}% arc`,magazine:n=>`+${n*4} rounds`,pierce:n=>`${n} extra targets`,reload:n=>`−${n*20}% reload`,stamina:n=>`+${n*40}% stamina`,spikes:n=>`+${n*30}% bash`,bleed:n=>`${n*5} bleed/sec`,counter:n=>`+${(n*.3).toFixed(1)}s counter`,block:n=>`+${n*25}% guard`,rush:n=>`+${n*25}% slam`,fire:n=>`${n*9} burn/sec`,orbit:n=>`${n*12} hit damage`};
+ const values:Record<string,(n:number)=>string>={twindatlone:n=>n?`+${15+15*n}% blast`:'NO COMPANION',lotusflame:n=>`${n?8+8*n:0} damage/sec`,earthshaker:n=>`${n?15+15*n:0}% echo damage`,elixir:n=>`${n?2+n:0}% HP / 30 XP`,celestial:n=>`+${n?20+20*n:0}% staff hit`,smoke:n=>`BLINDING SMOKE ${n}`, 'dragon-slash':n=>`${n*25}% FIRE DAMAGE`,health:n=>`+${Math.round((1.15**n-1)*100)}% HP`,speed:n=>`+${n*8}% speed`,crit:n=>`${5+n*7}% critical`,magnet:n=>`+${n*30}% reach`,regen:n=>`${n} HP/sec`,damage:n=>`+${n*12}% damage`,cooldown:n=>`−${n*15}% cooldown`,range:n=>`+${n*25}% reach`,wide:n=>`+${n*25}% arc`,magazine:n=>`+${n*4} rounds`,pierce:n=>`${n} extra targets`,reload:n=>`−${n*20}% reload`,stamina:n=>`+${n*40}% stamina`,spikes:n=>`+${n*30}% bash`,bleed:n=>`${n*5} bleed/sec`,counter:n=>`+${(n*.3).toFixed(1)}s counter`,block:n=>`+${n*25}% guard`,rush:n=>`+${n*25}% slam`,fire:n=>`${n*9} burn/sec`,orbit:n=>`${n*12} hit damage`};
  const value=values[u.id];return value?{before:value(level),after:value(level+1)}:{before:level?'ACTIVE':'NOT ACTIVE',after:({heal:'+30 HP',ward:'BLOCK 1 HIT',double:'SECOND SLASH',trail:'DASH DAMAGE',clone:'SHADOW ALLY',wind:'PIERCING WAVE',ricochet:'BOUNCING SHOT',explosive:'EXPLOSIVE FINISH',reflect:'REFLECT SHOTS'} as Record<string,string>)[u.id]||'UNLOCKED'};
 }
 export function cardBenefit(u:Upgrade){
  const brief:Record<string,string>={health:'Survive more hits.',speed:'Move out of danger faster.',crit:'Land more powerful critical hits.',magnet:'Collect drops from farther away.',regen:'Recover health while fighting.',ward:'Block the first hit each wave.',fire:'Burn enemies near you.',orbit:'A kunai circles and cuts enemies.',damage:'Every attack hits harder.',wide:'Cut a wider group in front.',double:'Attack again with an echo.',cooldown:'Use your ability more often.',trail:'Hurt enemies along your dash.',clone:'Kills summon a fighting shadow.',smoke:'Drop a bomb to escape and daze nearby enemies.', 'dragon-slash':'Dash forward with a blazing slash.',range:'Hit enemies farther away.',bleed:'Wounds keep dealing damage.',counter:'More time to counter a hit.',wind:'Send a crescent through crowds.',magazine:'Fire longer before reloading.',pierce:'Shoot through more enemies.',ricochet:'Shots bounce to another enemy.',explosive:'The last round explodes.',reload:'Get back to shooting sooner.',stamina:'Keep your shield up longer.',block:'Protect a wider angle.',reflect:'Send enemy shots back.',spikes:'Make shield bashes stronger.',rush:'Make Ground Slam stronger.',heal:'Recover 30 health now.'};
- if(u.evolves){const evolved:Record<string,string>={damage:'Every fifth kill bursts outward.',wide:'Every third attack cuts all around.',double:'Add a third shadow slash.',orbit:'Two kunai orbit around you.',fire:'Burning kills leave fire behind.',magnet:'Pull in drops every 5 seconds.',ward:'Block three hits each wave.',wind:'Launch two piercing crescents.',ricochet:'Shots bounce twice.',speed:'Moving charges a speed burst.',regen:'Elite kills boost recovery.',bleed:'Bleeding kills heal you.',reload:'Reloading grants a speed burst.',spikes:'Every third bash makes a shockwave.',explosive:'Final-round blasts grow wider.'};return evolved[u.evolves]||u.description.split(';')[0];}
+ if(u.evolves){const evolved:Record<string,string>={damage:'Every fifth kill bursts outward.',wide:'Every third attack cuts all around.',double:'Add a third shadow slash.',orbit:'Two kunai orbit around you.',fire:'Burning kills leave fire behind.',magnet:'Pull in drops every 5 seconds.',ward:'Block three hits each wave.',wind:'Launch two piercing crescents.',ricochet:'Shots bounce twice.',speed:'Moving charges a speed burst.',regen:'Elite kills boost recovery.',bleed:'Bleeding kills heal you.',reload:'Reloading grants a speed burst.',spikes:'Every third bash makes a shockwave.',explosive:'Enemies caught in the blast trigger smaller explosions.'};return evolved[u.evolves]||u.description.split(';')[0];}
  return brief[u.id]||u.description;
 }
 const EXPLAINED_CARDS:Record<string,{title:string;benefit:string;scene:string;description:string}>={
@@ -63,7 +72,7 @@ export function visualUpgradeCard(u:Upgrade,index:number,_hero:HeroId,_weapon:We
  const maxStars=Number.isFinite(u.max)?u.max:5;
  const stars=Array.from({length:5},(_,i)=>`<span class="${i<level?'filled':''} ${i>=u.max?'locked':''}" aria-hidden="true">\u2605</span>`).join('');
  const tag=preview?'article':'button',action=preview?'':` data-action="upgrade:${index}"`;
- const hasDesignedArt=!u.evolves&&(FULL_CARD_IDS[_hero]||[]).includes(u.id);
+ const hasDesignedArt=!!u.evolves||(FULL_CARD_IDS[_hero]||[]).includes(u.id);
  return `<${tag} class="upgrade choice-card ${hasDesignedArt?'levelup-designed-card':''} ${preview?'preview-card':''} ${u.evolves?'evolution-card':''}" data-card-role="${role}"${action} aria-label="${preview?'Preview':'Choose'} ${u.name}: ${cardBenefit(u)}. ${v.after}. ${level} of ${maxStars} levels">
   <span class="choice-top"><small>${category}</small>${level===0?'<b class="choice-new">NEW</b>':`<kbd>${index+1}</kbd>`}</span>
   <h3>${u.name}</h3>
@@ -79,7 +88,7 @@ export function evolutionProgress(u:Upgrade,level:number){
  if(u.evolves)return '✦ Evolution ready';
  if(!CARD_EVOLUTIONS[u.id])return Number.isFinite(u.max)?`Upgrade ${Math.min(level+1,u.max)} of ${u.max}`:'Instant recovery';
  const remaining=u.max-level-1,name=CARD_EVOLUTIONS[u.id].name;
- return remaining===0?`✦ ${name} · eligible from wave 11`:remaining===1?`1 level to ${name} · wave 11+`:`${remaining} levels to ${name} · wave 11+`;
+ return remaining===0?`✦ ${name} · ready at max level`:remaining===1?`1 level to ${name}`:`${remaining} levels to ${name}`;
 }
 export function upgradeBuildHint(u:Upgrade,levels:Record<string,number>){
  const pairs:Record<string,string[]>={double:['wide','damage'],wide:['double','orbit'],orbit:['damage','fire'],fire:['rush','orbit'],pierce:['ricochet','damage'],ricochet:['pierce'],explosive:['reload'],reload:['explosive','magazine'],magazine:['reload'],wind:['bleed','range'],bleed:['wind'],counter:['cooldown'],reflect:['block','stamina'],block:['reflect'],spikes:['stamina'],rush:['fire'],trail:['cooldown','speed'],clone:['double']};

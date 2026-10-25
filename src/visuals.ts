@@ -63,6 +63,7 @@ type EnemyVisual = {
     max: number;
 };
 export class ArenaVisuals {
+    get heroDepth(){return this.hero.depth;}
     private campDepths=new WeakMap<Phaser.GameObjects.Image|Phaser.GameObjects.Graphics,{base:number;applied:number}>();
     /** Sort a complete rig from its ground position, never from individual hands. */
     campLayer(y:number,campY:number){
@@ -73,6 +74,8 @@ export class ArenaVisuals {
         }
         this.zawgyiRig?.campLayer(offset);
     }
+    zawgyiRuby=false;
+    zawgyiCharges=0;
     zawgyiLift=0;
     zawgyiSlam=-1;
     private zawgyiRig?:ZawgyiRig;
@@ -470,7 +473,7 @@ export class ArenaVisuals {
         slot = { image: this.scene.add.image(0, 0, key).setDepth(1), size, expires: 0 };
         this.ghosts.push(slot);
     } this.prepareTexture(key);slot.size=size;slot.expires = time + .55; slot.image.setTexture(key).setPosition(e.x, e.y).setRotation(.7).setDisplaySize(size,size).setAlpha(.7).setTint(0x778b81).setVisible(true); }
-    render(enemies: EnemyVisual[], hero: HeroId, weapon: WeaponId, x: number, y: number, angle: number, time: number, swing: number, dash: number, invuln: number, blocking: boolean, counter: number, ammo: number, sequence=0,reach=1,arcScale=1,gunnerState?:GunnerState,tankMotion?:TankMotion,survivorMotion?:{brace:boolean;gesture:number;sweep?:number}) {
+    render(enemies: EnemyVisual[], hero: HeroId, weapon: WeaponId, x: number, y: number, angle: number, time: number, swing: number, dash: number, invuln: number, blocking: boolean, counter: number, ammo: number, sequence=0,reach=1,arcScale=1,gunnerState?:GunnerState,tankMotion?:TankMotion,survivorMotion?:{brace:boolean;gesture:number;sweep?:number;weaponTurn?:number;skillAim?:number;bodyLift?:number;dashTrail?:boolean;trailColor?:number}) {
         this.renderSmoke(time);
         this.renderCriticalHits(time);
         const moved = Math.hypot(x - this.lastX, y - this.lastY) > .2, frame = moved ? 1 + Math.floor(time * 10) % 2 : 0;
@@ -519,6 +522,11 @@ export class ArenaVisuals {
 
             }
         }
+        if(hero==='samurai'&&survivorMotion?.bodyLift){
+            const lift=survivorMotion.bodyLift;
+            for(const image of [this.hero,this.weapon,this.offhand,...this.ninjaBones,...this.cuteArms])if(image.visible)image.setY(image.y+lift);
+            pose={...pose,grip:{...pose.grip,y:pose.grip.y+lift},tip:{...pose.tip,y:pose.tip.y+lift}};
+        }
         if(hero==='tank'&&tankMotion?.lean){
             const lean=tankMotion.lean;
             for(const image of [this.hero,this.weapon,...this.ninjaBones])if(image.visible){const p=tankMotionPoint(image,x,y,lean);image.setPosition(p.x,p.y).setRotation(image.rotation+lean);}
@@ -546,7 +554,7 @@ export class ArenaVisuals {
             else if(weapon==='kama'){stroke(this.tipTrail,3);if(hero!=='ninja'){g.lineStyle(2,color,.7);g.beginPath();g.arc(pose.tip.x,pose.tip.y,11,pose.rotation-.5,pose.rotation+2);g.strokePath();}}
             else{stroke(this.tipTrail,weapon==='nodachi'?5:weapon==='naginata'?4:2);if(weapon==='dual')stroke(this.secondTrail,2);}
         }
-        if (dash > 0 && time - this.lastGhost > .045 && !(hero==='ninja'&&window.matchMedia('(prefers-reduced-motion: reduce)').matches)) {
+        if ((dash > 0||hero==='samurai'&&survivorMotion?.dashTrail) && time - this.lastGhost > .045 && !window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
             this.lastGhost = time;
             let s = this.afterimages.find(s => s.expires <= time);
             if (!s) {
@@ -554,9 +562,9 @@ export class ArenaVisuals {
                 this.afterimages.push(s);
             }
             s.expires = time + .22;
-            s.image.setTexture(hero==='tank'?'cute-tank-full':hero==='gunner'?'cute-gunner-full':hero==='samurai'?'cute-samurai-full':hero==='ninja'?'cute-ninja-full':`hero-${hero}-${frame}`).setPosition(x, y).setDisplaySize(78, 78).setRotation(articulatedHero?0:angle).setFlipX(hero==='samurai'&&!isRedesignedSurvivor(imageSourceUrl(this.scene.textures.get(SAMURAI_ATLAS.key).getSourceImage() as HTMLImageElement))?samuraiFlipX(angle):(hero==='ninja'||hero==='gunner'||hero==='tank'||hero==='samurai')&&Math.cos(angle)<0).setTint(HEROES[hero].color).setVisible(true);
+            s.image.setTexture(hero==='tank'?'cute-tank-full':hero==='gunner'?'cute-gunner-full':hero==='samurai'?'cute-samurai-full':hero==='ninja'?'cute-ninja-full':`hero-${hero}-${frame}`).setPosition(x, y).setDisplaySize(78, 78).setRotation(articulatedHero?0:angle).setFlipX(hero==='samurai'&&!isRedesignedSurvivor(imageSourceUrl(this.scene.textures.get(SAMURAI_ATLAS.key).getSourceImage() as HTMLImageElement))?samuraiFlipX(angle):(hero==='ninja'||hero==='gunner'||hero==='tank'||hero==='samurai')&&Math.cos(angle)<0).setTint(hero==='samurai'?(survivorMotion?.trailColor??HEROES[hero].color):HEROES[hero].color).setVisible(true);
         }
-        }else{this.hero.setVisible(false);this.weapon.setVisible(false);this.offhand.setVisible(false);this.cuteArms.forEach(a=>a.setVisible(false));this.ninjaBones.forEach(a=>a.setVisible(false));this.attackFx.clear();(this.zawgyiRig??=new ZawgyiRig(this.scene)).render(x,y,angle,time,moved,swing,sequence,this.zawgyiLift,invuln,this.zawgyiSlam);}
+        }else{this.hero.setVisible(false);this.weapon.setVisible(false);this.offhand.setVisible(false);this.cuteArms.forEach(a=>a.setVisible(false));this.ninjaBones.forEach(a=>a.setVisible(false));this.attackFx.clear();(this.zawgyiRig??=new ZawgyiRig(this.scene)).render(x,y,angle,time,moved,swing,sequence,this.zawgyiLift,invuln,this.zawgyiSlam,this.zawgyiRuby,this.zawgyiCharges);}
         for (const s of this.afterimages) {
             const left = s.expires - time;
             s.image.setVisible(left > 0).setAlpha(Math.max(0, left / .22) * .4);

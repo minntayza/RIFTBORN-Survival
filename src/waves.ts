@@ -23,7 +23,7 @@ export function wavePlan(w: number, random=Math.random, dailyBosses?: { wave5: B
       {basic:38,runner:12,spitter:6,brute:4,armoured:6,rifle:2},
       {basic:44,runner:14,spitter:7,brute:4,armoured:7,rifle:3,elite:1},
       {basic:48,runner:16,spitter:8,brute:5,armoured:8,rifle:4,commander:1},
-      {basic:54,runner:18,spitter:8,brute:5,armoured:9,rifle:5,boss:1}];
+      {basic:54,runner:18,spitter:8,brute:5,armoured:9,rifle:5,commander:1,boss:1}];
     if (dailyBosses && w <= 10) {
         if (w === 5) counts[5] = { basic: 16, runner: 4, spitter: 2, [dailyBosses.wave5.type]: 1 };
         else if (w === 9) counts[9] = { basic: 28, runner: 8, spitter: 4, brute: 3, armoured: 4, rifle: 2 };
@@ -80,8 +80,8 @@ export function wavePlan(w: number, random=Math.random, dailyBosses?: { wave5: B
             out.push({ time: 0, type: 'boss', count: 1, formation: 0 });
     }
     if(w>10){
-        // Extra ordinary packs add crowd pressure without multiplying elite or boss counts.
-        const extra=Math.round(Math.min(180,80+(w-8)*16)*encounterRhythm(w).density);
+        // Smaller supporting packs leave room for the post-wave-10 robot encounters.
+        const extra=Math.round(Math.min(48,20+(w-8)*4)*encounterRhythm(w).density);
         const batches=Math.ceil(extra/8);
         for(let i=0;i<batches;i++){
             const count=Math.min(8,extra-i*8),runners=Math.floor(count/4),time=2+i*37/Math.max(1,batches-1);
@@ -95,3 +95,10 @@ export function wavePlan(w: number, random=Math.random, dailyBosses?: { wave5: B
 }
 export const damageValue = (base: number, multiplier: number, crit: boolean, armour = false) => Math.round(base * multiplier * (crit ? 1.8 : 1) * (armour ? .55 : 1));
 export const cooldownValue = (base: number, rate: number, reduction = 0) => Math.max(.08, base / rate * (1 - Math.min(.75, reduction)));
+
+// Remaining scheduled leaders count too: killing the General before the Commander
+// arrives must not skip the final zombie encounter.
+export function zombieFinaleCleared(bossDefeated:boolean,plan:readonly Spawn[],enemies:readonly {type:EnemyId;active:boolean}[]){
+    const leader=(type:EnemyId)=>type==='boss'||type==='commander'||type==='shooterBoss';
+    return bossDefeated&&!plan.some(pack=>pack.count>0&&leader(pack.type))&&!enemies.some(enemy=>enemy.active&&leader(enemy.type));
+}

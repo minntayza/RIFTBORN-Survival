@@ -1,0 +1,6 @@
+@font-face{font-family:"Riftborn Display";src:url('/assets/fonts/CinzelDecorative-Bold.ttf') format('truetype');font-weight:700;font-style:normal;font-display:swap}
+.rift-wordmark,.home-hub h1.rift-wordmark{display:inline-block;font-family:"Riftborn Display",Georgia,serif!important;font-weight:700!important;letter-spacing:.035em!important;color:#f4d89b;background:linear-gradient(180deg,#fff5d6 10%,#edcc7f 63%,#bd9253 100%);background-clip:text;-webkit-background-clip:text;-webkit-text-fill-color:transparent;filter:drop-shadow(0 2px 0 #302621);text-shadow:none!important;line-height:1.3}
+.home-hub h1.rift-wordmark{font-size:clamp(28px,3vw,46px)!important;margin:0 0 24px!important}
+.dress-header>b>.rift-wordmark{font-size:inherit}
+@media(max-width:560px){.home-hub h1.rift-wordmark{font-size:clamp(24px,6.8vw,36px)!important}}
+@media(prefers-contrast:more){.rift-wordmark,.home-hub h1.rift-wordmark{background:none;-webkit-text-fill-color:currentColor;color:#fff2c6}}

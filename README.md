@@ -1,4 +1,4 @@
-# Zombie Last Stand
+# RIFTBORN
 
 A mobile-first zombie survival roguelite built with **TypeScript, Phaser 3, and Vite**. Fight through growing hordes, combine upgrades, awaken your weapon, and survive as long as you can.
 

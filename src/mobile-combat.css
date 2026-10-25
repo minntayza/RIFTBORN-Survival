@@ -46,3 +46,95 @@ body:has(.combat-hud.is-touch) #touch-controls .touch-stick.engaged{opacity:.85}
 @media(orientation:landscape) and (max-height:500px){body:has(.combat-hud.is-touch){--mobile-floor:20px;--mobile-edge:24px;--mobile-skill:74px;--mobile-rise:57px;--mobile-span:136px}body:has(.combat-hud.is-touch[data-map-view="2"]){--mobile-skill:61px;--mobile-rise:47px;--mobile-span:112px}}
 @media(max-width:360px){.combat-hud.is-touch .combat-health{width:98px}.combat-hud.is-touch .combat-wave{padding:8px 6px}.combat-hud.is-touch .combat-wave b{font-size:12px}}
 @media(prefers-reduced-motion:reduce){.combat-hud.is-touch .zawgyi-skill[class],body:has(.combat-hud.is-touch) #touch-controls .touch-ability[class]{transition:none!important}}
+
+/* Dynamic viewport dimensions follow browser chrome and portrait/landscape rotation. */
+html,body{width:100%;height:100%;margin:0}
+#game{position:fixed;inset:0;width:100%;height:100%;height:100dvh;overflow:hidden}
+#game canvas{display:block}
+#overlay{padding: max(12px,env(safe-area-inset-top)) max(12px,env(safe-area-inset-right)) max(12px,env(safe-area-inset-bottom)) max(12px,env(safe-area-inset-left))}
+#overlay>.panel{max-height:calc(100dvh - max(12px,env(safe-area-inset-top)) - max(12px,env(safe-area-inset-bottom)))}
+@media(orientation:landscape) and (max-height:500px){
+ body:has(.combat-hud.is-touch){--mobile-floor:16px;--mobile-edge:20px}
+ .combat-hud.is-touch .combat-health{height:48px}
+ .combat-hud.is-touch[class] .combat-passive{top:calc(var(--hud-top) + 54px)}
+ .combat-hud.is-touch .combat-map-view{top:var(--hud-top);right:calc(env(safe-area-inset-right) + 60px)}
+ .combat-hud.is-touch .camp-health-hud{right:calc(env(safe-area-inset-right) + 8px);top:calc(var(--hud-top) + 52px);width:114px;padding:5px 8px}
+ .combat-hud.is-touch .camp-health-hud>b{font-size:11px}
+ .combat-hud.is-touch .camp-health-hud small{font-size:8px}
+ body:has(.combat-hud.is-touch) #touch-controls .touch-stick{width:min(var(--stick-size,115px),28dvh)!important;height:min(var(--stick-size,115px),28dvh)!important;left:calc(env(safe-area-inset-left) + 20px)!important}
+ body:has(.combat-hud.is-touch) #touch-controls.right-handed .touch-stick{left:auto!important;right:calc(env(safe-area-inset-right) + 20px)!important}
+ .combat-hud.is-touch .combat-notice,.combat-hud.is-touch.has-boss .combat-notice{top:calc(var(--hud-top) + 92px);max-width:48%}
+}
+@media(orientation:landscape) and (max-height:360px){
+ body:has(.combat-hud.is-touch){--mobile-skill:62px;--mobile-rise:45px;--mobile-span:114px;--mobile-floor:12px}
+ body:has(.combat-hud.is-touch[data-map-view="2"]){--mobile-skill:54px;--mobile-rise:40px;--mobile-span:100px}
+ .combat-hud.is-touch .combat-resource{bottom:6px}
+}
+
+/* Short landscape screens: keep the complete three-card decision above the fold. */
+@media(orientation:landscape) and (max-height:600px){
+ #overlay>.panel.levelup-panel{width:min(1060px,100%);padding:12px 16px!important;max-height:calc(100dvh - max(12px,env(safe-area-inset-top)) - max(12px,env(safe-area-inset-bottom)));overflow-y:auto}
+ .levelup-panel .choice-heading{padding:0 0 8px;flex:none}
+ .levelup-panel .choice-heading>b{font-size:18px}
+ .levelup-panel .choice-heading>small{font-size:10px}
+ .levelup-panel .cards.upgrade-cards{grid-template-columns:repeat(3,minmax(0,1fr))!important;gap:10px!important;margin:10px 0!important;max-height:none;overflow:visible}
+ .levelup-panel .upgrade-cards .choice-card{padding:7px 9px!important;box-shadow:0 3px 0 #0b1923}
+ .levelup-panel .upgrade-cards .choice-card .upgrade-demo{height:clamp(48px,18dvh,108px)!important;width:clamp(48px,18dvh,108px)!important;max-width:100%;align-self:center;aspect-ratio:1!important;flex:none!important;background:transparent}
+ .levelup-panel .choice-card .upgrade-reference-art{object-fit:contain!important}
+ .levelup-panel .upgrade-cards .choice-card h3{font-size:clamp(13px,2vw,17px)!important;line-height:1.15;margin:7px 0 5px!important;min-height:20px!important;max-height:none;overflow:visible}
+ .levelup-panel .upgrade-cards .choice-card .card-benefit{font-size:11px!important;line-height:1.3;margin:0 0 6px!important;max-height:none;display:block}
+ .levelup-panel .upgrade-cards .choice-card .choice-evolution-progress{font-size:9px!important;line-height:1.25;padding:6px 0 0!important;gap:4px}
+ .levelup-panel .reward-progress-pips{gap:4px}
+ .levelup-panel .actions{margin-top:8px;gap:8px;flex-wrap:nowrap}
+ .levelup-panel .actions button{min-height:44px;padding:8px 12px;font-size:11px}
+}
+@media(orientation:landscape) and (max-height:360px){
+ #overlay>.panel.levelup-panel{padding:8px 12px!important}
+ .levelup-panel .choice-heading{padding-bottom:5px}
+ .levelup-panel .choice-heading>b{font-size:16px}
+ .levelup-panel .cards.upgrade-cards{margin:7px 0!important}
+ .levelup-panel .upgrade-cards .choice-card .upgrade-demo{height:46px!important;width:46px!important}
+ .levelup-panel .upgrade-cards .choice-card h3{margin:4px 0!important}
+ .levelup-panel .upgrade-cards .choice-card .card-benefit{font-size:10px!important}
+ .levelup-panel .actions{margin-top:5px}
+}
+.skill-aim-cancel{position:fixed;left:50%;bottom:max(24px,calc(env(safe-area-inset-bottom) + 16px));transform:translateX(-50%);z-index:4;min-height:52px;min-width:110px;padding:12px 20px;border:2px solid #e597a4;border-radius:30px;background:#382633ec;color:#ffe3e8;touch-action:none;box-shadow:0 3px 14px #0006}
+.skill-aim-cancel[hidden]{display:none}
+.skill-aim-cancel:hover{transform:translateX(-50%)}
+.skill-aim-cancel.is-cancel{background:#963e55;border-color:#ffe8ed}
+
+/* Daily mobile HUD: one compact status row, camp beneath the wave, controls at the edges. */
+.camp-mobile-threat,.camp-hit-summary{display:none}
+.camp-pause-quick{display:flex;justify-content:center;gap:10px;margin:12px 0}
+.camp-pause-quick button{min-height:44px}
+.combat-hud.is-touch.is-camp .combat-map-view{display:none}
+.combat-hud.is-touch.is-camp .combat-health{top:var(--hud-top);width:124px;height:49px;gap:6px;padding:5px;border-radius:13px}
+.combat-hud.is-touch.is-camp .combat-portrait{display:block;flex:0 0 28px;width:28px;height:28px;border-width:1px}
+.combat-hud.is-touch.is-camp .combat-health>div{min-width:0}
+.combat-hud.is-touch.is-camp .combat-hp{font-size:11px;white-space:nowrap}
+.combat-hud.is-touch.is-camp .combat-health .combat-xp{margin-right:20px}
+.combat-hud.is-touch.is-camp .combat-wave{width:108px;padding:5px 7px;border-radius:12px;box-shadow:none}
+.combat-hud.is-touch.is-camp .combat-wave>b{font:800 12px system-ui;display:block}
+.combat-hud.is-touch.is-camp .combat-wave>span{display:block;font:700 10px system-ui;margin-top:2px;opacity:.8}
+.combat-hud.is-touch.is-camp .combat-wave .wave-remaining,.combat-hud.is-touch.is-camp .combat-sector{display:none}
+.combat-hud.is-touch.is-camp .camp-health-hud{top:calc(var(--hud-top) + 52px);left:50%;right:auto;transform:translateX(-50%);width:108px;padding:4px 7px;border-radius:9px;background:#10272be6;border:1px solid #bba36566;box-shadow:none;min-height:0}
+.combat-hud.is-touch.is-camp .camp-health-hud>b{font:800 10px system-ui;display:block;text-align:center}
+.combat-hud.is-touch.is-camp .camp-health-hud>div{height:4px;margin:4px 0 0}
+.combat-hud.is-touch.is-camp .camp-health-hud>small,.combat-hud.is-touch.is-camp .camp-wave-hint{display:none}
+.combat-hud.is-touch.is-camp .camp-health-hud.camp-hit{border-color:#ff9c79;background:#49282dee}
+.combat-hud.is-touch.is-camp .camp-hit .camp-hit-summary{display:block;font:800 10px system-ui;text-align:center;color:#ffc9ab;font-style:normal;margin-top:3px}
+.combat-hud.is-touch.is-camp[class] .combat-passive{top:calc(var(--hud-top) + 55px);width:112px;background:#11272b99;border:0;box-shadow:none}
+.combat-hud.is-touch.is-camp .combat-boss{top:calc(var(--hud-top) + 100px);width:min(54vw,240px)}
+.combat-hud.is-touch.is-camp .camp-mobile-threat{display:block;position:absolute;top:calc(var(--hud-top) + 99px);left:50%;transform:translateX(-50%);max-width:80%;white-space:nowrap;padding:5px 9px;border-radius:8px;background:#422d28e8;color:#ffce99;font:800 10px system-ui;border:1px solid #f5ae6466}
+.combat-hud.is-touch.is-camp.has-boss .camp-mobile-threat{top:calc(var(--hud-top) + 130px)}
+.combat-hud.is-touch.is-camp .combat-notice{top:calc(var(--hud-top) + 132px);max-width:70%;font-size:10px}
+.combat-hud.is-touch.is-camp.has-boss .combat-notice{top:calc(var(--hud-top) + 161px)}
+.combat-hud.is-touch.is-camp .zawgyi-skill.ready>b{display:none}
+@media(max-width:360px){.combat-hud.is-touch.is-camp .combat-health{width:112px}.combat-hud.is-touch.is-camp .combat-wave,.combat-hud.is-touch.is-camp .camp-health-hud{width:98px}}
+@media(orientation:landscape) and (max-height:500px){
+ .combat-hud.is-touch.is-camp .combat-boss{top:calc(var(--hud-top) + 91px);width:min(34vw,220px)}
+ .combat-hud.is-touch.is-camp .camp-mobile-threat{top:calc(var(--hud-top) + 94px)}
+ .combat-hud.is-touch.is-camp.has-boss .camp-mobile-threat{top:calc(var(--hud-top) + 120px)}
+ .combat-hud.is-touch.is-camp .combat-notice{top:calc(var(--hud-top) + 123px)}
+ .combat-hud.is-touch.is-camp.has-boss .combat-notice{top:calc(var(--hud-top) + 145px)}
+}

@@ -14,7 +14,9 @@ export class TankActiveEffects{
    const points=Array.from({length:8},(_,i)=>{const a=i*Math.PI/4,r=i%2?8:11;return{x:x+Math.cos(a)*r,y:y+Math.sin(a)*r};});g.strokePoints(points,true);g.strokeCircle(x,y,5);g.fillStyle(color,alpha);g.fillTriangle(x-2,y,x+2,y,x,y+3);g.fillCircle(x-3,y-2,1);g.fillCircle(x+3,y-2,1);
   }else if(theme==='forge'){g.strokePoints([{x,y:y-9},{x:x+7,y},{x,y:y+7},{x:x-7,y},{x,y:y-9}],false);g.lineBetween(x-4,y+5,x+3,y+11);g.lineBetween(x+4,y+5,x-3,y+11);}
   else if(theme==='polar'){for(let i=0;i<6;i++){const a=i*Math.PI/3,dx=Math.cos(a),dy=Math.sin(a);g.lineBetween(x,y,x+dx*11,y+dy*11);g.lineBetween(x+dx*7,y+dy*7,x+dx*5-dy*3,y+dy*5+dx*3);}}
-  else{g.strokePoints([{x:x-7,y:y-8},{x:x+7,y:y-8},{x:x+6,y:y+4},{x,y:y+10},{x:x-6,y:y+4}],true);}
+  else{const pts=[{x:x-9,y:y-8},{x:x+9,y:y-8},{x:x+8,y:y+4},{x,y:y+12},{x:x-8,y:y+4}];g.fillStyle(0x245765,alpha*.85);g.fillPoints(pts,true);g.strokePoints(pts,true);g.fillStyle(0xfff6d7,alpha);g.fillEllipse(x-3,y-1,2.5,4);g.fillEllipse(x+3,y-1,2.5,4);g.lineStyle(1.3,color,alpha);g.lineBetween(x-2,y+5,x,y+6);g.lineBetween(x,y+6,x+2,y+5);}
+ }
+ private sparkle(g:Phaser.GameObjects.Graphics,x:number,y:number,r:number,c:number,a:number){g.fillStyle(c,a);g.fillPoints([{x,y:y-r},{x:x+r*.3,y:y-r*.3},{x:x+r,y},{x:x+r*.3,y:y+r*.3},{x,y:y+r},{x:x-r*.3,y:y+r*.3},{x:x-r,y},{x:x-r*.3,y:y-r*.3}],true);
  }
  /** Filled wave edge keeps its centre transparent and reads at gameplay scale. */
  private ring(g:Phaser.GameObjects.Graphics,x:number,y:number,r:number,color:number,ink:number,fade:number,width=7){
@@ -29,7 +31,7 @@ export class TankActiveEffects{
   if(s.theme==='forge'){g.lineStyle(2,p.primary,alpha);g.lineBetween(x-2,y+2,x+1,y-3);g.lineBetween(x+1,y-3,x+4,y);}
  }
  private plume(g:Phaser.GameObjects.Graphics,s:State,x:number,y:number,u:number,fade:number,size=1){
-  const p=TANK_PALETTES[s.theme];g.fillStyle(s.theme==='polar'?0xd7effb:p.fragment,fade*.3);
+  const p=TANK_PALETTES[s.theme];g.fillStyle(s.theme==='polar'?0xd7effb:s.theme==='default'?0xe1ebdc:p.fragment,fade*.3);
   for(let i=0;i<3;i++){const side=i-1;g.fillEllipse(x+side*(8+u*12)*size,y-3-u*(i===1?13:6)*size,(15+u*15)*size,(8+u*6)*size);}
   g.lineStyle(2,p.accent,fade*.45);g.lineBetween(x-13*size,y+2,x-5*size,y+3);
  }
@@ -38,6 +40,10 @@ export class TankActiveEffects{
   const compress=e.kind==='release'?.055:0,progress=s.reduced?1:Math.min(1,Math.max(0,e.age-compress)/.24),r=e.radius*(.28+.72*(1-Math.pow(1-progress,3)));
   if(e.kind!=='release'||e.age>=compress)this.ring(g,e.x,e.y,r,p.primary,p.ink,fade*.8,(s.wide?6.5:7.5)+Math.min(2,e.power/40));
   else{const q=1-e.age/compress,x=e.x+Math.cos(e.angle)*T.bulwark.radius,y=e.y+Math.sin(e.angle)*T.bulwark.radius;this.front.fillStyle(p.accent,q*.7);this.front.fillCircle(x,y,3+q*6);}
+  if(s.theme==='default'&&e.kind!=='release'){
+   if(e.age<.22){const q=1-e.age/.22,n=s.wide?8:12,points=Array.from({length:n*2},(_,i)=>{const a=i*Math.PI/n,d=(i%2?20:36)*(s.reduced?1:1+u*.7);return{x:e.x+Math.cos(a)*d,y:e.y+Math.sin(a)*d*.6};});g.fillStyle(p.accent,q*.3);g.fillPoints(points,true);g.lineStyle(2,p.primary,q*.7);g.strokePoints(points,true);}
+   if(!s.reduced)for(let i=0;i<(s.wide?2:5);i++){const a=i*Math.PI*2/5+.4,d=28+u*70;this.sparkle(g,e.x+Math.cos(a)*d,e.y+Math.sin(a)*d*.65-Math.sin(u*Math.PI)*12,5*(1-u*.5),i%2?p.primary:p.accent,fade);}
+  }
   // Short, branching ground fractures anchor the impact without masking actors.
   if(e.kind!=='release'&&!s.reduced){
    const branches=s.wide?3:6,reach=Math.min(e.radius*.52,74)*(1-Math.pow(1-Math.min(1,u*5),3));
@@ -72,11 +78,12 @@ export class TankActiveEffects{
    const point=(forward:number,side:number)=>({x:s.x+Math.cos(s.angle)*forward-Math.sin(s.angle)*side,y:s.y+Math.sin(s.angle)*forward+Math.cos(s.angle)*side});
    // Five translucent armored facets stay entirely inside the real frontal sector.
    const sector=(a:number,radius:number)=>({x:s.x+Math.cos(s.angle+a)*radius,y:s.y+Math.sin(s.angle+a)*radius});
-   for(let i=0;i<5;i++){const a=-half+i*half*2/5+.025,b=a+half*2/5-.05,pts=[sector(a,59),sector(a,73),sector((a+b)/2,75),sector(b,73),sector(b,59)];g.fillStyle(p.primary,s.reduced?.14:.3);g.fillPoints(pts,true);g.lineStyle(s.wide?2.2:1.8,p.accent,.8);g.strokePoints(pts,true);g.fillStyle(p.accent,.1);g.fillPoints([sector(a,70),sector((a+b)/2,74),sector(b,70)],true);const c=(a+b)/2;if(s.theme==='polar'){g.fillStyle(p.accent,.65);g.fillPoints([sector(c-.07,65),sector(c,75),sector(c+.07,65)],true);}else if(s.theme==='royal'){g.lineStyle(3,p.primary,.9);const q=sector(c-.07,69),v=sector(c,74),z=sector(c+.07,69);g.strokePoints([q,v,z],false);}else if(s.theme==='forge'){for(const t of [a+.07,b-.07]){const q=sector(t,67);g.fillStyle(p.primary,.85);g.fillCircle(q.x,q.y,2);}}}
+   for(let i=0;i<5;i++){const a=-half+i*half*2/5+.025,b=a+half*2/5-.05,pts=[sector(a,59),sector(a,73),sector((a+b)/2,75),sector(b,73),sector(b,59)];g.fillStyle(p.primary,s.reduced?.14:s.theme==='default'?.22:.3);g.fillPoints(pts,true);g.lineStyle(s.wide?2.2:1.8,p.accent,.8);g.strokePoints(pts,true);g.fillStyle(p.accent,.1);g.fillPoints([sector(a,70),sector((a+b)/2,74),sector(b,70)],true);const c=(a+b)/2;if(s.theme==='polar'){g.fillStyle(p.accent,.65);g.fillPoints([sector(c-.07,65),sector(c,75),sector(c+.07,65)],true);}else if(s.theme==='royal'){g.lineStyle(3,p.primary,.9);const q=sector(c-.07,69),v=sector(c,74),z=sector(c+.07,69);g.strokePoints([q,v,z],false);}else if(s.theme==='forge'){for(const t of [a+.07,b-.07]){const q=sector(t,67);g.fillStyle(p.primary,.85);g.fillCircle(q.x,q.y,2);}}}
    const plate=[point(55,-15),point(68,-18),point(74,0),point(68,18),point(55,15)];g.fillStyle(p.ink,.4);g.fillPoints(plate,true);g.lineStyle(2.5,p.primary,.95);g.strokePoints(plate,true);
    const charged=tankChargeSegments(s.energy);
    for(let i=0;i<5;i++){const a=s.angle+(i-2)*.3,x=s.x+Math.cos(a)*(r-2),y=s.y+Math.sin(a)*(r-2);g.fillStyle(i<charged?p.primary:p.ink,i<charged?.95:.6);g.fillCircle(x,y,s.wide?4:3.5);}
-   if(charged>0){const cx=s.x+Math.cos(s.angle)*(r-12),cy=s.y+Math.sin(s.angle)*(r-12);this.crest(g,s.theme,cx,cy,p.accent,.55+charged*.07);}
+   if(s.theme==='default'){const cx=s.x+Math.cos(s.angle)*(r-12),cy=s.y+Math.sin(s.angle)*(r-12);this.crest(g,s.theme,cx,cy,p.accent,.8);}
+   if(charged>0&&s.theme!=='default'){const cx=s.x+Math.cos(s.angle)*(r-12),cy=s.y+Math.sin(s.angle)*(r-12);this.crest(g,s.theme,cx,cy,p.accent,.55+charged*.07);}
    if(charged===5){const x=s.x+Math.cos(s.angle)*(r-15),y=s.y+Math.sin(s.angle)*(r-15);g.lineStyle(1.6,p.accent,.9);g.strokeCircle(x,y,4);}
   }
   if(s.march){const ground=this.ground;ground.lineStyle(3,p.primary,.7);for(const side of [-1,1])ground.lineBetween(s.x+side*22,s.y+21,s.x+side*26,s.y+29);
@@ -92,7 +99,7 @@ export class TankActiveEffects{
    }
    if(s.reduced)continue;
    if(e.kind==='step'){if(s.wide&&stepsShown++>=2)continue;this.ground.lineStyle(s.wide?3:2.5,p.primary,fade*.7);this.ground.strokeEllipse(e.x,e.y,12+(1-fade)*9,5+(1-fade)*4);if(!s.wide){this.plume(this.ground,s,e.x,e.y,1-fade,fade,.6);for(const side of [-1,1])this.shard(this.ground,s,e.x+side*(10+(1-fade)*7),e.y-3-(1-fade)*8,2.5,fade*.8);}}
-   if(e.kind==='push'){const x=e.x+Math.cos(e.angle)*8,y=e.y+22;this.ground.lineStyle(2,p.accent,fade*.55);this.ground.lineBetween(x-3,y-3,x+2,y);this.ground.lineBetween(x+2,y,x-3,y+3);}
+   if(e.kind==='push'){if(s.theme==='default')this.sparkle(this.ground,e.x,e.y+10,5,p.accent,fade*.8);const x=e.x+Math.cos(e.angle)*8,y=e.y+22;this.ground.lineStyle(2,p.accent,fade*.55);this.ground.lineBetween(x-3,y-3,x+2,y);this.ground.lineBetween(x+2,y,x-3,y+3);}
   }
  }
 }

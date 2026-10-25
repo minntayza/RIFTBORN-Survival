@@ -30,6 +30,7 @@ export type Save = {
         music: boolean;
         shake: boolean;
         aimAssist:boolean;
+        skillCast?:'hold'|'quick';
         joystickSide:'left'|'right';
         joystickSize: number;
         mapView:1|2;
@@ -37,7 +38,7 @@ export type Save = {
     };
 };
 export const defaultMapView = (): 1|2 => typeof matchMedia !== 'undefined' && (matchMedia('(pointer:coarse)').matches || navigator.maxTouchPoints > 0) ? 2 : 1;
-export const freshSave = (): Save => ({ version: 1, heroAbilities:{samurai:validHeroAbilities('samurai',null),gunner:validHeroAbilities('gunner',null),tank:validHeroAbilities('tank',null)}, zawgyiSkills:['datlone','flame'], runSetup:{mode:'endless',build:'assault'}, archive:{}, petals:0, cosmetics:{owned:[],equipped:{}}, gold: 0, heroes: ['ninja'], weapons: ['katana', 'nodachi', 'pistols', 'shield', 'mysticstaff'], hero: 'ninja', weapon: 'katana', permanent: {}, bestWave: 0, bestTime: 0, bestKills: 0, mastery: {}, techniques:{},daily:{},shortWins:0, settings: { sound: true, music: true, shake: true,aimAssist:true,joystickSide:'left',joystickSize:115,mapView:defaultMapView() } });
+export const freshSave = (): Save => ({ version: 1, heroAbilities:{samurai:validHeroAbilities('samurai',null),gunner:validHeroAbilities('gunner',null),tank:validHeroAbilities('tank',null)}, zawgyiSkills:['datlone','flame'], runSetup:{mode:'endless',build:'assault'}, archive:{}, petals:0, cosmetics:{owned:[],equipped:{}}, gold: 0, heroes: ['ninja'], weapons: ['katana', 'nodachi', 'pistols', 'shield', 'mysticstaff'], hero: 'ninja', weapon: 'katana', permanent: {}, bestWave: 0, bestTime: 0, bestKills: 0, mastery: {}, techniques:{},daily:{},shortWins:0, settings: { sound: true, music: true, shake: true,aimAssist:true,skillCast:'hold',joystickSide:'left',joystickSize:115,mapView:defaultMapView() } });
 const num = (x: unknown, max = 1e9) => typeof x === 'number' && Number.isFinite(x) ? Math.max(0, Math.min(max, Math.floor(x))) : 0;
 export const compatible = (h: HeroId, w: WeaponId) => WEAPONS[w]?.hero === h;
 export function validateSave(raw: unknown): Save { const d = freshSave(); if (!raw || typeof raw !== 'object')
@@ -62,7 +63,7 @@ export function validateSave(raw: unknown): Save { const d = freshSave(); if (!r
     if(r.daily&&typeof r.daily==='object')for(const [date,record] of Object.entries(r.daily).filter(([date])=>/^\d{4}-\d{2}-\d{2}$/.test(date)).sort().slice(-31)){if(record&&typeof record==='object')d.daily[date]={score:num(record.score),wins:num(record.wins)};}
     for (const k of ['sound', 'music', 'shake','aimAssist'] as const)
     if (typeof r.settings?.[k] === 'boolean')
-        d.settings[k] = r.settings[k]; d.settings.joystickSide=r.settings?.joystickSide==='right'?'right':'left';d.settings.joystickSize=[95,115,135].includes(r.settings?.joystickSize||0)?r.settings!.joystickSize:115;d.settings.mapViewChosen=r.settings?.mapViewChosen===true;d.settings.mapView=d.settings.mapViewChosen?(r.settings?.mapView===2?2:1):defaultMapView();return d; }
+        d.settings[k] = r.settings[k]; d.settings.skillCast=r.settings?.skillCast==='quick'?'quick':'hold';d.settings.joystickSide=r.settings?.joystickSide==='right'?'right':'left';d.settings.joystickSize=[95,115,135].includes(r.settings?.joystickSize||0)?r.settings!.joystickSize:115;d.settings.mapViewChosen=r.settings?.mapViewChosen===true;d.settings.mapView=d.settings.mapViewChosen?(r.settings?.mapView===2?2:1):defaultMapView();return d; }
 const KEY = 'zombie-last-stand.v1';
 export const PROGRESS_KEY='zombie-last-stand.progress.v2';
 export type Progress={version:2;updatedAt:number;save:Save;run:RunRecovery|null};

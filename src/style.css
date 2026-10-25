@@ -1819,3 +1819,82 @@ button:disabled{box-shadow:none;filter:saturate(.55)}
 .camp-health-hud{position:absolute;top:calc(var(--hud-top) + 86px);right:18px;width:160px;padding:10px 13px;border:1px solid #d4b36b;border-radius:12px;background:#10232ef2;color:#ffe0a0}.camp-health-hud>b{font-size:14px}.camp-health-hud>div{height:8px;background:#48362c;margin:6px 0;border-radius:5px;overflow:hidden}.camp-health-hud i{display:block;height:100%;background:linear-gradient(90deg,#eaa138,#ffe39c);transition:width .15s}.camp-health-hud small{font-size:9px;letter-spacing:1px}@media(max-width:600px){.camp-health-hud{right:8px;top:calc(var(--hud-top) + 58px);width:114px;padding:6px 8px}.camp-health-hud>b{font-size:11px}.camp-health-hud small{font-size:8px}}
 .camp-health-hud .camp-wave-hint{display:block;margin-top:4px;font-size:10px;color:#a8c3c9}.camp-health-hud.camp-danger{border-color:#ffad63;box-shadow:0 0 0 2px #bd533e55}.camp-health-hud.camp-danger>small{color:#ffc080;font-weight:800}.camp-reward-preview{display:block;margin:14px 0;color:#f4d88f;font-size:16px}.daily-practice-brief{margin:14px 0;padding:12px 16px;background:#1d3038;border:1px solid #5c7168;border-radius:10px}.daily-practice-brief p{font-size:13px;color:#bed0c7;margin:5px 0 10px}.daily-score-parts{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px;margin:14px 0}.daily-score-parts>div{display:flex;justify-content:space-between;gap:12px;padding:9px;background:#20333c;border-radius:7px;font-size:13px}.daily-score-parts b{color:#f5d78b}.camp-health-hud{width:190px}@media(max-width:600px){.camp-health-hud{width:128px}.camp-health-hud small{line-height:1.4}.camp-health-hud .camp-wave-hint{font-size:8px}.daily-score-parts{grid-template-columns:1fr}}
 .camp-practice-exit{position:absolute;bottom:18px;left:50%;transform:translateX(-50%);pointer-events:auto;padding:10px 16px;font-size:12px;border-color:#a49b71;background:#142a35ed}.camp-practice-exit:hover{transform:translateX(-50%)}@media(max-width:600px){.camp-practice-exit{bottom:10px;max-width:180px;font-size:10px;padding:8px}}
+
+/* Dedicated display lettering for the game identity. */
+@font-face{font-family:"Riftborn Display";src:url('/assets/fonts/CinzelDecorative-Bold.ttf') format('truetype');font-weight:700;font-style:normal;font-display:swap}
+.home-hub .home-brand,.home-hub .rift-title,.dress-header>b{font-family:"Riftborn Display",Georgia,serif;font-weight:700}
+.home-hub .home-brand{font-size:clamp(17px,1.65vw,27px);letter-spacing:.045em;color:#f2dba4;text-shadow:0 2px 0 #372b26,0 3px 10px #0006;white-space:nowrap}
+.home-hub .rift-title{font-size:clamp(30px,3.3vw,54px);line-height:1.25;letter-spacing:.035em;margin:0 0 28px;color:#f7dfa4;background:linear-gradient(180deg,#fff7d9 8%,#efcf83 62%,#b68b4d 100%);background-clip:text;-webkit-background-clip:text;-webkit-text-fill-color:transparent;filter:drop-shadow(0 3px 0 #14232b);overflow-wrap:normal}
+.dress-header>b{font-size:15px;letter-spacing:.04em}.dress-header>b span{font-family:system-ui,sans-serif;font-size:11px}
+@media(max-width:560px){.home-hub .home-header{flex-wrap:wrap;row-gap:14px}.home-hub .home-brand{width:100%;font-size:23px;justify-content:center}.home-hub .hub-wallets{width:100%;flex:1 1 100%;justify-content:center;margin-left:0;flex-wrap:wrap}.home-hub .rift-title{font-size:clamp(27px,7.7vw,39px);text-align:center;margin-bottom:22px}.dress-header{flex-wrap:wrap;gap:12px}.dress-header>b{font-size:13px}.dress-header>div{gap:12px}}
+@media(prefers-contrast:more){.home-hub .rift-title{background:none;-webkit-text-fill-color:currentColor;color:#fff2c6}}
+
+/* Weapon awakening is a short, illustrated choice, independent of level-up card layout. */
+.panel.weapon-awakening-panel{width:min(960px,100%);padding:26px;max-height:calc(100dvh - 32px);overflow-y:auto;background:linear-gradient(145deg,#1c3037,#111f2c);border:1px solid #9a875777;border-radius:22px}
+.awakening-heading{text-align:center;margin-bottom:22px}
+.awakening-heading>small{font:800 10px system-ui;letter-spacing:2px;color:#d8bd80}
+.awakening-heading h2{font-size:34px;margin:8px 0;color:#ffedbd;line-height:1.1}
+.awakening-heading p{font:700 13px system-ui;color:#d3dedb;margin:8px 0 0}
+.awakening-heading p span{font-weight:400;color:#9fb4b8}
+.awakening-options{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px}
+.awakening-card{--element:#74dcff;display:flex;flex-direction:column;align-items:stretch;text-align:left;min-width:0;padding:10px;border:1px solid color-mix(in srgb,var(--element) 45%,#465962);border-radius:17px;background:#1e333e;box-shadow:0 5px 0 #091720;cursor:pointer;transition:transform .15s,border-color .15s,background .15s;color:#f3ead9;overflow:hidden}
+.awakening-card.element-power{--element:#ffb05e}.awakening-card.element-tempo{--element:#d0adff}
+.awakening-card:hover{transform:translateY(-3px);background:#29414a;border-color:var(--element)}
+.awakening-card:focus-visible{outline:3px solid #fff2b7;outline-offset:4px}
+.awakening-card-art{display:block;aspect-ratio:1;overflow:hidden;border-radius:11px;background:#152a31}
+.awakening-card-art img{display:block;width:100%;height:100%;object-fit:cover}
+.awakening-card-copy{display:flex;flex-direction:column;gap:7px;padding:14px 7px;flex:1}
+.awakening-card-name{font:800 22px system-ui;color:#fff2cc}
+.awakening-card-copy>strong{font:800 13px system-ui;color:var(--element)}
+.awakening-card-detail{font:500 12px/1.45 system-ui;color:#c5d3d6;min-height:35px}
+.awakening-card-action{display:flex;justify-content:space-between;align-items:center;gap:5px;border-radius:9px;background:color-mix(in srgb,var(--element) 15%,#16292f);padding:12px 10px;font:800 12px system-ui;color:var(--element);min-height:44px}
+.awakening-card-action i{font-style:normal;font-size:18px}
+.awakening-footer{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-top:20px;font:500 11px/1.4 system-ui;color:#a5b9bd}
+.awakening-footer button{min-height:44px;font-size:12px;padding:8px 12px;white-space:nowrap}
+.awakening-options.single-element{max-width:300px;margin:auto;grid-template-columns:1fr}
+@media(max-width:600px) and (orientation:portrait){
+ .panel.weapon-awakening-panel{padding:18px 14px;border-radius:16px}
+ .awakening-heading{margin-bottom:15px}.awakening-heading h2{font-size:26px}
+ .awakening-options{grid-template-columns:1fr;gap:12px}
+ .awakening-card{display:grid;grid-template-columns:88px minmax(0,1fr);gap:0 12px;padding:9px}
+ .awakening-card-art{grid-column:1;grid-row:1/3;width:88px;align-self:center}
+ .awakening-card-copy{padding:2px 0 6px;gap:4px}.awakening-card-name{font-size:18px}
+ .awakening-card-copy>strong{font-size:11px}.awakening-card-detail{min-height:0;font-size:11px}
+ .awakening-card-action{grid-column:2;padding:7px 9px;min-height:36px;font-size:11px}
+ .awakening-footer{margin-top:14px;gap:6px;flex-wrap:wrap;justify-content:center;text-align:center}
+ .awakening-options.single-element{max-width:none}
+}
+@media(orientation:landscape) and (max-height:600px){
+ .panel.weapon-awakening-panel{padding:12px 18px;max-height:calc(100dvh - 20px)}
+ .awakening-heading{margin-bottom:10px}.awakening-heading h2{font-size:23px;margin:3px 0}
+ .awakening-heading>small{font-size:8px}.awakening-heading p{font-size:11px;margin-top:4px}
+ .awakening-options{gap:12px}.awakening-card{padding:7px}
+ .awakening-card-art{height:clamp(48px,22dvh,110px);aspect-ratio:auto;display:flex;justify-content:center;background:color-mix(in srgb,var(--element) 8%,#14252e)}
+ .awakening-card-art img{width:auto;max-width:100%;object-fit:contain}
+ .awakening-card-copy{padding:7px 3px;gap:3px}.awakening-card-name{font-size:16px}
+ .awakening-card-copy>strong{font-size:10px}.awakening-card-detail{font-size:10px;min-height:27px}
+ .awakening-card-action{padding:6px 9px;min-height:36px;font-size:10px}
+ .awakening-footer{margin-top:10px;font-size:10px}.awakening-footer button{min-height:36px;font-size:10px;padding:6px 10px}
+}
+@media(prefers-reduced-motion:reduce){.awakening-card{transition:none}.awakening-card:hover{transform:none}}
+@media(max-width:600px) and (orientation:portrait) and (max-height:650px){
+ .panel.weapon-awakening-panel{padding:14px 12px}
+ .awakening-heading{margin-bottom:10px}.awakening-heading h2{font-size:23px;margin:5px 0}.awakening-heading>small{font-size:8px}
+ .awakening-options{gap:9px}.awakening-card{grid-template-columns:76px minmax(0,1fr);padding:8px;gap:0 10px}
+ .awakening-card-art{width:76px}.awakening-card-name{font-size:17px}.awakening-card-copy{gap:3px}
+ .awakening-card-action{min-height:32px;padding:5px 8px}.awakening-card-action i{font-size:16px}
+ .awakening-footer{margin-top:10px;padding-top:10px;gap:7px;font-size:10px}.awakening-footer button{min-height:36px;padding:6px 10px}
+}
+/* Evolved upgrades keep the same large illustrated surface as the base cards. */
+.upgrade-cards .choice-card .evolution-illustration{position:relative;overflow:hidden;background:#372650}
+.evolution-art-badge{position:absolute;top:8px;left:8px;z-index:4;display:block!important;padding:5px 8px;border-radius:7px;background:#2d213be8;color:#ffebae;border:1px solid #edce8199;font:800 9px system-ui;letter-spacing:.7px;box-shadow:0 2px 5px #0004;pointer-events:none}
+.levelup-panel .choice-card.evolution-card{--reward:#efcf86;border-color:#d9bb77!important;background:linear-gradient(155deg,#3c354a,#24363d)!important}
+.levelup-panel .choice-card.evolution-card:hover{border-color:#ffe6a0!important;box-shadow:0 4px #101720,0 0 15px #d7b86455}
+@media(orientation:landscape) and (max-height:600px){.evolution-art-badge{top:3px;left:3px;padding:3px 4px;font-size:7px;letter-spacing:0}}
+/* The guide shares the live card art instead of hero-specific image paths. */
+.field-build-content .guide-evolution-art{aspect-ratio:1;max-width:260px;width:100%;margin:14px auto;border-radius:10px;overflow:hidden;flex:none}
+.field-build-content .guide-evolution-art .upgrade-demo{position:relative;width:100%;height:100%!important;aspect-ratio:1;margin:0!important;border:0;border-radius:10px;overflow:hidden;background:#24303d}
+.field-build-content .guide-evolution-art img,.field-build-content .guide-evolution-art svg{display:block;width:100%;height:100%;object-fit:cover}
+.field-build-content .reference-evolution{justify-content:flex-start}
+.field-build-content .reference-evolution>p{margin:0 0 14px;min-height:0}
+.field-build-content .reference-evolution .build-requirements{margin-top:auto}

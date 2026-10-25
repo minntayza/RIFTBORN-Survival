@@ -1,0 +1,4 @@
+# Phantom Blades artwork
+Generated with the built-in image-generation tool. Style reference: `public/assets/card-concepts/skill-icons-v1.webp`. Final asset: `public/assets/card-concepts/phantom-blades-v2.png`, 512 × 512.
+
+Prompt: One square level-up evolution illustration for a cute 2D fantasy action game. Two silver kunai with dark violet wrapped handles and gold pommels orbit opposite each other along a sweeping luminous lavender and cream crescent loop. Crisp bold dark outlines, rich simple cel shading, polished chunky silhouettes, magical star highlights. Saturated violet backdrop like the reference Ninja card icons. Both blades large and complete with 10% padding. No character, enemy, text, border, UI, sketch, or realistic materials. The two opposite kunai and their spectral trails should instantly explain the evolution.

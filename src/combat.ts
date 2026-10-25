@@ -1,3 +1,10 @@
+import {Cataclysm} from './cataclysm';
+import {drawIronHeartShields} from './iron-heart-fx';
+import {IronHeart} from './iron-heart';
+import {AreaGate} from './area-gate';
+import {SkillAim} from './skill-aim';
+import {GoldPayout} from './gold-payout';
+import {tankTouchAim,tankShieldCommitted} from './tank-control';
 import {campCamera} from './last-camp-camera';
 import {prepareRunSave} from './daily-appearance';
 import {LastCamp,campWave,CAMP_DIRECTIONS} from './last-camp';
@@ -55,7 +62,7 @@ import type { TouchState } from './touch';
 import { ArenaVisuals } from './visuals';
 import Phaser from 'phaser';
 import { ABILITY_TUNING, BALANCE, HEROES, WEAPONS, ENEMIES, type HeroId, type WeaponId, type EnemyId } from './config';
-import { wavePlan, scaling, damageValue, cooldownValue, type Spawn } from './waves';
+import { wavePlan, zombieFinaleCleared, scaling, damageValue, cooldownValue, type Spawn } from './waves';
 import type { Save } from './save';
 import { AudioManager } from './audio';
 export type RunStats = {
@@ -148,6 +155,8 @@ export class ArenaScene extends Phaser.Scene {
     siegeWindups=new Map<Enemy,number>();
     gfx!: Phaser.GameObjects.Graphics;
     warningGfx!:Phaser.GameObjects.Graphics;
+    ironHeartBack!:Phaser.GameObjects.Graphics;
+    ironHeartFront!:Phaser.GameObjects.Graphics;
     impactCount=0;
     bossMarks:(BossMark&{remaining:number;owner:Enemy;fired:boolean})[]=[];
     markBoss(e:Enemy){
@@ -181,7 +190,7 @@ export class ArenaScene extends Phaser.Scene {
 
         const assets=[
             ...(this.camp?[['last-camp-beacon','/assets/maps/last-camp/beacon-v1.png'],['last-camp-court','/assets/maps/last-camp/courtyard-v1.png']]:[]),
-            ...(this.hero==='zawgyi'?[[ZAWGYI_ART.key,ZAWGYI_ART.url]]:[]),
+            ...(this.hero==='zawgyi'?[[ZAWGYI_ART.key,ZAWGYI_ART.url],['zawgyi-ruby-sun','/assets/characters/zawgyi-ruby-sun-v1.png']]:[]),
             ...(this.hero==='tank'&&equippedSkin(this.save,this.hero)?[['tank-outfit-arm-art',tankArmAsset(equippedSkin(this.save,this.hero)!)]]:[]),
             [CONNECTED_ARMS.key,CONNECTED_ARMS.url],[TANK_WEAPONS_ATLAS.key,this.hero==='tank'?equippedWeaponSkin(this.save,this.weapon)||TANK_WEAPONS_ATLAS.url:TANK_WEAPONS_ATLAS.url],[TANK_ATLAS.key,this.hero==='tank'?equippedSkin(this.save,this.hero)||TANK_ATLAS.url:TANK_ATLAS.url],[GUNNER_ATLAS.key,this.hero==='gunner'?equippedSkin(this.save,this.hero)||GUNNER_ATLAS.url:GUNNER_ATLAS.url],[GUNNER_WEAPONS_ATLAS.key,this.hero==='gunner'?equippedWeaponSkin(this.save,this.weapon)||GUNNER_WEAPONS_ATLAS.url:GUNNER_WEAPONS_ATLAS.url],
             [SAMURAI_WEAPONS_ATLAS.key,this.hero==='samurai'?equippedWeaponSkin(this.save,this.weapon)||SAMURAI_WEAPONS_ATLAS.url:SAMURAI_WEAPONS_ATLAS.url],
@@ -337,6 +346,10 @@ export class ArenaScene extends Phaser.Scene {
     boostDamage = 0;
     boostSpeed = 0;
     rewardShield = 0;
+    ironHeart=new IronHeart();
+    cataclysm=new Cataclysm();
+    areaGate:AreaGate|undefined;
+    gateLabel:Phaser.GameObjects.Text|undefined;
     pendingReward: RewardId | undefined;
     evolution: Record<EvolutionId,number> = {reach:0,power:0,tempo:0};
     eventName = 'Survival';
@@ -346,7 +359,8 @@ export class ArenaScene extends Phaser.Scene {
     hazardClock = 0;
     hazard: {x:number;y:number;time:number} | undefined;
     rewardPool(){return rollReward(this.hp,this.maxHp);}
-    grantGold(n:number){this.stats.gold+=n;this.waveStats.gold+=n;this.save.gold+=n;}
+    private goldPayout=new GoldPayout();private waveBaseGold=0;
+    grantGold(n:number){this.waveBaseGold+=n;const paid=this.goldPayout.grant(n);this.stats.gold+=paid;this.waveStats.gold+=paid;this.save.gold+=paid;return paid;}
     grantPetals(n:number){this.stats.petals=(this.stats.petals||0)+n;this.waveStats.petals=(this.waveStats.petals||0)+n;this.save.petals=(this.save.petals||0)+n;}
     grantReward(id:RewardId){
         if(id==='heal')this.heal(this.maxHp*.25);
@@ -407,7 +421,7 @@ export class ArenaScene extends Phaser.Scene {
     grid = new Map<string, Enemy[]>();
     dashHits = new Set<Enemy>();
     constructor(save: Save, audio: AudioManager, choice: (wave: boolean) => void, end: () => void, pause: () => void, options?:RunOptions) { super('arena'); this.save = save; this.audio = audio; this.hero = save.hero; this.weapon = save.weapon; this.onChoice = choice; this.onEnd = end; this.onPause = pause; if(options){this.options=options;this.hero=options.hero||save.hero;this.weapon=options.weapon||save.weapon;} if(this.options.seed!==undefined){this.random=seededRandom(this.options.seed);this.cardRandom=seededRandom(this.options.seed^0x85ebca6b);}this.options.technique='standard';if(this.options.mode==='daily'){this.save=prepareRunSave(save,this.options);this.camp=new LastCamp();this.x=600;this.y=520;} }
-    create() { applyArtDirection(this); this.robotArt=new RobotMapArt(this);const park=this.textures.get('park-ground'),pw=Math.floor(park.getSourceImage().width/5),ph=Math.floor(park.getSourceImage().height/5);for(let y=0;y<5;y++)for(let x=0;x<5;x++)park.add(`${x}-${y}`,0,x*pw,y*ph,pw,ph); this.textures.get('city-wreck').add('chassis',0,150,18,810,1395); this.floor = this.add.graphics().setDepth(-4); this.gfx = this.add.graphics();this.warningGfx=this.add.graphics().setDepth(6); this.drawFloor();if(this.camp)this.campArt=new LastCampArt(this); this.visuals = new ArenaVisuals(this,this.hero==='samurai'&&!!equippedSkin(this.save,this.hero),this.hero==='ninja'&&!!equippedSkin(this.save,this.hero),this.hero==='gunner'&&!!equippedSkin(this.save,this.hero),this.hero==='tank'&&!!equippedSkin(this.save,this.hero)); this.cosmeticFx=new CosmeticWeaponEffects(this);this.outfitFx=new OutfitAbilityEffects(this); this.keys = this.input.keyboard!.addKeys('W,A,S,D,UP,DOWN,LEFT,RIGHT,SPACE,Q,E,ESC,M,ONE,TWO,THREE') as typeof this.keys; this.input.keyboard!.on('keydown-ESC', () => this.onPause()); this.input.keyboard!.on('keydown-M', () => { this.save.settings.sound = !this.save.settings.sound; this.audio.sound = this.save.settings.sound; }); this.input.keyboard!.on('keydown', (event:KeyboardEvent)=>{if(event.repeat||event.ctrlKey||event.metaKey||event.altKey)return;const slot=event.code==='Space'||this.hero!=='ninja'&&event.code==='KeyQ'?0:this.hero!=='ninja'&&event.code==='KeyE'?1:-1;if(slot<0)return;const k=this.keys,dx=this.touch?.enabled?this.touch.x:Number(k.D.isDown||k.RIGHT.isDown)-Number(k.A.isDown||k.LEFT.isDown),dy=this.touch?.enabled?this.touch.y:Number(k.S.isDown||k.DOWN.isDown)-Number(k.W.isDown||k.UP.isDown);this.requestAbility(slot,dx,dy);});this.input.keyboard!.addCapture(['Q','E','W', 'A', 'S', 'D', 'UP', 'DOWN', 'LEFT', 'RIGHT', 'SPACE']); const h = HEROES[this.hero]; this.maxHp = h.hp * (1 + this.meta('health') * .05); if(this.options.build==='guard')this.maxHp*=1.15;this.hp = this.maxHp; this.rerolls = 1 + this.meta('reroll'); this.ammo=this.maxAmmo;this.applyMapView(); this.startWave();if(this.hero==='zawgyi')this.zawgyi=new ZawgyiCombat(this);if(isAbilityHero(this.hero))this.heroAbilities=new HeroAbilityCombat(this);this.events.once('postupdate',()=>this.onArenaReady?.()); }
+    create() { applyArtDirection(this); this.robotArt=new RobotMapArt(this);const park=this.textures.get('park-ground'),pw=Math.floor(park.getSourceImage().width/5),ph=Math.floor(park.getSourceImage().height/5);for(let y=0;y<5;y++)for(let x=0;x<5;x++)park.add(`${x}-${y}`,0,x*pw,y*ph,pw,ph); this.textures.get('city-wreck').add('chassis',0,150,18,810,1395); this.floor = this.add.graphics().setDepth(-4); this.gfx = this.add.graphics();this.warningGfx=this.add.graphics().setDepth(6);this.ironHeartBack=this.add.graphics();this.ironHeartFront=this.add.graphics(); this.drawFloor();if(this.camp)this.campArt=new LastCampArt(this); this.visuals = new ArenaVisuals(this,this.hero==='samurai'&&!!equippedSkin(this.save,this.hero),this.hero==='ninja'&&!!equippedSkin(this.save,this.hero),this.hero==='gunner'&&!!equippedSkin(this.save,this.hero),this.hero==='tank'&&!!equippedSkin(this.save,this.hero)); this.cosmeticFx=new CosmeticWeaponEffects(this);this.outfitFx=new OutfitAbilityEffects(this); this.keys = this.input.keyboard!.addKeys('W,A,S,D,UP,DOWN,LEFT,RIGHT,SPACE,Q,E,ESC,M,ONE,TWO,THREE') as typeof this.keys; this.input.keyboard!.on('keydown-ESC', () => {if(!this.skillAim?.cancel())this.onPause();}); this.input.keyboard!.on('keydown-M', () => { this.save.settings.sound = !this.save.settings.sound; this.audio.sound = this.save.settings.sound; }); this.input.keyboard!.on('keydown', (event:KeyboardEvent)=>{if(event.repeat||event.ctrlKey||event.metaKey||event.altKey)return;const slot=event.code==='Space'||this.hero!=='ninja'&&event.code==='KeyQ'?0:this.hero!=='ninja'&&event.code==='KeyE'?1:-1;if(slot<0)return;if(this.skillAim?.keyDown(slot,event.code))return;const k=this.keys,dx=this.touch?.enabled?this.touch.x:Number(k.D.isDown||k.RIGHT.isDown)-Number(k.A.isDown||k.LEFT.isDown),dy=this.touch?.enabled?this.touch.y:Number(k.S.isDown||k.DOWN.isDown)-Number(k.W.isDown||k.UP.isDown);this.requestAbility(slot,dx,dy);});this.input.keyboard!.on('keyup',(event:KeyboardEvent)=>this.skillAim?.keyUp(event.code));this.input.keyboard!.addCapture(['Q','E','W', 'A', 'S', 'D', 'UP', 'DOWN', 'LEFT', 'RIGHT', 'SPACE']); const h = HEROES[this.hero]; this.maxHp = h.hp * (1 + this.meta('health') * .05); if(this.options.build==='guard')this.maxHp*=1.15;this.hp = this.maxHp; this.rerolls = 1 + this.meta('reroll'); this.ammo=this.maxAmmo;this.applyMapView();const resized=()=>{this.applyMapView();if(this.visuals)this.render();};this.scale.on('resize',resized);this.events.once('shutdown',()=>this.scale.off('resize',resized)); this.startWave();if(this.hero==='zawgyi')this.zawgyi=new ZawgyiCombat(this);if(isAbilityHero(this.hero))this.heroAbilities=new HeroAbilityCombat(this);if(this.hero==='gunner'){this.skillAim=new SkillAim(this);this.events.once('shutdown',()=>this.skillAim?.destroy());}this.events.once('postupdate',()=>this.onArenaReady?.()); }
     applyMapView(){this.cameras.main.setZoom(1.05/(this.save.settings.mapView||1));this.positionCamera();}
     private positionCamera(){const camera=this.cameras.main;if(this.camp){const p=campCamera(camera.width,camera.height,this.save.settings.mapView,this.x,this.y,this.camp.x,this.camp.y);camera.setZoom(p.zoom).centerOn(p.x,p.y);}else camera.centerOn(this.x,this.y);}
     floorTheme = 0;
@@ -489,9 +503,9 @@ export class ArenaScene extends Phaser.Scene {
         return n;
     }
     get maxAmmo() { return (this.weapon === 'shotgun' ? 6 : this.weapon==='smg'?28:12) + this.u('magazine') * 4; }
-    startWave() { this.bossMarks=[];if(this.floorTheme !== (this.stats.wave>10?1:0)){this.drawFloor();this.cameras.main.fadeIn(900,15,8,12);} this.boostDamage=this.pendingReward==='damage'?15:0;this.boostSpeed=this.pendingReward==='speed'?15:0;this.pendingReward=undefined;this.eventName=waveEvent(this.stats.wave);if(this.stats.wave<=10)this.eventName=({2:'Supply rush',4:'Hold the zone',6:'Elite hunt',8:'Supply rush',10:'Boss encounter'} as Record<number,string>)[this.stats.wave]||'Survival';this.waveObjectives=0;this.zoneSpawnClock=5;this.bossDefeated=false;this.supplies=[];this.huntTarget=undefined;this.zone={x:this.x+180,y:this.y,progress:0,done:false};this.hazard=undefined;this.hazardClock=8;
+    startWave() { this.cataclysm.clear();this.bossMarks=[];if(this.floorTheme !== (this.stats.wave>10?1:0)){this.drawFloor();this.cameras.main.fadeIn(900,15,8,12);} this.boostDamage=this.pendingReward==='damage'?15:0;this.boostSpeed=this.pendingReward==='speed'?15:0;this.pendingReward=undefined;this.eventName=waveEvent(this.stats.wave);if(this.stats.wave<=10)this.eventName=({2:'Supply rush',4:'Hold the zone',6:'Elite hunt',8:'Supply rush',10:'Boss encounter'} as Record<number,string>)[this.stats.wave]||'Survival';this.waveObjectives=0;this.zoneSpawnClock=5;this.bossDefeated=false;this.supplies=[];this.huntTarget=undefined;this.zone={x:this.x+180,y:this.y,progress:0,done:false};this.hazard=undefined;this.hazardClock=8;
         if(this.eventName==='Supply rush')this.supplies=Array.from({length:3},(_,i)=>{const x=this.x+Math.cos(i*2.1)*260,y=this.y+Math.sin(i*2.1)*260;return {...this.clearGroundPoint(x,y,65),active:true};});
-        if(this.camp){this.supplies=[];this.eventName='Defend the beacon';}this.createLandmark();this.waveTime = 0; this.spawnIndex = 0; this.plan = wavePlan(this.stats.wave,this.random,this.options.mode==='daily'?this.dailyBosses:undefined); if(this.options.mode==='daily'){if(this.stats.wave===5)this.eventName='Boss encounter';else if(this.stats.wave===10)this.eventName='Final boss';} if(this.camp){const info=campWave(this.stats.wave);this.eventName=info.name;if([2,8].includes(this.stats.wave))this.plan.push({time:14,type:this.stats.wave===8?'armoured':'brute',count:2,formation:0,faction:'zombie'},{time:14,type:'basic',count:5,formation:0,faction:'zombie'});if([3,6,7,9].includes(this.stats.wave))this.plan.push({time:20,type:'brute',count:2,formation:0,faction:'zombie'});if(this.stats.wave===4)this.plan.push({time:12,type:'runner',count:6,formation:0,faction:'zombie'});this.plan.sort((a,b)=>a.time-b.time);}if(this.camp&&[5,10].includes(this.stats.wave)){this.plan.push({time:18,type:'brute',count:this.stats.wave===10?3:2,formation:0,faction:'zombie'});this.plan.sort((a,b)=>a.time-b.time);}this.waveStats = { kills: 0, gold: 0, damage: 0, time: 0, petals: 0 }; this.waiting = false;if(this.evolved('ward'))this.rewardShield=Math.max(this.rewardShield,3); this.waveWard = !!this.u('ward'); if(this.eventName==='Elite hunt'){this.spawn('elite');this.huntTarget=this.enemies.find(e=>e.active&&e.type==='elite');} this.audio.play('wave'); this.banner(this.camp?`WAVE ${this.stats.wave} · ${campWave(this.stats.wave).name.toUpperCase()} · ${campWave(this.stats.wave).sides.map(side=>CAMP_DIRECTIONS[side]).join(' + ')}`:`WAVE ${String(this.stats.wave).padStart(2, '0')} · ${this.eventName.toUpperCase()}`,this.camp?0xffcf80:0x9eefae); }
+        if(this.camp){this.supplies=[];this.eventName='Defend the beacon';}this.createLandmark();this.waveTime = 0; this.spawnIndex = 0; this.plan = wavePlan(this.stats.wave,this.random,this.options.mode==='daily'?this.dailyBosses:undefined); if(this.options.mode==='daily'){if(this.stats.wave===5)this.eventName='Boss encounter';else if(this.stats.wave===10)this.eventName='Final boss';} if(this.camp){const info=campWave(this.stats.wave);this.eventName=info.name;if([2,8].includes(this.stats.wave))this.plan.push({time:14,type:this.stats.wave===8?'armoured':'brute',count:2,formation:0,faction:'zombie'},{time:14,type:'basic',count:5,formation:0,faction:'zombie'});if([3,6,7,9].includes(this.stats.wave))this.plan.push({time:20,type:'brute',count:2,formation:0,faction:'zombie'});if(this.stats.wave===4)this.plan.push({time:12,type:'runner',count:6,formation:0,faction:'zombie'});this.plan.sort((a,b)=>a.time-b.time);}if(this.camp&&[5,10].includes(this.stats.wave)){this.plan.push({time:18,type:'brute',count:this.stats.wave===10?3:2,formation:0,faction:'zombie'});this.plan.sort((a,b)=>a.time-b.time);}this.waveStats = { kills: 0, gold: 0, damage: 0, time: 0, petals: 0 };this.waveBaseGold=0; this.waiting = false;if(this.evolved('ward'))this.rewardShield=Math.max(this.rewardShield,3); this.waveWard = !!this.u('ward'); if(this.eventName==='Elite hunt'){this.spawn('elite');this.huntTarget=this.enemies.find(e=>e.active&&e.type==='elite');} this.audio.play('wave'); this.banner(this.camp?`WAVE ${this.stats.wave} · ${campWave(this.stats.wave).name.toUpperCase()} · ${campWave(this.stats.wave).sides.map(side=>CAMP_DIRECTIONS[side]).join(' + ')}`:`WAVE ${String(this.stats.wave).padStart(2, '0')} · ${this.eventName.toUpperCase()}`,this.camp?0xffcf80:0x9eefae); }
     banner(message: string, color = 0xffffff) { const t = this.add.text(this.cameras.main.width/2, 125, message, { fontFamily: 'monospace', fontSize: Math.min(26,Math.max(13,this.cameras.main.width/32))+'px', color: '#' + color.toString(16).padStart(6, '0'), fontStyle: 'bold' }).setOrigin(.5).setScrollFactor(0).setDepth(this.camp?7:0); this.tweens.add({ targets: t, alpha: 0, y: 100, delay: 1400, duration: 600, onComplete: () => t.destroy() }); }
     spawnSerial=0;
     spawn(type: EnemyId, side = Math.floor(this.random() * 4), offset = this.random(), factionOverride?:EnemyFaction) {
@@ -701,7 +715,7 @@ export class ArenaScene extends Phaser.Scene {
         this.tweens.add({ targets: g, alpha: 0, duration: 140, onComplete: () => g.destroy() });
     }
     basicAttack() {
-        if(this.zawgyi&&this.zawgyi.slamTime>0||this.heroAbilities&&this.heroAbilities.drawTime>0)return;
+        if(this.zawgyi&&this.zawgyi.slamTime>0||this.heroAbilities?.actionLocked)return;
         const w = WEAPONS[this.weapon];
         this.attack = cooldownValue(w.cooldown, HEROES[this.hero].rate * (this.earlyPower&&this.hero==='gunner'?1.1:1) * (1 + (this.momentum > 0 ? .1 * Math.min(3, Math.floor(this.combo / 5)) : 0))*(1+this.evolution.tempo*.1)*(this.overdrive>0?1.6:1));
 
@@ -769,6 +783,7 @@ export class ArenaScene extends Phaser.Scene {
         if(!strike.echo){if(this.hero==='samurai'&&this.u('dragon-slash')&&sequence%3===0){const level=this.u('dragon-slash'),reach=235+level*20+(this.evolved('dragon-slash')?70:0);this.dash=Math.max(this.dash,.16);this.invuln=Math.max(this.invuln,.16);this.dashX=Math.cos(aim);this.dashY=Math.sin(aim);for(const e of this.enemies){const dx=e.x-this.x,dy=e.y-this.y,d=Math.hypot(dx,dy),a=Math.atan2(dy,dx);if(e.active&&d<reach+e.r&&Math.abs(Phaser.Math.Angle.Wrap(a-aim))<.62){this.hit(e,WEAPONS[id].damage*(.6+level*.25),WEAPONS[id].knock);e.burn=Math.max(e.burn,1.4+level*.45+(this.evolved('dragon-slash')?1.2:0));if(this.evolved('dragon-slash'))this.hit(e,WEAPONS[id].damage*.4,0);}}this.visuals.samuraiSkills.dragon(this.x,this.y,aim,reach,level+(this.evolved('dragon-slash')?1:0),this.elapsed);this.audio.play('dragon-slash');}if(sequence%3===0&&(this.evolved('wide')||this.evolved('spikes'))){this.slash(strike.damage*.4,strike.range,Math.PI*2,aim,this.hero!=='tank');if(this.hero==='tank')this.visuals.tankSkills.slam(this.x,this.y,strike.range,this.u('spikes'),this.elapsed,'crown');else this.impactRing(this.x,this.y,strike.range,0xb8abd1);}if(this.evolution.reach>=2)this.windSlash(WEAPONS[id].damage*(.5+this.evolution.reach*.2),tip,aim);if(this.u('wind')){this.windSlash(WEAPONS[id].damage*.6,tip,aim);if(this.evolved('wind')){this.windSlash(WEAPONS[id].damage*.6,tip,aim+.2);}}if(this.evolution.power>=2){for(const e of this.enemies)if(e.active&&Math.hypot(e.x-tip.x,e.y-tip.y)<105+e.r)this.hit(e,WEAPONS[id].damage*.25*this.evolution.power,12);this.impactRing(tip.x,tip.y,105);}}
         if(this.hero==='tank'&&this.blockCharge>=100){this.blockCharge=0;this.slash(WEAPONS[id].damage*2,170,Math.PI*2,aim,false);this.visuals.tankSkills.slam(this.x,this.y,170,1,this.elapsed,'charge');}
     }
+    skillAim?:SkillAim;
     requestAbility(slot:number,dx:number,dy:number){if(this.paused||this.ended||this.countdown>0)return;this.skillInput.request(slot,dx,dy,this.time.now);}
     activate(dx:number,dy:number){
         if(this.hero==='zawgyi'){this.zawgyi?.activate(0,dx,dy);return;}
@@ -834,6 +849,7 @@ export class ArenaScene extends Phaser.Scene {
         value *= 1 - this.meta('defense') * .05;
         if(e)a=Math.atan2(e.y-this.y,e.x-this.x);
         if(this.hero==='ninja'&&this.u('smoke')&&this.time.now>=this.smokeBombReadyAt){const level=this.u('smoke'),radius=145+level*28;this.smokeBombReadyAt=this.time.now+Math.max(4200,9000-level*1500);for(const enemy of this.enemies)if(enemy.active&&Math.hypot(enemy.x-this.x,enemy.y-this.y)<radius)enemy.slow=Math.max(enemy.slow,1.5+level*.5+(this.evolved('smoke')?1:0));if(this.evolved('smoke'))this.rewardShield=Math.max(this.rewardShield,1);this.invuln=Math.max(this.invuln,.35);this.visuals.smokeBomb(this.x,this.y,radius,level,this.evolved('smoke'),this.elapsed);this.audio.play('smoke-bloom');this.notifyCombat('SMOKE BOMB · ENEMIES DAZED');}
+        if(this.evolved('health'))value=this.ironHeart.absorb(value);
         this.lastCause=e?enemyName(e.type,e.faction):source;
         this.damageFeedback={time:.65,angle:a,value:Math.round(value),label:this.lastCause};
         this.showHpChange(-Math.min(this.hp,value));
@@ -856,9 +872,9 @@ export class ArenaScene extends Phaser.Scene {
         }
     }
     apply(id: string) {
-        if(id.startsWith('evolve:')){const base=id.slice(7),card=UPGRADES.find(u=>u.id===base);if(!card||!CARD_EVOLUTIONS[base]||this.stats.wave<=10||this.u(base)<card.max||this.evolved(base))return;this.cardEvolutions[base]=true;this.save.archive[`card:${base}`]=2;
+        if(id.startsWith('evolve:')){const base=id.slice(7),card=UPGRADES.find(u=>u.id===base);if(!card||!CARD_EVOLUTIONS[base]||this.u(base)<card.max||this.evolved(base))return;this.cardEvolutions[base]=true;this.save.archive[`card:${base}`]=2;
             if(['health','wide','crit','magnet','regen','damage','cooldown','range','bleed','counter','magazine','pierce','reload','stamina','block','spikes','rush'].includes(base))this.levels[base]++;
-            if(base==='health'){this.maxHp*=1.15;this.heal(this.maxHp*.35);}this.reveal(CARD_EVOLUTIONS[base].name);this.audio.play('level');this.paused=false;return;
+            if(base==='health'){this.maxHp*=1.15;this.heal(this.maxHp*.35);this.ironHeart.activate();}this.reveal(CARD_EVOLUTIONS[base].name);this.audio.play('level');this.paused=false;return;
         }
         this.levels[id] = (this.levels[id] || 0) + 1;
         if (id === 'health') {
@@ -872,6 +888,7 @@ export class ArenaScene extends Phaser.Scene {
     }
     finishWave() {
         if(this.waiting||this.ended)return;
+        if(!this.finiteRun&&this.stats.wave===10&&!zombieFinaleCleared(this.bossDefeated,this.plan,this.enemies))return;
         if(this.camp&&(this.spawnIndex<this.plan.length||this.enemies.some(e=>e.active)))return;
         if(this.stats.wave===10&&this.bossMagnet){
             if(this.bossMagnet.active){if(this.elapsed-this.bossMagnet.born<6)return;this.collectBossMagnet();return;}
@@ -881,7 +898,7 @@ export class ArenaScene extends Phaser.Scene {
         if(this.options.mode==='daily'&&this.stats.wave===5&&this.enemies.some(e=>e.active&&(e.type==='boss'||e.type==='commander')))return;
         if(this.options.practice){this.victory=true;this.ended=true;this.paused=true;this.stats.time=this.elapsed;this.onEnd();return;}
         this.earned=earnedWaveGold(this.stats.wave,this.waveStats.kills,this.waveStats.damage,this.waveObjectives);
-        const earnedGold=this.earned.combat+this.earned.perfect+this.earned.objective;this.grantGold(earnedGold);
+        const earnedGold=this.grantGold(this.earned.combat+this.earned.perfect+this.earned.objective);
         const earnedPetals = this.stats.wave === 10 ? 60 : this.stats.wave === 5 ? 40 : (this.options.mode === 'daily' ? 20 : 10);
         this.grantPetals(earnedPetals);
         this.banner(`WAVE CLEAR · +${earnedGold} GOLD · +${earnedPetals} ✿ PETALS`,0xd8ba85);
@@ -889,15 +906,13 @@ export class ArenaScene extends Phaser.Scene {
         if(this.stats.wave>10&&[3,6,8].includes(this.stats.wave)&&(this.earned.combat>0||this.waveObjectives>0)){this.xp+=this.xpNeed;this.notifyCombat('COMBAT MILESTONE · BONUS LEVEL-UP');}
 
         if(this.finiteRun&&this.stats.wave===10){this.victory=true;this.ended=true;this.paused=true;this.stats.time=this.elapsed;this.onEnd();return;}
-        this.pendingStrikes=[];this.pendingEchoes=[];this.swing=0;
+        this.cataclysm.clear();this.pendingStrikes=[];this.pendingEchoes=[];this.swing=0;
         this.waiting = true;
         this.paused = true;
         this.waveStats.time = this.waveTime;
         if (this.waveTime < 45) {
-            const bonus = Math.round(this.waveStats.gold * .15);
-            this.stats.gold += bonus;
-            this.save.gold += bonus;
-            this.waveStats.gold += bonus;
+            const bonus = Math.round(this.waveBaseGold * .15);
+            this.grantGold(bonus);
         }
         if (this.waveStats.damage === 0)
             this.rerolls++;
@@ -905,13 +920,43 @@ export class ArenaScene extends Phaser.Scene {
         this.audio.play('clear');
         this.onChoice(true);
     }
-    nextWave() { this.heroAbilities?.clear();for(const e of this.enemies)if(e.active&&!['boss','shooterBoss','commander'].includes(e.type))e.slow=Math.max(e.slow,2);this.waiting = true; this.paused = false; this.countdown = encounterRhythm(this.stats.wave).recovery; }
+    nextWave() {
+        if(!this.finiteRun&&this.stats.wave===10){
+            if(this.areaGate)return;
+            this.heroAbilities?.clear();
+            for(const enemy of this.enemies)enemy.active=false;
+            for(const bullet of this.bullets)bullet.active=false;
+            this.cataclysm.clear();this.pendingStrikes=[];this.pendingEchoes=[];this.bossMarks=[];this.firePatches=[];this.hazard=undefined;this.landmark=undefined;this.supplies=[];
+            const p=this.clearGroundPoint(this.x+150,this.y,45);
+            this.areaGate=new AreaGate(p.x,p.y);
+            this.gateLabel=this.add.text(p.x,p.y-135,'ENTER THE GATE\nROBOT FRONTIER · WAVE 11',{fontSize:'14px',color:'#d8f7ff',align:'center',backgroundColor:'#142332',padding:{x:8,y:5}}).setOrigin(.5).setDepth(7);
+            this.waiting=true;this.paused=false;this.countdown=0;
+            this.banner('AREA CLEARED · ENTER THE GATE',0x9cf4ff);
+            return;
+        }
+        this.heroAbilities?.clear();for(const e of this.enemies)if(e.active&&!['boss','shooterBoss','commander'].includes(e.type))e.slow=Math.max(e.slow,2);this.waiting = true; this.paused = false; this.countdown = encounterRhythm(this.stats.wave).recovery; }
     update(_time: number, ms: number) {
-        if (this.paused || this.ended){this.skillInput.clear();if(this.ended)this.heroAbilities?.clear();return;}
+        if (this.paused || this.ended){this.skillAim?.cancel();this.skillInput.clear();if(this.ended){this.heroAbilities?.clear();this.zawgyi?.clear();}return;}
         const dt = Math.min(ms / 1000, .04);
         if (this.strongStop > 0) {
             this.strongStop -= dt;
             return;
+        }
+        this.ironHeart.tick(dt);
+        if(this.areaGate){
+            const gate=this.areaGate;gate.age+=dt;
+            let dx=this.touch?.enabled?this.touch.x:Number(this.keys.D.isDown||this.keys.RIGHT.isDown)-Number(this.keys.A.isDown||this.keys.LEFT.isDown),dy=this.touch?.enabled?this.touch.y:Number(this.keys.S.isDown||this.keys.DOWN.isDown)-Number(this.keys.W.isDown||this.keys.UP.isDown);
+            const length=Math.hypot(dx,dy);if(length>1){dx/=length;dy/=length;}
+            if(length>0){this.angle=Math.atan2(dy,dx);const p=this.moveOnGround(this.x,this.y,dx*HEROES[this.hero].speed*dt,dy*HEROES[this.hero].speed*dt,17);this.x=p.x;this.y=p.y;}
+            this.updateDrops(dt);
+            if(gate.entered(this.x,this.y)){
+                this.areaGate=undefined;this.gateLabel?.destroy();this.gateLabel=undefined;
+                for(const drop of this.drops)drop.active=false;
+                this.stats.wave=11;this.robotOrigin=undefined;
+                const p=this.clearGroundPoint(this.x,this.y,17);this.x=p.x;this.y=p.y;
+                this.startWave();
+            }
+            this.render();return;
         }
         if(this.camp)this.visuals.campLayer(this.y,this.camp.y);
         if (this.countdown > 0) {
@@ -925,6 +970,11 @@ export class ArenaScene extends Phaser.Scene {
                 this.startWave();
             }
             return;
+        }
+        for(const blast of this.cataclysm.tick(dt)){
+            this.visuals.gunnerSkills.verdict(blast.x,blast.y,blast.radius,this.elapsed,0x72e5ff);
+            this.audio.play('verdict-pop');
+            for(const enemy of this.enemies)if(enemy.active&&Math.hypot(enemy.x-blast.x,enemy.y-blast.y)<blast.radius)this.hit(enemy,blast.damage,12);
         }
         this.impactCount=0;
         this.hitConfirm.time=Math.max(0,this.hitConfirm.time-dt);this.combatNotice.time=Math.max(0,this.combatNotice.time-dt);this.synergyClock=Math.max(0,this.synergyClock-dt);this.spawnPulse-=dt;this.escapeClock-=dt;
@@ -975,12 +1025,13 @@ export class ArenaScene extends Phaser.Scene {
         }
         if(this.touch?.enabled){
             const desired=len>0?Math.atan2(dy,dx):this.angle;
-            if(this.swing<=0||isGun(this.weapon))this.angle=this.save.settings.aimAssist?assistedAim(this.x,this.y,desired,isGun(this.weapon)?480:WEAPONS[this.weapon].range*(1+this.u('range')*.25)+35,this.enemies):desired;
+            if(this.hero==='tank'&&this.weapon!=='hammer'){if(!tankShieldCommitted(this.swing,WEAPON_EFFECTS[this.weapon].duration))this.angle=tankTouchAim(this.angle,dx,dy,dt);}
+            else if(this.swing<=0||isGun(this.weapon))this.angle=this.save.settings.aimAssist?assistedAim(this.x,this.y,desired,isGun(this.weapon)?480:WEAPONS[this.weapon].range*(1+this.u('range')*.25)+35,this.enemies):desired;
         }else this.angle = Math.atan2(this.input.activePointer.worldY - this.y, this.input.activePointer.worldX - this.x);
-        if(this.hero!=='zawgyi'&&this.hero!=='gunner'&&this.swing>0)this.angle=this.meleeAim;
+        if(this.hero!=='zawgyi'&&this.hero!=='gunner'&&this.swing>0&&(this.hero!=='tank'||this.weapon==='hammer'||tankShieldCommitted(this.swing,WEAPON_EFFECTS[this.weapon].duration)))this.angle=this.meleeAim;
         if(this.dash>0)this.angle=Math.atan2(this.dashY,this.dashX);
         if(this.zawgyi?.lockedAim!==undefined)this.angle=this.zawgyi.lockedAim;
-        if(this.heroAbilities&&this.heroAbilities.drawTime>0)this.angle=this.heroAbilities.drawAim;
+        if(this.heroAbilities?.samuraiActive?.active)this.angle=this.heroAbilities.samuraiActive.aim;
 
         if (this.dash > 0) {
             this.dash -= dt;
@@ -998,7 +1049,7 @@ export class ArenaScene extends Phaser.Scene {
             if (this.dash <= 0 && this.u('rush'))
                 this.slash(110, 190, Math.PI * 2);
         }
-        if(this.zawgyi&&(this.zawgyi.actionLocked)){dx=0;dy=0;}
+        if(this.zawgyi&&(this.zawgyi.actionLocked)||this.heroAbilities?.samuraiActive?.dashing){dx=0;dy=0;}
         const speed = this.dash > 0 ? 650 : HEROES[this.hero].speed * (1 + this.u('speed') * .08 + this.meta('speed') * .05 + (this.momentum > 0 ? .1 : 0) + (this.boostSpeed>0?.25:0)+(this.speedBurst>0?.3:0)+(this.options.build==='mobility'?.08:0)) * (blocking&&!this.heroAbilities?.marchTime ? .55 : 1)*(this.zawgyi?.speedMultiplier||1)*(this.heroAbilities?.speedMultiplier||1);
         {const p=this.moveOnGround(this.x,this.y,dx*speed*dt,dy*speed*dt,17);this.x=p.x;this.y=p.y;}
         const targetInReach=this.enemies.some(e=>e.active&&Math.hypot(e.x-this.x,e.y-this.y)<(isGun(this.weapon)?520:WEAPONS[this.weapon].range*(1+this.u('range')*.25)+e.r+25));
@@ -1296,6 +1347,9 @@ export class ArenaScene extends Phaser.Scene {
 
 
                         if (b.explosive) {
+                            const radius=this.evolved('explosive')?120:85;
+                            const targets=this.enemies.filter(nearby=>(nearby.active||nearby===e)&&Math.hypot(nearby.x-b.x,nearby.y-b.y)<radius);
+                            if(this.evolved('explosive'))this.cataclysm.trigger(targets,b.damage);
                             if(this.hero==='gunner'){this.visuals.gunnerSkills.verdict(b.x,b.y,this.evolved('explosive')?120:85,this.elapsed);this.audio.play('verdict-pop');}else{this.burst(b.x,b.y,0xa58d73,10);this.impactRing(b.x,b.y,this.evolved('explosive')?120:85);}
                             for (const nearby of this.enemies)
                                 if (nearby.active && Math.hypot(nearby.x - b.x, nearby.y - b.y) < (this.evolved('explosive')?120:85))
@@ -1330,13 +1384,11 @@ export class ArenaScene extends Phaser.Scene {
             if (dist < 22) {
                 d.active = false;
                 if (d.gold) {
-                    this.stats.gold += d.value;
-                    this.waveStats.gold += d.value;
-                    this.save.gold += d.value;
+                    this.grantGold(d.value);
                     this.audio.play('gold');
                 }
                 else {
-                    this.xp += d.value;
+                    this.xp += d.value;this.zawgyi?.cards.collectXp(d.value);
                     this.audio.play('xp');
                 }
             }
@@ -1380,11 +1432,6 @@ export class ArenaScene extends Phaser.Scene {
             const g=this.warningGfx;
             if (!e.active)
                 continue;
-            if(e.burn>0){g.lineStyle(2,0xd59a66,.75);g.strokeCircle(e.x,e.y,e.r+5+Math.sin(this.elapsed*14)*2);}
-            if (e.type === 'elite') {
-                g.lineStyle(2, [0xcfe2bc, 0xffa06b, 0x9fd58b, 0xc69edc, 0xf48499][e.mod], .25 + .12 * Math.sin(this.elapsed * 5));
-                g.strokeCircle(e.x, e.y, e.r + 10 + (e.mod === 1 ? 15 : 0));
-            }
             if (['elite','boss','shooterBoss','commander'].includes(e.type)) {
                 g.fillStyle(0x24222a);
                 g.fillRect(e.x - 30, e.y - e.r - 15, 60, 5);
@@ -1484,6 +1531,8 @@ export class ArenaScene extends Phaser.Scene {
         const color = HEROES[this.hero].color;
         g.fillStyle(0x040b12, .6);
         g.fillEllipse(this.x, this.y + 17, 44, 18);
+        this.visuals.zawgyiRuby=!!this.cardEvolutions.celestial;
+        this.visuals.zawgyiCharges=this.zawgyi?.cards.ready?this.zawgyi.cards.empoweredHits:(this.zawgyi?.cards.rhythm||0);
         this.visuals.render(this.enemies, this.hero, this.weapon, this.x, this.y, this.angle, this.elapsed, this.swing, this.dash, this.invuln, this.hero === 'tank' && this.weapon!=='hammer' && this.attacking && this.stamina > 0, this.counter, this.ammo,this.attackSequence,1+this.u('range')*.25,1+this.u('wide')*.25,{reload:this.reload,reloadDuration:this.reloadDuration,overdrive:this.overdrive},this.heroAbilities?.tankPresentation(),this.heroAbilities?.survivorPresentation());
         this.visuals.passiveSkills(this.hero,this.x,this.y,this.angle,this.elapsed,this.u('fire'),this.evolved('fire'),this.clone,this.evolved('clone'),this.tick);
         if (this.u('orbit')) {
@@ -1501,10 +1550,14 @@ export class ArenaScene extends Phaser.Scene {
         if(this.earlyPower&&this.hero!=='zawgyi'){const w=this.warningGfx,color=({zawgyi:0xffd183,ninja:0xb9a1f2,samurai:0xffb279,gunner:0xffd16c,tank:0x84e1da})[this.hero];const pose=this.hero==='gunner'&&isGunnerWeapon(this.weapon)?gunnerWeaponPose(this.weapon,this.x,this.y,this.angle,1-this.swing/WEAPON_EFFECTS[this.weapon].duration,this.swing>0,this.weapon==='pistols'&&this.attackSequence%2===1,{reload:this.reload,reloadDuration:this.reloadDuration,overdrive:this.overdrive}):weaponPose(this.weapon,this.x,this.y,this.angle,this.swing,this.swing>0,this.attackSequence,false,false,1+this.u('range')*.25,1+this.u('wide')*.25);w.fillStyle(color,.28+.15*Math.sin(this.elapsed*5));w.fillCircle(pose.tip.x,pose.tip.y,5);}
 
         if(this.decoy){g.fillStyle(0x7d78a4,.35);g.fillEllipse(this.decoy.x,this.decoy.y,36,44);g.lineStyle(2,0xaba3c0,.6);g.strokeCircle(this.decoy.x,this.decoy.y,25);}
+        this.areaGate?.draw(this.warningGfx);
+        this.ironHeartBack.setDepth(this.visuals.heroDepth-.15);
+        this.ironHeartFront.setDepth(this.visuals.heroDepth+.5);
+        drawIronHeartShields(this.ironHeartBack,this.ironHeartFront,this.x,this.y,this.ironHeart.remaining);
         this.visuals.evolutionDetails(this.evolution,this.swing,this.elapsed);
         this.campArt?.render(this.elapsed,[...this.siegeEnemies],window.matchMedia('(prefers-reduced-motion: reduce)').matches,this.save.settings.mapView===2);
         this.zawgyi?.render(this.elapsed);
-        this.heroAbilities?.render();
+        this.heroAbilities?.render();this.skillAim?.render();
         this.cosmeticFx?.render(this.elapsed,this.bullets,cosmeticEffectProfile(this.save,this.weapon),this.save.settings.mapView===2,window.matchMedia('(prefers-reduced-motion: reduce)').matches);
         this.outfitFx?.render(this.heroAbilities?.survivorFx?undefined:outfitEffectProfile(this.save,this.hero),{x:this.x,y:this.y,angle:this.angle,time:this.elapsed,dash:this.dash,counter:this.counter,overdrive:this.overdrive,reduced:window.matchMedia('(prefers-reduced-motion: reduce)').matches,wide:this.save.settings.mapView===2});
         this.visuals.applyCosmetics(cosmeticColor(this.save,'character',this.hero),cosmeticColor(this.save,'weapon',this.weapon),this.invuln>0&&this.dash<=0);

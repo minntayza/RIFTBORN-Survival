@@ -1,8 +1,8 @@
-# Zombie Last Stand — Privacy Policy
+# RIFTBORN — Privacy Policy
 
 Draft for owner review · 24 October 2026
 
-Zombie Last Stand offers guest play and optional Google sign-in.
+RIFTBORN offers guest play and optional Google sign-in.
 
 ## Guest play
 

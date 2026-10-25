@@ -4,9 +4,9 @@ import {UPGRADES,upgradeChoices} from '../src/upgrades';
 import {CARD_EVOLUTIONS} from '../src/card-evolutions';
 import {wavePlan} from '../src/waves';
 import {seededRandom} from '../src/retention';
-test('every regular upgrade has a named evolution',()=>{for(const u of UPGRADES)assert.ok(CARD_EVOLUTIONS[u.id]?.effect);});
-test('maxed cards evolve from wave 11 alongside regular choices',()=>{
- const levels={damage:5};assert.ok(upgradeChoices('ninja',levels,()=>0,'katana',10,{}).every(u=>!u.evolves));
+test('Royal Dat Lone and Azure Lotus have named evolutions at three ranks',()=>{for(const id of ['twindatlone','lotusflame','celestial']){assert.equal(UPGRADES.find(u=>u.id===id)!.max,3);assert.ok(CARD_EVOLUTIONS[id]?.effect);}});
+test('maxed cards evolve on the next level-up at any wave',()=>{
+ const levels={damage:5};for(const wave of [1,2,5,10,11]){assert.ok(upgradeChoices('ninja',levels,()=>0,'katana',wave,{}).some(u=>u.evolves==='damage'));assert.ok(upgradeChoices('ninja',{damage:4},()=>0,'katana',wave,{}).every(u=>!u.evolves));}
  const options=upgradeChoices('ninja',levels,()=>0,'katana',11,{});assert.ok(options.some(u=>u.evolves==='damage'));assert.ok(options.some(u=>!u.evolves));assert.ok(upgradeChoices('ninja',levels,()=>0,'katana',50,{damage:true}).every(u=>u.evolves!=='damage'));
 });
 test('mini bosses spawn after wave 10 and alternate before major bosses',()=>{

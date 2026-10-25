@@ -25,10 +25,10 @@ export class GunnerSkillEffects{
  muzzle(x:number,y:number,angle:number,time:number,color=0xffdfa2){this.event({kind:'muzzle',x,y,angle,out:0,born:time,radius:0,color});}
  pierce(x:number,y:number,angle:number,time:number){this.event({kind:'pierce',x,y,angle,out:0,born:time,radius:0,color:0x9de8f5});}
  bounce(x:number,y:number,incoming:number,outgoing:number,time:number){this.event({kind:'bounce',x,y,angle:incoming,out:outgoing,born:time,radius:0,color:0xf0b0e4});}
- verdict(x:number,y:number,radius:number,time:number){
+ verdict(x:number,y:number,radius:number,time:number,color=0xffbd94){
   // Shotgun pellets can explode together. Keep their real damage, merge only nearby artwork.
-  if(this.events.some(e=>e.kind==='verdict'&&time-e.born<.06&&Math.hypot(x-e.x,y-e.y)<25))return;
-  this.event({kind:'verdict',x,y,angle:0,out:0,born:time,radius,color:0xffbd94});
+  if(this.events.some(e=>e.kind==='verdict'&&e.color===color&&time-e.born<.06&&Math.hypot(x-e.x,y-e.y)<25))return;
+  this.event({kind:'verdict',x,y,angle:0,out:0,born:time,radius,color});
  }
  refill(x:number,y:number,time:number){this.event({kind:'refill',x,y,angle:0,out:0,born:time,radius:0,color:0xa7edcf});}
  private star(x:number,y:number,r:number,color:number,fade:number){
@@ -92,13 +92,14 @@ export class GunnerSkillEffects{
     if(!reduced)for(let i=0;i<4;i++){g.fillStyle(i%2?0xffdfa1:0xb6efd2,fade*.8);g.fillRoundedRect(e.x+(i-1.5)*8,e.y+32-age*25,3,6,1);}
    }else{
     const spread=reduced?1:1-Math.pow(1-Math.min(1,age/.16),3),r=e.radius*spread;
-    // Open peach puffs show the real blast boundary without covering enemies.
+    const chain=e.color===0x72e5ff,highlight=chain?0xd4faff:0xffdfa8,core=chain?0x9ef1ff:0xffcd88,detail=chain?0x247f9e:0x80566a,size=Math.min(1,e.radius/85);
+    // Both generations share the animation; cyan distinguishes the smaller chain blasts.
     for(let i=0;i<8;i++){const a=i*Math.PI/4,px=e.x+Math.cos(a)*r*.8,py=e.y+Math.sin(a)*r*.8;
-     if(!reduced){g.fillStyle(i%2?0xffbd99:0xf4b2b6,fade*.18);g.fillCircle(px,py,12+r*.12);}
-     g.lineStyle(2,0xffdfa8,fade*.8);g.beginPath();g.arc(e.x,e.y,r,a+.1,a+.45);g.strokePath();
-     if(!reduced)this.star(px,py,3+fade*3,0xffdfa3,fade*.9);
+     if(!reduced){g.fillStyle(chain?e.color:i%2?0xffbd99:0xf4b2b6,fade*.18);g.fillCircle(px,py,12*size+r*.12);}
+     g.lineStyle(2,highlight,fade*.8);g.beginPath();g.arc(e.x,e.y,r,a+.1,a+.45);g.strokePath();
+     if(!reduced)this.star(px,py,(3+fade*3)*size,highlight,fade*.9);
     }
-    this.star(e.x,e.y,10+fade*7,0xffcd88,fade);g.fillStyle(0x80566a,fade);g.fillCircle(e.x-4,e.y-1,1.5);g.fillCircle(e.x+4,e.y-1,1.5);g.lineStyle(1.2,0x80566a,fade);g.beginPath();g.arc(e.x,e.y+3,3,0,Math.PI);g.strokePath();
+    this.star(e.x,e.y,(10+fade*7)*size,core,fade);g.fillStyle(detail,fade);g.fillCircle(e.x-4,e.y-1,1.5);g.fillCircle(e.x+4,e.y-1,1.5);g.lineStyle(1.2,detail,fade);g.beginPath();g.arc(e.x,e.y+3,3,0,Math.PI);g.strokePath();
    }
   }
  }
