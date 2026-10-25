@@ -6,13 +6,13 @@ export function ninjaAttackPart(image:HTMLImageElement,part:keyof typeof regions
 }
 export function ninjaSwordCanvas(image:HTMLImageElement,resolution=512){
  const c=document.createElement('canvas');c.width=c.height=resolution;const g=c.getContext('2d')!;g.scale(resolution/128,resolution/128);g.imageSmoothingQuality='high';
- g.translate(44,64);g.rotate(Math.PI/2);g.scale(.82,1);
+ g.translate(44,64);g.rotate(Math.PI/2);g.scale(.65,1);
  const [x,y,w,h]=regions.sword;g.drawImage(image,x,y,w,h,-11,-76,23,90);return c;
 }
 export const NINJA_WEAPONS_ATLAS={key:'ninja-weapons-v1',url:'/assets/characters/ninja-weapons-v1.webp'};
 export function ninjaWeaponCanvas(image:HTMLImageElement,id:'dual'|'kama',resolution=512){
  const c=document.createElement('canvas');c.width=c.height=resolution;const g=c.getContext('2d')!;g.scale(resolution/128,resolution/128);g.imageSmoothingQuality='high';
- g.translate(id==='kama'?45:44,64);g.rotate(Math.PI/2);g.scale(.82,1);
+ g.translate(id==='kama'?45:44,64);g.rotate(Math.PI/2);g.scale(.65,1);
  if(id==='dual')g.drawImage(image,585,37,204,643,-13,-71,26,92);
  else{g.scale(-1,1);g.drawImage(image,1371,113,508,549,-9,-66,52,86);}
  return c;

@@ -1,0 +1,17 @@
+import Phaser from 'phaser';
+import {startHomeScene} from '../src/home-scene';
+import {ArenaScene} from '../src/combat';
+import {freshSave} from '../src/save';
+import {AudioManager} from '../src/audio';
+import {COSMETICS,buyCosmetic,equipCosmetic} from '../src/cosmetics';
+const chosen=new URLSearchParams(location.search).get('outfit');
+const outfit=chosen==='future'?'/assets/cosmetics/ninja-future.png':chosen==='ancient'?'/assets/cosmetics/ninja-ancient.png':'/assets/cosmetics/ninja-modern-rig-v3.png';
+document.querySelector('h2')!.textContent=outfit.includes('ancient')?'Ancient Shadow':outfit.includes('future')?'Future Neon Ghost':'Modern Street Shinobi';
+await startHomeScene(document.querySelector('#home')!,'ninja','katana',false,undefined,outfit);
+const save=freshSave();save.petals=100000;save.hero='ninja';save.weapon='katana';const cosmetic=COSMETICS.find(c=>c.kind==='character'&&c.asset===outfit)!;buyCosmetic(save,cosmetic.id);equipCosmetic(save,cosmetic.id);save.settings.sound=save.settings.music=save.settings.shake=false;
+const scene=new ArenaScene(save,new AudioManager(),()=>{},()=>{},()=>{});let left=false,walking=false,swing=0,elapsed=0,sequence=0,freezeAttack=false;
+scene.onArenaReady=()=>{scene.paused=true;scene.plan=[];scene.enemies=[];scene.cameras.main.setZoom(2);scene.cameras.main.centerOn(600,400);document.querySelector('#status')!.textContent='Shared home and gameplay assembly · cosmetic and weapon selections stay independent';let previous=performance.now();const frame=(now:number)=>{const dt=Math.min(.04,(now-previous)/1000);previous=now;elapsed+=dt;swing=Math.max(0,swing-dt);scene.visuals.render([],'ninja','katana',600+(walking?Math.sin(elapsed*2)*16:0),400,left?Math.PI:0,elapsed,freezeAttack?.16:swing,0,0,false,0,10,sequence);requestAnimationFrame(frame);};requestAnimationFrame(frame);};
+const game=new Phaser.Game({type:Phaser.AUTO,parent:'game',width:innerWidth,height:240,scene:[scene],audio:{noAudio:true},banner:false});
+document.querySelector('#face')!.addEventListener('click',()=>left=!left);document.querySelector('#walk')!.addEventListener('click',()=>walking=!walking);document.querySelector('#attack')!.addEventListener('click',()=>{swing=.3;sequence++;freezeAttack=!freezeAttack;});document.querySelector('#view')!.addEventListener('click',()=>scene.cameras.main.setZoom(scene.cameras.main.zoom===2?1:2));
+
+new ResizeObserver(()=>{game.scale.resize(document.querySelector('#game')!.clientWidth,240);if(scene.visuals)scene.cameras.main.centerOn(600,400);}).observe(document.querySelector('#game')!);
