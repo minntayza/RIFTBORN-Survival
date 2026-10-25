@@ -1898,3 +1898,9 @@ button:disabled{box-shadow:none;filter:saturate(.55)}
 .field-build-content .reference-evolution{justify-content:flex-start}
 .field-build-content .reference-evolution>p{margin:0 0 14px;min-height:0}
 .field-build-content .reference-evolution .build-requirements{margin-top:auto}
+
+/* Match Ninja and Samurai portraits, including outfits, to their polished gameplay art. */
+svg[aria-label*="ninja" i],svg[aria-label*="samurai" i]{
+ filter:saturate(1.25) brightness(1.12) contrast(1.08);
+ image-rendering:auto;
+}

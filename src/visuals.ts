@@ -387,7 +387,7 @@ export class ArenaVisuals {
     private tankOutfit=false;
     private tankOutfitUrl='';
     constructor(private scene: Phaser.Scene,skin=false,ninjaSkin=false,gunnerSkin=false,tankSkin=false) {this.tankOutfit=tankSkin;
-        const addArt=(key:string,canvas:HTMLCanvasElement)=>scene.textures.addCanvas(key,gameplayArtwork(/^(tank|gunner|samurai|ninja)-(hammer|shield|spiked|pistols|shotgun|smg|nodachi|cursed|naginata|katana|dual|kama)$/.test(key)?outlinedWeapon(canvas):colorfulCharacter(canvas),256));
+        const addArt=(key:string,canvas:HTMLCanvasElement)=>scene.textures.addCanvas(key,gameplayArtwork(/^(tank|gunner|samurai|ninja)-(hammer|shield|spiked|pistols|shotgun|smg|nodachi|cursed|naginata|katana|dual|kama)$/.test(key)?outlinedWeapon(canvas):colorfulCharacter(canvas,/(ninja|samurai)/.test(key)),256));
         this.ninjaArmFx=scene.add.graphics().setDepth(3.15);
         this.shieldFx=scene.add.graphics().setDepth(.9);
         this.attackFx=scene.add.graphics().setDepth(3.3);
@@ -427,7 +427,7 @@ export class ArenaVisuals {
         const cuteSource=scene.textures.get(CUTE_ATLAS.key).getSourceImage() as HTMLImageElement;
         if(!scene.textures.exists('cute-ninja-full'))addArt('cute-ninja-full',ninjaSkin?ninjaSkinCanvas(scene.textures.get(NINJA_SKIN_KEY).getSourceImage() as HTMLImageElement,0,true):cuteCanvas(cuteSource,'ninja',0,0,true));
         for(const part of ['leftArm','rightArm'] as const){
-            const key=`cute-ninja-${part}`;if(!scene.textures.exists(key))scene.textures.addCanvas(key,cuteArmCanvas(cuteSource,part));
+            const key=`cute-ninja-${part}`;if(!scene.textures.exists(key))addArt(key,cuteArmCanvas(cuteSource,part));
             this.cuteArms.push(scene.add.image(0,0,key).setVisible(false).setDepth(3.2));
         }
         this.decoyImage=scene.add.image(0,0,'hero-ninja-0').setVisible(false).setDepth(2).setDisplaySize(78,78);
@@ -463,7 +463,7 @@ export class ArenaVisuals {
             if(isCuteHorde(id))return hordeCanvas(textures.get(hordeAtlas(id).key).getSourceImage() as HTMLImageElement,id,frame);
             return zombieSpriteLocation(id)?zombieWalkCanvases(textures.get(CUTE_ATLAS.key).getSourceImage() as HTMLImageElement,id)![frame]:actorCanvas('enemy',id,frame);
         });
-        textures.addCanvas(key,/^cute-(tank|gunner|samurai|ninja)-/.test(key)?gameplayArtwork(colorfulCharacter(canvas)):canvas);
+        textures.addCanvas(key,/^cute-(tank|gunner|samurai|ninja)-/.test(key)?gameplayArtwork(colorfulCharacter(canvas,/(ninja|samurai)/.test(key))):canvas);
     }
     defeat() { this.hero.setRotation(this.hero.rotation + 1.2).setAlpha(.5).setScale(.5); this.weapon.setVisible(false); this.offhand.setVisible(false);this.cuteArms.forEach(arm=>arm.setVisible(false));this.ninjaArmFx.clear();this.ninjaBones.forEach(bone=>bone.setVisible(false)); }
     death(e: EnemyVisual, time: number) { const key=e.faction==='robot'?(e.type==='spitter'?'cute-pulse-0':`robot-unit-${e.type}-0`):(e.type==='basic'?'cute-wanderer-0':`enemy-${e.type}-0`);const size=e.r*3.4*zombieVisualScale(e.type,this.scene.cameras.main.zoom);let slot = this.ghosts.find(s => s.expires <= time); if (!slot) {

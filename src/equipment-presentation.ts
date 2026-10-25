@@ -1,7 +1,15 @@
 /** Color and outline treatment is baked once; it never changes sprite geometry. */
-export function colorfulCharacter(source:HTMLCanvasElement){
+export function colorfulCharacter(source:HTMLCanvasElement,polished=false){
  const c=document.createElement('canvas');c.width=source.width;c.height=source.height;
- const g=c.getContext('2d')!;g.filter='saturate(1.18) brightness(1.08) contrast(1.03)';g.drawImage(source,0,0);return c;
+ const g=c.getContext('2d')!;g.imageSmoothingEnabled=true;g.imageSmoothingQuality='high';
+ g.filter=polished?'saturate(1.25) brightness(1.12) contrast(1.08)':'saturate(1.18) brightness(1.08) contrast(1.03)';g.drawImage(source,0,0);
+ if(polished){
+  g.filter='none';g.globalCompositeOperation='source-atop';
+  const light=g.createLinearGradient(0,0,c.width*.7,c.height);
+  light.addColorStop(0,'rgba(226,246,255,.18)');light.addColorStop(.38,'rgba(255,255,255,.07)');light.addColorStop(.62,'rgba(255,255,255,0)');light.addColorStop(1,'rgba(17,30,63,.13)');
+  g.fillStyle=light;g.fillRect(0,0,c.width,c.height);g.globalCompositeOperation='source-over';
+ }
+ return c;
 }
 export function outlinedWeapon(source:HTMLCanvasElement){
  const c=document.createElement('canvas');c.width=source.width;c.height=source.height;

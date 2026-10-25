@@ -56,7 +56,7 @@ export async function startHomeScene(canvas:HTMLCanvasElement,hero:HeroId,weapon
  const arms=[0,1].map(i=>cachedFrame(`connected:${hero}:${i}:${colors.character}:${skin||'base'}`,()=>tintArtwork(skin&&hero==='samurai'?samuraiSkinArm(bodyImage,i):skin&&hero==='ninja'?ninjaSkinArm(bodyImage,i):skin&&hero==='gunner'?gunnerSkinArm(bodyImage,i,4):skin&&hero==='tank'?tankSkinArm(bodyImage,i):connectedArmCanvas(connectedImage,hero,i),colors.character)));
  const staging=document.createElement('canvas');staging.width=1000;staging.height=800;const g=staging.getContext('2d')!;canvas.width=(portrait?420:600)*2;canvas.height=840;g.imageSmoothingEnabled=true;g.imageSmoothingQuality='high';canvas.getContext('2d')!.imageSmoothingQuality='high';
  const sprite=(im:CanvasImageSource,x:number,y:number,w:number,h:number,rotation=0,ox=.5,oy=.5,flipX=false,flipY=false)=>{g.save();g.translate(x,y);g.rotate(rotation);g.scale(flipX?-1:1,flipY?-1:1);g.drawImage(im,-w*ox,-h*oy,w,h);g.restore();};
- const colorfulBody=colorfulCharacter(heroFrame(0)),outlinedEquipment=outlinedWeapon(equipment),colorfulArms=arms.map(colorfulCharacter);
+ const colorfulBody=colorfulCharacter(heroFrame(0),hero==='ninja'||hero==='samurai'),outlinedEquipment=outlinedWeapon(equipment),colorfulArms=arms.map(arm=>colorfulCharacter(arm,hero==='ninja'||hero==='samurai'));
  const draw=()=>{if(!canvas.isConnected)return;g.clearRect(0,0,staging.width,staging.height);
  const frame=0;
 
