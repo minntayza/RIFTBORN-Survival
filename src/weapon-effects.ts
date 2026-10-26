@@ -8,6 +8,15 @@ import type {WeaponId} from './config';
 export type Point={x:number;y:number};
 type Geometry={grip:Point;tip:Point;size:number;duration:number;style:string;color:number};
 export const WEAPON_EFFECTS:Record<WeaponId,Geometry>={
+ aungzeyabow:{grip:{x:-12,y:0},tip:{x:45,y:0},size:95,duration:.28,style:'bow-shot',color:0xf6cb62},
+ solarcrossbow:{grip:{x:-14,y:2},tip:{x:38,y:0},size:82,duration:.14,style:'solar-shot',color:0xffaa44},
+ greatbow:{grip:{x:-16,y:0},tip:{x:54,y:0},size:115,duration:.44,style:'heavy-shot',color:0xff7733},
+ hempwraps:{grip:{x:0,y:0},tip:{x:28,y:0},size:76,duration:.18,style:'fist-strike',color:0xbd3a42},
+ ironwraps:{grip:{x:0,y:0},tip:{x:32,y:0},size:82,duration:.26,style:'iron-strike',color:0x889aa8},
+ tigerwraps:{grip:{x:0,y:0},tip:{x:30,y:0},size:78,duration:.2,style:'claw-strike',color:0xd46830},
+ arindamaspear:{grip:{x:-36,y:0},tip:{x:68,y:0},size:160,duration:.38,style:'arindama-thrust',color:0x72c438},
+ baganpike:{grip:{x:-32,y:0},tip:{x:58,y:-16},size:150,duration:.42,style:'crescent-sweep',color:0xb5c84d},
+ royallance:{grip:{x:-40,y:0},tip:{x:74,y:0},size:175,duration:.48,style:'heavy-lance',color:0xd4af37},
  mysticstaff:{grip:{x:0,y:10},tip:{x:0,y:-42},size:90,duration:.24,style:"magic-bolt",color:0xffce76},
  katana:{grip:{x:-20,y:0},tip:{x:52,y:-9},size:110,duration:.3,style:'clean-cut',color:0xabbcc3},
  dual:{grip:{x:-20,y:0},tip:{x:48,y:-9},size:92,duration:.2,style:'cross-cut',color:0xa6a2bb},
@@ -23,6 +32,7 @@ export const WEAPON_EFFECTS:Record<WeaponId,Geometry>={
  hammer:{grip:{x:-31,y:0},tip:{x:34,y:0},size:112,duration:.46,style:'hammer-slam',color:0xa89a82}
 };
 export const isGun=(id:WeaponId)=>['pistols','shotgun','smg'].includes(id);
+export const isBow=(id:WeaponId)=>['aungzeyabow','solarcrossbow','greatbow'].includes(id);
 export function weaponPose(id:WeaponId,x:number,y:number,aim:number,phase:number,active:boolean,sequence=0,offhand=false,blocking=false,reach=1,arcScale=1,articulated:boolean|'samurai'|'tank'=false){
  const g=WEAPON_EFFECTS[id],t=Math.max(0,Math.min(1,phase)),ease=t*t*(3-2*t),shield=id==='shield'||id==='spiked',gun=isGun(id);
  const facing=Math.cos(aim)<0?-1:1,samuraiFacing=articulated==='samurai'||articulated==='tank'&&shield?facing:1;
@@ -56,7 +66,7 @@ export function weaponPose(id:WeaponId,x:number,y:number,aim:number,phase:number
 }
 function segmentDistance(p:Point,a:Point,b:Point){const dx=b.x-a.x,dy=b.y-a.y,t=Math.max(0,Math.min(1,((p.x-a.x)*dx+(p.y-a.y)*dy)/(dx*dx+dy*dy||1)));return Math.hypot(p.x-a.x-dx*t,p.y-a.y-dy*t);}
 export function meleeContact(id:WeaponId,x:number,y:number,aim:number,enemy:Point,radius:number,sequence=0,reach=1,arcScale=1,articulated:boolean|'samurai'|'tank'=false){
- if(isGun(id))return false;
+ if(isGun(id)||isBow(id))return false;
  for(let i=0;i<=16;i++)for(const offhand of id==='dual'?[false,true]:[false]){
  const pose=weaponPose(id,x,y,aim,i/16*.55,true,sequence,offhand,false,reach,arcScale,articulated),tip=pose.tip;
  if(articulated&&id==='kama'){if(pose.hook&&(segmentDistance(enemy,pose.grip,pose.hook)<=radius+11||segmentDistance(enemy,pose.hook,tip)<=radius+11))return true;}

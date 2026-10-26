@@ -3,12 +3,15 @@ import type {Save} from './save';
 import {HEROES,type HeroId,type WeaponId} from './config';
 import {HERO_ABILITIES,isAbilityHero,validHeroAbilities} from './hero-abilities';
 import {ZAWGYI_SKILLS,validZawgyiLoadout} from './zawgyi';
+import {PYUSAWHTI_SKILLS,validPyusawhtiLoadout} from './pyusawhti';
+import {LETHWEI_SKILLS,validLethweiLoadout} from './lethwei';
+import {KYANSITTHA_SKILLS,validKyansitthaLoadout} from './kyansittha';
 import {AudioManager} from './audio';
 /** A disposable real arena: no progression callbacks, purchases, or save writes. */
 export async function openSkillPreview(source:Save,hero:HeroId,weapon:WeaponId,slot:0|1,returnFocus:HTMLElement){
  if(document.querySelector('.dress-preview-dialog'))return;
  const save=structuredClone({...source,cosmetics:{...source.cosmetics}});save.hero=hero;save.weapon=weapon;save.settings.sound=false;save.settings.music=false;save.settings.shake=false;save.settings.mapView=matchMedia('(max-width:700px)').matches||matchMedia('(pointer:coarse)').matches?2:1;
- const name=hero==='zawgyi'?ZAWGYI_SKILLS[validZawgyiLoadout(save.zawgyiSkills)[slot]].name:isAbilityHero(hero)?HERO_ABILITIES[validHeroAbilities(hero,save.heroAbilities[hero])[slot]].name:HEROES[hero].ability;
+ const name=hero==='zawgyi'?ZAWGYI_SKILLS[validZawgyiLoadout(save.zawgyiSkills)[slot]].name:hero==='pyusawhti'?PYUSAWHTI_SKILLS[validPyusawhtiLoadout(save.pyusawhtiSkills)[slot]].name:hero==='lethwei'?LETHWEI_SKILLS[validLethweiLoadout(save.lethweiSkills)[slot]].name:hero==='kyansittha'?KYANSITTHA_SKILLS[validKyansitthaLoadout(save.kyansitthaSkills)[slot]].name:isAbilityHero(hero)?HERO_ABILITIES[validHeroAbilities(hero,save.heroAbilities[hero])[slot]].name:HEROES[hero].ability;
  const dialog=document.createElement('dialog');dialog.className='dress-preview-dialog';dialog.setAttribute('aria-label',name+' practice preview');dialog.innerHTML=`<header><div><small>SKILL PRACTICE · NO PROGRESS SAVED</small><h3>${name}</h3></div><button data-close aria-label="Close skill preview">✕</button></header><div class="dress-preview-arena" role="img" aria-label="Live ability practice arena"></div><p role="status">Loading practice…</p><footer><button data-cast disabled>▶ Use skill</button><button data-hit disabled>Test enemy hit</button><button data-shot disabled>Test incoming shots</button></footer>`;document.body.append(dialog);dialog.showModal();let stopViewport:(()=>void)|undefined;let alive=true,game:import('phaser').Game|undefined;
  const status=dialog.querySelector('p')!,cast=dialog.querySelector<HTMLButtonElement>('[data-cast]')!,hit=dialog.querySelector<HTMLButtonElement>('[data-hit]')!,shots=dialog.querySelector<HTMLButtonElement>('[data-shot]')!;
  const close=()=>{if(!alive)return;alive=false;stopViewport?.();game?.destroy(true);dialog.remove();returnFocus.focus({preventScroll:true});};dialog.addEventListener('close',close);dialog.querySelector('[data-close]')!.addEventListener('click',()=>dialog.close());
@@ -20,7 +23,7 @@ export async function openSkillPreview(source:Save,hero:HeroId,weapon:WeaponId,s
  s.onLoadingError=()=>{status.textContent='Preview could not load. Close and try again.';};
  const host=dialog.querySelector<HTMLElement>('.dress-preview-arena')!;
  game=new Phaser.Game({type:Phaser.AUTO,parent:host,width:host.clientWidth,height:host.clientHeight,scene:[s],audio:{noAudio:true},banner:false});stopViewport=observeGameViewport(host,(width,height)=>game?.scale.resize(width,height));
- cast.onclick=()=>{if(!alive||!s.visuals)return;s.ability=0;if(s.heroAbilities)s.heroAbilities.cooldowns.fill(0);if(s.zawgyi)s.zawgyi.cooldowns.fill(0);s.requestAbility(hero==='ninja'?0:slot,1,0);status.textContent=name+' · Live practice';};
+ cast.onclick=()=>{if(!alive||!s.visuals)return;s.ability=0;if(s.heroAbilities)s.heroAbilities.cooldowns.fill(0);if(s.zawgyi)s.zawgyi.cooldowns.fill(0);if(s.pyusawhti)s.pyusawhti.cooldowns.fill(0);if(s.lethwei)s.lethwei.cooldowns.fill(0);if(s.kyansittha)s.kyansittha.cooldowns.fill(0);s.requestAbility(hero==='ninja'?0:slot,1,0);status.textContent=name+' · Live practice';};
  hit.onclick=()=>{const e=s.enemies.find(e=>e.active);if(e){e.x=s.x+40;e.y=s.y;s.invuln=0;s.hp=s.maxHp;s.hurt(1,e,0,'Practice hit',true);s.hp=s.maxHp;}};
  shots.onclick=()=>{for(let i=-1;i<=1;i++)s.shoot(s.x+130,s.y+i*15,Math.PI,0,true);};
  }catch{if(alive)status.textContent='Preview could not load. Close and try again.';}

@@ -15,7 +15,7 @@ test('all nine owned Tank weapons resolve to the right theme and an isolated atl
  }
 });
 test('new Tank weapon art preserves old purchases, selections and independent outfit choices',()=>{
- const s=freshSave();s.heroes.push('tank');s.weapons.push('hammer','shield','spiked');
+ const s=freshSave();s.petals=10000;s.heroes.push('tank');s.weapons.push('hammer','shield','spiked');
  buyCosmetic(s,'character:tank:jade');equipCosmetic(s,'character:tank:jade');const outfit=equippedSkin(s,'tank');
  for(const id of TANK_DESIGN_WEAPONS)for(const finish of ['sakura','jade','starlight']){
   const key=`weapon:${id}:${finish}`;buyCosmetic(s,key);assert.ok(equipCosmetic(s,key));assert.equal(equippedSkin(s,'tank'),outfit);

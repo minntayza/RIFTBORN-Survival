@@ -11,9 +11,6 @@ export function gunnerWeaponPose(id:GunnerWeapon,x:number,y:number,aim:number,ph
  const anchor={x:x+8*facing,y:y+5},support={x:x-9*facing,y:y+5};
  const u=local.fore.x*local.size/128,v=local.fore.y*local.size/128*facing,offset={x:Math.cos(rotation)*u-Math.sin(rotation)*v,y:Math.sin(rotation)*u+Math.cos(rotation)*v};
  const held=id==='pistols'?shoulderGrip(shoulder,rotation+.65*facing,17):pairedGrip(anchor,support,offset);grip.x=held.x;grip.y=held.y;
- // Carry long guns in front of the chest rather than through the torso.
- // Both hand targets and the muzzle are projected from this same final grip.
- if(id!=='pistols'){grip.x+=Math.cos(aim)*9;grip.y+=Math.sin(aim)*9+4;}
  const project=(p:{x:number;y:number})=>{const u=p.x*local.size/128,v=p.y*local.size/128*facing;return {x:grip.x+Math.cos(rotation)*u-Math.sin(rotation)*v,y:grip.y+Math.sin(rotation)*u+Math.cos(rotation)*v};};
  return {body:{x,y},facing,grip,tip:project(local.tip),fore:project(local.fore),rotation,size:local.size,originX:.5,originY:.5,flipY:facing<0,hook:undefined};
 }

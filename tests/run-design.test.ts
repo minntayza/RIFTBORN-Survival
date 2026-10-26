@@ -13,7 +13,7 @@ test('encounters alternate pressure and contain genuine gaps in reinforcements',
 });
 test('weapon milestones awaken at ten and complete the same element at twenty',()=>{
  assert.equal(weaponMilestone(9,false,false),undefined);assert.equal(weaponMilestone(10,false,false),'awakening');assert.equal(weaponMilestone(19,true,false),undefined);assert.equal(weaponMilestone(20,true,false),'full');assert.equal(weaponMilestone(40,true,true),undefined);
- assert.equal(new Set(Object.values(HERO_IDENTITIES).map(h=>h.trigger)).size,4);
+ assert.equal(new Set(Object.values(HERO_IDENTITIES).map(h=>h.trigger)).size,Object.keys(HERO_IDENTITIES).length);
 });
 test('archive migration preserves old saves and sanitizes discovery states',()=>{
  const save=freshSave();save.archive={'card:damage':2,'weapon:katana:reach':1};const restored=validateSave(save);assert.deepEqual(restored.archive,save.archive);assert.deepEqual(validateSave({version:1}).archive,{});

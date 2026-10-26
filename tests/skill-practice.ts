@@ -15,7 +15,7 @@ import {HEROES,type HeroId,type WeaponId} from '../src/config';
 let game:Phaser.Game|undefined,scene:ArenaScene|undefined,touch:TouchControls|undefined;
 let touchMode=matchMedia('(pointer:coarse)').matches;
 const heroSelect=document.querySelector<HTMLSelectElement>('#hero')!,pairSelect=document.querySelector<HTMLSelectElement>('#pair')!,status=document.querySelector<HTMLOutputElement>('#status')!,hud=document.querySelector<HTMLElement>('#hud')!;
-const weapons:Record<HeroId,WeaponId>={ninja:'katana',samurai:'nodachi',gunner:'pistols',tank:'shield',zawgyi:'mysticstaff'};
+const weapons:Record<HeroId,WeaponId>={ninja:'katana',samurai:'nodachi',gunner:'pistols',tank:'shield',zawgyi:'mysticstaff',pyusawhti:'aungzeyabow',lethwei:'hempwraps',kyansittha:'arindamaspear'};
 function targets(){if(!scene?.visuals)return;for(let i=0;i<6;i++){const e=scene.spawn(i===0?'elite':'basic');if(e)Object.assign(e,{x:scene.x+Math.cos(i)*150,y:scene.y+Math.sin(i)*150,hp:10000,max:10000,speed:0,damage:0});}}
 function pairs(hero:HeroId){const ids=hero==='zawgyi'?Object.keys(ZAWGYI_SKILLS):isAbilityHero(hero)?[...ABILITY_CHOICES[hero]]:[];pairSelect.hidden=hero==='ninja';pairSelect.innerHTML=ids.flatMap(a=>ids.filter(b=>b!==a).map(b=>`<option value="${a},${b}">${hero==='zawgyi'?ZAWGYI_SKILLS[a as ZawgyiSkill].name:HERO_ABILITIES[a as keyof typeof HERO_ABILITIES].name} + ${hero==='zawgyi'?ZAWGYI_SKILLS[b as ZawgyiSkill].name:HERO_ABILITIES[b as keyof typeof HERO_ABILITIES].name}</option>`)).join('');}
 function equip(){const s=scene;if(!s?.visuals)return;const ids=pairSelect.value.split(',');s.ability=0;s.counter=0;s.strongStop=0;

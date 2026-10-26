@@ -8,7 +8,7 @@ import {combatHud,abilityIcons} from '../src/combat-hud';
 import {updateHud} from '../src/hud-dom';
 import {TouchControls} from '../src/touch';
 let game:Phaser.Game|undefined,s:ArenaScene|undefined,touch:TouchControls|undefined,wide=false,touchMode=false;
-const defaults:Record<HeroId,WeaponId>={ninja:'katana',samurai:'nodachi',gunner:'pistols',tank:'shield',zawgyi:'mysticstaff'},proof=document.querySelector('#proof')!,lines:string[]=[];
+const defaults:Record<HeroId,WeaponId>={ninja:'katana',samurai:'nodachi',gunner:'pistols',tank:'shield',zawgyi:'mysticstaff',pyusawhti:'aungzeyabow',lethwei:'hempwraps',kyansittha:'arindamaspear'},proof=document.querySelector('#proof')!,lines:string[]=[];
 function assert(value:unknown,message:string){if(!value)throw Error(message);}
 async function launch(hero:HeroId,verify=false){game?.destroy(true);touch?.destroy();await new Promise<void>(resolve=>requestAnimationFrame(()=>resolve()));return new Promise<void>((resolve,reject)=>{
  const save=freshSave();save.hero=hero;save.heroes.push(hero);save.weapon=defaults[hero];save.settings.sound=false;save.settings.music=false;save.settings.shake=false;save.settings.mapView=wide?2:1;

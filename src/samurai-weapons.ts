@@ -26,5 +26,5 @@ export function samuraiWeaponCanvas(image:HTMLImageElement,id:SamuraiWeapon,reso
 }
 export function samuraiWeaponPortrait(id:SamuraiWeapon,url=SAMURAI_WEAPONS_ATLAS.url){
  const a=cosmeticWeaponArt(url,id),[x,y,w,h]=a.rect,drawHeight=116*SAMURAI_WEAPON_LENGTH,drawWidth=116*a.width/a.height*.82;
- return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" role="img" aria-label="${id==='nodachi'?'Nodachi':id==='cursed'?'Cursed Blade':'Naginata'} Samurai weapon illustration"><svg x="${64-drawWidth/2}" y="${(128-drawHeight)/2}" width="${drawWidth}" height="${drawHeight}" viewBox="${x} ${y} ${w} ${h}" preserveAspectRatio="none" overflow="hidden"><image href="${url}" width="1536" height="1024"/></svg></svg>`;
+ return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" role="img" aria-label="${id==='nodachi'?'Nodachi':id==='cursed'?'Cursed Blade':'Naginata'} illustration"><svg x="${64-drawWidth/2}" y="${(128-drawHeight)/2}" width="${drawWidth}" height="${drawHeight}" viewBox="${x} ${y} ${w} ${h}" preserveAspectRatio="none" overflow="hidden"><image href="${url}" width="1536" height="1024"/></svg></svg>`;
 }

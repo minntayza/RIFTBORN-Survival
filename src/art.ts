@@ -1,3 +1,6 @@
+import {pyusawhtiPortrait, aungZeyaBowPortrait, solarCrossbowPortrait, greatbowPortrait} from './pyusawhti';
+import {lethweiPortrait, hempWrapsPortrait, ironWrapsPortrait, tigerWrapsPortrait} from './lethwei';
+import {kyansitthaPortrait, arindamaSpearPortrait, baganPikePortrait, royalLancePortrait} from './kyansittha';
 import {zawgyiPortrait,mysticStaffPortrait} from './zawgyi';
 import {connectedHeroPortrait} from './connected-arms';
 import {isTankWeapon,tankWeaponPortrait} from './tank-weapons';
@@ -15,8 +18,40 @@ const ink = '#080e19';
 const svg = (body: string, view = '0 0 240 280') => `<svg xmlns="http://www.w3.org/2000/svg" viewBox="${view}" fill="none" stroke="${ink}" stroke-width="4" stroke-linecap="round" stroke-linejoin="round">${body}</svg>`;
 const path = (d: string, fill: string, stroke = ink, width = 4) => `<path d="${d}" fill="${fill}" stroke="${stroke}" stroke-width="${width}"/>`;
 const circle = (x: number, y: number, r: number, fill: string, stroke = ink) => `<circle cx="${x}" cy="${y}" r="${r}" fill="${fill}" stroke="${stroke}"/>`;
-export const ART_NAMES: Record<WeaponId, string> = { mysticstaff:"Mystic Staff / close-range strikes",kama:'Crescent / hooked steel',naginata:'Horizon / sweeping polearm',smg:'Hornet / 28 rounds',hammer:'Anvil / crushing steel',katana: 'Moonsteel / balanced edge', dual: 'Dusk & Dawn / twin edges', nodachi: 'Exile / heavy steel', cursed: 'Blood oath / fractured steel', pistols: 'Brass twins / 12 rounds', shotgun: 'Crowdbreaker / scatter fire', shield: 'Bastion / forged guard', spiked: 'Thornwall / retaliation' };
+export const ART_NAMES: Record<WeaponId, string> = {
+ aungzeyabow:"Aung Zeya Bow / longbow",
+ solarcrossbow:"Solar Repeater / dual limbs",
+ greatbow:"Phoenix Greatbow / heavy fire",
+ hempwraps:"Hemp Wraps / raw weave",
+ ironwraps:"Iron Wraps / studded fists",
+ tigerwraps:"Tiger Wraps / claw caestus",
+ arindamaspear:"Arindama Spear / Bagan royal spear",
+ baganpike:"Bagan Pike / crescent blade",
+ royallance:"Royal Lance / vanguard steel",
+ mysticstaff:"Mystic Staff / close-range strikes",
+ kama:'Crescent / hooked steel',
+ naginata:'Horizon / sweeping polearm',
+ smg:'Hornet / 28 rounds',
+ hammer:'Anvil / crushing steel',
+ katana: 'Moonsteel / balanced edge',
+ dual: 'Dusk & Dawn / twin edges',
+ nodachi: 'Exile / heavy steel',
+ cursed: 'Blood oath / fractured steel',
+ pistols: 'Brass twins / 12 rounds',
+ shotgun: 'Crowdbreaker / scatter fire',
+ shield: 'Bastion / forged guard',
+ spiked: 'Thornwall / retaliation'
+};
 export function weaponSvg(id: WeaponId) {
+    if(id==='aungzeyabow')return aungZeyaBowPortrait();
+    if(id==='solarcrossbow')return solarCrossbowPortrait();
+    if(id==='greatbow')return greatbowPortrait();
+    if(id==='hempwraps')return hempWrapsPortrait();
+    if(id==='ironwraps')return ironWrapsPortrait();
+    if(id==='tigerwraps')return tigerWrapsPortrait();
+    if(id==='arindamaspear')return arindamaSpearPortrait();
+    if(id==='baganpike')return baganPikePortrait();
+    if(id==='royallance')return royalLancePortrait();
     if(id==='mysticstaff')return mysticStaffPortrait();
     let b = '';
     if(id==='kama')b=`<g transform="translate(118 123) rotate(25)">${path('M-7 -63 L7 -63 L7 88 L-7 88 Z','#655778')}${path('M-6 -57 Q39 -91 84 -59 Q44 -55 22 -17 L4 -23 L8 -43 Q35 -70 65 -63 Q26 -79 -6 -44 Z','#b7c9cd')}${path('M-7 10 L7 17 M-7 28 L7 35 M-7 46 L7 53 M-7 64 L7 71','none','#b89e80',3)}${circle(1,-56,5,'#a79261')}</g>`;
@@ -39,6 +74,9 @@ export function weaponSvg(id: WeaponId) {
 }
 export function heroSvg(id: HeroId, equipped = true) {
     if(id==='zawgyi')return zawgyiPortrait();
+    if(id==='pyusawhti')return pyusawhtiPortrait();
+    if(id==='lethwei')return lethweiPortrait();
+    if(id==='kyansittha')return kyansitthaPortrait();
     const c = '#' + HEROES[id].color.toString(16);
     let b = '';
     const legs = path('M87 181 L120 179 L118 230 L111 260 L81 260 L89 230 Z', '#253244') + path('M122 179 L153 181 L151 228 L166 254 L138 260 L125 230 Z', '#253244') + path('M80 248 L112 248 L111 267 L75 267 Z', '#141d2b') + path('M139 248 L166 247 L172 265 L135 269 Z', '#141d2b');
@@ -81,9 +119,38 @@ export function enemySvg(id: EnemyId) {
     if(id==='commander')b+=path('M75 85 L151 82 L173 166 L151 215 L80 210 L61 154 Z','#3e4f65')+path('M72 91 L47 84 L43 106 L78 119 M152 86 L181 82 L188 103 L156 115','#aa9766')+path('M90 34 L96 14 L137 14 L151 31 L149 48 L88 48 Z','#526779')+path('M91 42 L152 41','none','#d0b779',7)+path('M191 88 L188 204','none','#9db8bd',8)+circle(191,85,12,'#a8c4ca')+path('M113 113 L126 105 L139 113 L126 130 Z','#b6a16f');
     return svg(b);
 }
-export const heroFigureImage=(id:HeroId)=>id==='zawgyi'?zawgyiPortrait():connectedHeroPortrait(id).replace('<svg ','<svg class="art-image" ');
-export const artImage = (kind: 'hero' | 'weapon' | 'enemy', id: string, cls = '') => kind==='hero'&&id==='zawgyi'?zawgyiPortrait(`art-image ${cls}`):kind==='weapon'&&id==='mysticstaff'?`<img class="art-image ${cls}" alt="Mystic Staff illustration" src="data:image/svg+xml,${encodeURIComponent(mysticStaffPortrait())}">`:kind==='hero'?connectedHeroPortrait(id as HeroId).replace('<svg ',`<svg class="art-image ${cls}" `):kind==='weapon'&&isTankWeapon(id)?tankWeaponPortrait(id).replace('<svg ',`<svg class="art-image ${cls}" `):kind==='weapon'&&isGunnerWeapon(id)?gunnerWeaponPortrait(id).replace('<svg ',`<svg class="art-image ${cls}" `):kind==='weapon'&&isSamuraiWeapon(id)?samuraiWeaponPortrait(id).replace('<svg ',`<svg class="art-image ${cls}" `):kind==='weapon'&&(id==='katana'||id==='dual'||id==='kama')?ninjaWeaponPortrait(id).replace('<svg ',`<svg class="art-image ${cls}" `):kind==='enemy'&&id==='basic'?cutePortrait('wanderer').replace('<svg ',`<svg class="art-image ${cls}" `): `<img class="art-image ${cls}" alt="${kind === 'weapon' ? WEAPONS[id as WeaponId].name : ENEMIES[id as EnemyId].name} illustration" src="data:image/svg+xml,${encodeURIComponent(kind === 'weapon' ? weaponSvg(id as WeaponId) : enemySvg(id as EnemyId))}">`;
-export const weaponShopImage = (id: WeaponId) => id==='mysticstaff'?mysticStaffPortrait('weapon-reference-art'): isTankWeapon(id)?tankWeaponPortrait(id).replace('<svg ','<svg class="weapon-reference-art" '):isGunnerWeapon(id)?gunnerWeaponPortrait(id).replace('<svg ','<svg class="weapon-reference-art" '):isSamuraiWeapon(id)?samuraiWeaponPortrait(id).replace('<svg ','<svg class="weapon-reference-art" '):(id==='katana'||id==='dual'||id==='kama')?ninjaWeaponPortrait(id).replace('<svg ','<svg class="weapon-reference-art" '): `<img class="weapon-reference-art" alt="${id} illustrated weapon" src="/assets/weapon-cards/${id}.webp" loading="lazy">`;
+export const heroFigureImage=(id:HeroId)=>id==='zawgyi'?zawgyiPortrait():id==='pyusawhti'?pyusawhtiPortrait():id==='lethwei'?lethweiPortrait():id==='kyansittha'?kyansitthaPortrait():connectedHeroPortrait(id).replace('<svg ','<svg class="art-image" ');
+export const artImage = (kind: 'hero' | 'weapon' | 'enemy', id: string, cls = '') =>
+ kind==='hero'&&id==='zawgyi'?zawgyiPortrait(`art-image ${cls}`):
+ kind==='hero'&&id==='pyusawhti'?pyusawhtiPortrait(`art-image ${cls}`):
+ kind==='hero'&&id==='lethwei'?lethweiPortrait(`art-image ${cls}`):
+ kind==='hero'&&id==='kyansittha'?kyansitthaPortrait(`art-image ${cls}`):
+ kind==='weapon'&&id==='mysticstaff'?`<img class="art-image ${cls}" alt="Mystic Staff illustration" src="data:image/svg+xml,${encodeURIComponent(mysticStaffPortrait())}">`:
+ kind==='weapon'&&['aungzeyabow','solarcrossbow','greatbow','hempwraps','ironwraps','tigerwraps','arindamaspear','baganpike','royallance'].includes(id)?`<img class="art-image ${cls}" alt="${WEAPONS[id as WeaponId].name} illustration" src="data:image/svg+xml,${encodeURIComponent(weaponSvg(id as WeaponId))}">`:
+ kind==='hero'?connectedHeroPortrait(id as HeroId).replace('<svg ',`<svg class="art-image ${cls}" `):
+ kind==='weapon'&&isTankWeapon(id)?tankWeaponPortrait(id).replace('<svg ',`<svg class="art-image ${cls}" `):
+ kind==='weapon'&&isGunnerWeapon(id)?gunnerWeaponPortrait(id).replace('<svg ',`<svg class="art-image ${cls}" `):
+ kind==='weapon'&&isSamuraiWeapon(id)?samuraiWeaponPortrait(id).replace('<svg ',`<svg class="art-image ${cls}" `):
+ kind==='weapon'&&(id==='katana'||id==='dual'||id==='kama')?ninjaWeaponPortrait(id).replace('<svg ',`<svg class="art-image ${cls}" `):
+ kind==='enemy'&&id==='basic'?cutePortrait('wanderer').replace('<svg ',`<svg class="art-image ${cls}" `):
+ `<img class="art-image ${cls}" alt="${kind === 'weapon' ? WEAPONS[id as WeaponId].name : ENEMIES[id as EnemyId].name} illustration" src="data:image/svg+xml,${encodeURIComponent(kind === 'weapon' ? weaponSvg(id as WeaponId) : enemySvg(id as EnemyId))}">`;
+
+export const weaponShopImage = (id: WeaponId) =>
+ id==='mysticstaff'?mysticStaffPortrait('weapon-reference-art'):
+ id==='aungzeyabow'?aungZeyaBowPortrait('weapon-reference-art'):
+ id==='solarcrossbow'?solarCrossbowPortrait('weapon-reference-art'):
+ id==='greatbow'?greatbowPortrait('weapon-reference-art'):
+ id==='hempwraps'?hempWrapsPortrait('weapon-reference-art'):
+ id==='ironwraps'?ironWrapsPortrait('weapon-reference-art'):
+ id==='tigerwraps'?tigerWrapsPortrait('weapon-reference-art'):
+ id==='arindamaspear'?arindamaSpearPortrait('weapon-reference-art'):
+ id==='baganpike'?baganPikePortrait('weapon-reference-art'):
+ id==='royallance'?royalLancePortrait('weapon-reference-art'):
+ isTankWeapon(id)?tankWeaponPortrait(id).replace('<svg ','<svg class="weapon-reference-art" '):
+ isGunnerWeapon(id)?gunnerWeaponPortrait(id).replace('<svg ','<svg class="weapon-reference-art" '):
+ isSamuraiWeapon(id)?samuraiWeaponPortrait(id).replace('<svg ','<svg class="weapon-reference-art" '):
+ (id==='katana'||id==='dual'||id==='kama')?ninjaWeaponPortrait(id).replace('<svg ','<svg class="weapon-reference-art" '):
+ `<img class="weapon-reference-art" alt="${id} illustrated weapon" src="/assets/weapon-cards/${id}.webp" loading="lazy">`;
 // Cached top-down animation frames: canvas is used once at scene creation, never per frame.
 export function actorCanvas(kind: 'hero' | 'enemy', id: HeroId | EnemyId, frame: number) {
     const canvas = document.createElement('canvas');

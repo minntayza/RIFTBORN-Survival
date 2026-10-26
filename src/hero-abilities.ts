@@ -3,7 +3,7 @@ import {ABILITY_TUNING as T,HEROES,type HeroId} from './config';
 export type AbilityHero='samurai'|'gunner'|'tank';
 export type HeroAbilityId='counter'|'draw'|'mark'|'overdrive'|'beacon'|'breach'|'slam'|'bulwark'|'march';
 export type AbilityPair=[HeroAbilityId,HeroAbilityId];
-export const isAbilityHero=(hero:HeroId):hero is AbilityHero=>hero==='samurai'||hero==='gunner';
+export const isAbilityHero=(hero:HeroId):hero is AbilityHero=>hero==='samurai'||hero==='gunner'||hero==='tank';
 export const HERO_ABILITIES={
  counter:{name:'Perfect Counter',cooldown:HEROES.samurai.cooldown,description:'Brace for a hit, then retaliate in a wide circle. Counter upgrades extend the timing window.',icon:'☯'},
  draw:{name:'Flash Draw',cooldown:T.draw.cooldown,description:'Burst forward through enemies with one powerful cut. Brief protection during the dash. Walls and obstacles stop movement.',icon:'☾'},

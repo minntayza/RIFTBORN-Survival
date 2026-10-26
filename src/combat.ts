@@ -17,6 +17,9 @@ import {HeroAbilityCombat} from './hero-ability-combat';
 import {isAbilityHero} from './hero-abilities';
 import {SkillInputBuffer,effectBudget} from './combat-polish';
 import {ZawgyiCombat} from './zawgyi-combat';
+import {PyusawhtiCombat} from './pyusawhti-combat';
+import {LethweiCombat} from './lethwei-combat';
+import {KyansitthaCombat} from './kyansittha-combat';
 import {ZAWGYI_ART} from './zawgyi';
 import {tankArmAsset,registerTankArmArtwork} from './tank-arm-art';
 import {OutfitAbilityEffects} from './outfit-ability-fx';
@@ -167,6 +170,9 @@ export class ArenaScene extends Phaser.Scene {
     }
 
     zawgyi?:ZawgyiCombat;
+    pyusawhti?:PyusawhtiCombat;
+    lethwei?:LethweiCombat;
+    kyansittha?:KyansitthaCombat;
     heroAbilities?:HeroAbilityCombat;
     outfitFx!:OutfitAbilityEffects;
     cosmeticFx!:CosmeticWeaponEffects;
@@ -322,7 +328,7 @@ export class ArenaScene extends Phaser.Scene {
     fullEvolution=false;
     earlyAwakened=false;
     get earlyPower(){return this.earlyAwakened&&this.stats.wave<=10;}
-    get earlyTechnique(){return ({zawgyi:"Alchemist’s Spark · +12% magic damage",ninja:"Shadow Edge · +5% critical chance",samurai:"Tempered Edge · +12% weapon damage",gunner:"Hot Chamber · +10% fire rate",tank:"Iron Impact · +20% knockback"})[this.hero];}
+    get earlyTechnique(){return ({zawgyi:"Alchemist’s Spark · +12% magic damage",ninja:"Shadow Edge · +5% critical chance",samurai:"Tempered Edge · +12% weapon damage",gunner:"Hot Chamber · +10% fire rate",tank:"Iron Impact · +20% knockback",pyusawhti:"Eagle Eye · +15% arrow velocity & pierce",lethwei:"Lethwei Heart · +10% physical power",kyansittha:"Vanguard Thrust · +10% spear reach"})[this.hero];}
     get evolutionDue(){return !!weaponMilestone(this.stats.wave,!!this.awakened,this.fullEvolution);}
     identityCharge=0;
     openingShots=0;
@@ -425,7 +431,7 @@ export class ArenaScene extends Phaser.Scene {
     grid = new Map<string, Enemy[]>();
     dashHits = new Set<Enemy>();
     constructor(save: Save, audio: AudioManager, choice: (wave: boolean) => void, end: () => void, pause: () => void, options?:RunOptions) { super('arena'); this.save = save; this.audio = audio; this.hero = save.hero; this.weapon = save.weapon; this.onChoice = choice; this.onEnd = end; this.onPause = pause; if(options){this.options=options;this.hero=options.hero||save.hero;this.weapon=options.weapon||save.weapon;} if(!Object.hasOwn(HEROES,this.hero)||!Object.hasOwn(WEAPONS,this.weapon)){this.hero='ninja';this.weapon='katana';this.options={...this.options,hero:'ninja',weapon:'katana'};} if(this.options.seed!==undefined){this.random=seededRandom(this.options.seed);this.cardRandom=seededRandom(this.options.seed^0x85ebca6b);}this.options.technique='standard';if(this.options.mode==='daily'){this.save=prepareRunSave(save,this.options);this.camp=new LastCamp();this.x=600;this.y=520;} }
-    create() { applyArtDirection(this); this.robotArt=new RobotMapArt(this);const park=this.textures.get('park-ground'),pw=Math.floor(park.getSourceImage().width/5),ph=Math.floor(park.getSourceImage().height/5);for(let y=0;y<5;y++)for(let x=0;x<5;x++)park.add(`${x}-${y}`,0,x*pw,y*ph,pw,ph); this.textures.get('city-wreck').add('chassis',0,150,18,810,1395); this.floor = this.add.graphics().setDepth(-4); this.gfx = this.add.graphics();this.warningGfx=this.add.graphics().setDepth(6);this.ironHeartBack=this.add.graphics();this.ironHeartFront=this.add.graphics(); this.drawFloor();if(this.camp)this.campArt=new LastCampArt(this); this.visuals = new ArenaVisuals(this,this.hero==='samurai'&&!!equippedSkin(this.save,this.hero),this.hero==='ninja'&&!!equippedSkin(this.save,this.hero),this.hero==='gunner'&&!!equippedSkin(this.save,this.hero),this.hero==='tank'&&!!equippedSkin(this.save,this.hero)); this.cosmeticFx=new CosmeticWeaponEffects(this);this.outfitFx=new OutfitAbilityEffects(this); this.keys = this.input.keyboard!.addKeys('W,A,S,D,UP,DOWN,LEFT,RIGHT,SPACE,Q,E,ESC,M,ONE,TWO,THREE') as typeof this.keys; this.input.keyboard!.on('keydown-ESC', () => {if(!this.skillAim?.cancel())this.onPause();}); this.input.keyboard!.on('keydown-M', () => { this.save.settings.sound = !this.save.settings.sound; this.audio.sound = this.save.settings.sound; }); this.input.keyboard!.on('keydown', (event:KeyboardEvent)=>{if(event.repeat||event.ctrlKey||event.metaKey||event.altKey)return;const slot=event.code==='Space'||this.hero!=='ninja'&&event.code==='KeyQ'?0:this.hero!=='ninja'&&event.code==='KeyE'?1:-1;if(slot<0)return;if(this.skillAim?.keyDown(slot,event.code))return;const k=this.keys,dx=this.touch?.enabled?this.touch.x:Number(k.D.isDown||k.RIGHT.isDown)-Number(k.A.isDown||k.LEFT.isDown),dy=this.touch?.enabled?this.touch.y:Number(k.S.isDown||k.DOWN.isDown)-Number(k.W.isDown||k.UP.isDown);this.requestAbility(slot,dx,dy);});this.input.keyboard!.on('keyup',(event:KeyboardEvent)=>this.skillAim?.keyUp(event.code));this.input.keyboard!.addCapture(['Q','E','W', 'A', 'S', 'D', 'UP', 'DOWN', 'LEFT', 'RIGHT', 'SPACE']); const h = HEROES[this.hero]; this.maxHp = h.hp * (1 + this.meta('health') * .05); if(this.options.build==='guard')this.maxHp*=1.15;this.hp = this.maxHp; this.rerolls = 1 + this.meta('reroll'); this.ammo=this.maxAmmo;this.applyMapView();const resized=()=>{this.applyMapView();if(this.visuals)this.render();};this.scale.on('resize',resized);this.events.once('shutdown',()=>this.scale.off('resize',resized)); this.startWave();if(this.hero==='zawgyi')this.zawgyi=new ZawgyiCombat(this);if(isAbilityHero(this.hero))this.heroAbilities=new HeroAbilityCombat(this);if(this.hero==='gunner'){this.skillAim=new SkillAim(this);this.events.once('shutdown',()=>this.skillAim?.destroy());}this.events.once('postupdate',()=>this.onArenaReady?.()); }
+    create() { applyArtDirection(this); this.robotArt=new RobotMapArt(this);const park=this.textures.get('park-ground'),pw=Math.floor(park.getSourceImage().width/5),ph=Math.floor(park.getSourceImage().height/5);for(let y=0;y<5;y++)for(let x=0;x<5;x++)park.add(`${x}-${y}`,0,x*pw,y*ph,pw,ph); this.textures.get('city-wreck').add('chassis',0,150,18,810,1395); this.floor = this.add.graphics().setDepth(-4); this.gfx = this.add.graphics();this.warningGfx=this.add.graphics().setDepth(6);this.ironHeartBack=this.add.graphics();this.ironHeartFront=this.add.graphics(); this.drawFloor();if(this.camp)this.campArt=new LastCampArt(this); this.visuals = new ArenaVisuals(this,this.hero==='samurai'&&!!equippedSkin(this.save,this.hero),this.hero==='ninja'&&!!equippedSkin(this.save,this.hero),this.hero==='gunner'&&!!equippedSkin(this.save,this.hero),this.hero==='tank'&&!!equippedSkin(this.save,this.hero)); this.cosmeticFx=new CosmeticWeaponEffects(this);this.outfitFx=new OutfitAbilityEffects(this); this.keys = this.input.keyboard!.addKeys('W,A,S,D,UP,DOWN,LEFT,RIGHT,SPACE,Q,E,ESC,M,ONE,TWO,THREE') as typeof this.keys; this.input.keyboard!.on('keydown-ESC', () => {if(!this.skillAim?.cancel())this.onPause();}); this.input.keyboard!.on('keydown-M', () => { this.save.settings.sound = !this.save.settings.sound; this.audio.sound = this.save.settings.sound; }); this.input.keyboard!.on('keydown', (event:KeyboardEvent)=>{if(event.repeat||event.ctrlKey||event.metaKey||event.altKey)return;const slot=event.code==='Space'||this.hero!=='ninja'&&event.code==='KeyQ'?0:this.hero!=='ninja'&&event.code==='KeyE'?1:-1;if(slot<0)return;if(this.skillAim?.keyDown(slot,event.code))return;const k=this.keys,dx=this.touch?.enabled?this.touch.x:Number(k.D.isDown||k.RIGHT.isDown)-Number(k.A.isDown||k.LEFT.isDown),dy=this.touch?.enabled?this.touch.y:Number(k.S.isDown||k.DOWN.isDown)-Number(k.W.isDown||k.UP.isDown);this.requestAbility(slot,dx,dy);});this.input.keyboard!.on('keyup',(event:KeyboardEvent)=>this.skillAim?.keyUp(event.code));this.input.keyboard!.addCapture(['Q','E','W', 'A', 'S', 'D', 'UP', 'DOWN', 'LEFT', 'RIGHT', 'SPACE']); const h = HEROES[this.hero]; this.maxHp = h.hp * (1 + this.meta('health') * .05); if(this.options.build==='guard')this.maxHp*=1.15;this.hp = this.maxHp; this.rerolls = 1 + this.meta('reroll'); this.ammo=this.maxAmmo;this.applyMapView();const resized=()=>{this.applyMapView();if(this.visuals)this.render();};this.scale.on('resize',resized);this.events.once('shutdown',()=>this.scale.off('resize',resized)); this.startWave();if(this.hero==='zawgyi')this.zawgyi=new ZawgyiCombat(this);if(this.hero==='pyusawhti'){this.pyusawhti=new PyusawhtiCombat(this);this.events.once('shutdown',()=>this.pyusawhti?.clear());}if(this.hero==='lethwei'){this.lethwei=new LethweiCombat(this);this.events.once('shutdown',()=>this.lethwei?.clear());}if(this.hero==='kyansittha'){this.kyansittha=new KyansitthaCombat(this);this.events.once('shutdown',()=>this.kyansittha?.clear());}if(isAbilityHero(this.hero))this.heroAbilities=new HeroAbilityCombat(this);if(this.hero==='gunner'){this.skillAim=new SkillAim(this);this.events.once('shutdown',()=>this.skillAim?.destroy());}this.events.once('postupdate',()=>this.onArenaReady?.()); }
     applyMapView(){this.cameras.main.setZoom(1.05/(this.save.settings.mapView||1));this.positionCamera();}
     private positionCamera(){const camera=this.cameras.main;if(this.camp){const p=campCamera(camera.width,camera.height,this.save.settings.mapView,this.x,this.y,this.camp.x,this.camp.y);camera.setZoom(p.zoom).centerOn(p.x,p.y);}else camera.centerOn(this.x,this.y);}
     floorTheme = 0;
@@ -724,6 +730,7 @@ export class ArenaScene extends Phaser.Scene {
         this.attack = cooldownValue(w.cooldown, HEROES[this.hero].rate * (this.earlyPower&&this.hero==='gunner'?1.1:1) * (1 + (this.momentum > 0 ? .1 * Math.min(3, Math.floor(this.combo / 5)) : 0))*(1+this.evolution.tempo*.1)*(this.overdrive>0?1.6:1));
 
         if(this.hero==='zawgyi'){this.zawgyi?.staffAttack();return;}
+        if(this.hero==='pyusawhti'){this.pyusawhti?.bowAttack();return;}
         if (this.hero === 'gunner') {
             if (this.reload > 0)
                 return;
@@ -791,6 +798,9 @@ export class ArenaScene extends Phaser.Scene {
     requestAbility(slot:number,dx:number,dy:number){if(this.paused||this.ended||this.countdown>0)return;this.skillInput.request(slot,dx,dy,this.time.now);}
     activate(dx:number,dy:number){
         if(this.hero==='zawgyi'){this.zawgyi?.activate(0,dx,dy);return;}
+        if(this.hero==='pyusawhti'){this.pyusawhti?.activate(0,dx,dy);return;}
+        if(this.hero==='lethwei'){this.lethwei?.activate(0,dx,dy);return;}
+        if(this.hero==='kyansittha'){this.kyansittha?.activate(0,dx,dy);return;}
         if(this.heroAbilities){this.heroAbilities.activate(0,dx,dy);return;}
         this.activateLegacy(dx,dy);
     }
@@ -850,6 +860,10 @@ export class ArenaScene extends Phaser.Scene {
         }
         if(e){if(this.enemies.some(c=>c.active&&c.type==='commander'&&c.commandTime>0&&Math.hypot(c.x-e.x,c.y-e.y)<220))value*=1.15;e.touched=true;}
         value=this.heroAbilities?.incomingDamage(value)??value;
+        if(this.lethwei){
+            value*=this.lethwei.damageReductionMultiplier;
+            this.lethwei.onDamageTaken(value);
+        }
         value *= 1 - this.meta('defense') * .05;
         if(e)a=Math.atan2(e.y-this.y,e.x-this.x);
         if(this.hero==='ninja'&&this.u('smoke')&&this.time.now>=this.smokeBombReadyAt){const level=this.u('smoke'),radius=145+level*28;this.smokeBombReadyAt=this.time.now+Math.max(4200,9000-level*1500);for(const enemy of this.enemies)if(enemy.active&&Math.hypot(enemy.x-this.x,enemy.y-this.y)<radius)enemy.slow=Math.max(enemy.slow,1.5+level*.5+(this.evolved('smoke')?1:0));if(this.evolved('smoke'))this.rewardShield=Math.max(this.rewardShield,1);this.invuln=Math.max(this.invuln,.35);this.visuals.smokeBomb(this.x,this.y,radius,level,this.evolved('smoke'),this.elapsed);this.audio.play('smoke-bloom');this.notifyCombat('SMOKE BOMB · ENEMIES DAZED');}
@@ -940,7 +954,7 @@ export class ArenaScene extends Phaser.Scene {
         }
         this.heroAbilities?.clear();for(const e of this.enemies)if(e.active&&!['boss','shooterBoss','commander'].includes(e.type))e.slow=Math.max(e.slow,2);this.waiting = true; this.paused = false; this.countdown = encounterRhythm(this.stats.wave).recovery; }
     update(_time: number, ms: number) {
-        if (this.paused || this.ended){this.skillAim?.cancel();this.skillInput.clear();if(this.ended){this.heroAbilities?.clear();this.zawgyi?.clear();}return;}
+        if (this.paused || this.ended){this.skillAim?.cancel();this.skillInput.clear();if(this.ended){this.heroAbilities?.clear();this.zawgyi?.clear();this.pyusawhti?.clear();this.lethwei?.clear();this.kyansittha?.clear();}return;}
         const dt = Math.min(ms / 1000, .04);
         if (this.strongStop > 0) {
             this.strongStop -= dt;
@@ -997,8 +1011,11 @@ export class ArenaScene extends Phaser.Scene {
         this.tick += dt;
         this.attack -= dt;
         this.zawgyi?.update(dt);
+        this.pyusawhti?.update(dt);
+        this.lethwei?.update(dt);
+        this.kyansittha?.update(dt);
         this.heroAbilities?.update(dt);
-        this.skillInput.consume(this.time.now,(slot,dx,dy)=>{if(this.paused||this.ended||this.countdown>0)return false;if(this.zawgyi)return this.zawgyi.activate(slot,dx,dy);if(this.heroAbilities)return this.heroAbilities.activate(slot,dx,dy);if(slot!==0||this.ability>0)return false;this.activate(dx,dy);return true;});
+        this.skillInput.consume(this.time.now,(slot,dx,dy)=>{if(this.paused||this.ended||this.countdown>0)return false;if(this.zawgyi)return this.zawgyi.activate(slot,dx,dy);if(this.pyusawhti)return this.pyusawhti.activate(slot,dx,dy);if(this.lethwei)return this.lethwei.activate(slot,dx,dy);if(this.kyansittha)return this.kyansittha.activate(slot,dx,dy);if(this.heroAbilities)return this.heroAbilities.activate(slot,dx,dy);if(slot!==0||this.ability>0)return false;this.activate(dx,dy);return true;});
         this.swing = Math.max(0, this.swing - dt);
         this.ability = Math.max(0, this.ability - dt);
         this.invuln = Math.max(0, this.invuln - dt);
@@ -1054,7 +1071,7 @@ export class ArenaScene extends Phaser.Scene {
                 this.slash(110, 190, Math.PI * 2);
         }
         if(this.zawgyi&&(this.zawgyi.actionLocked)||this.heroAbilities?.samuraiActive?.dashing){dx=0;dy=0;}
-        const speed = this.dash > 0 ? 650 : HEROES[this.hero].speed * (1 + this.u('speed') * .08 + this.meta('speed') * .05 + (this.momentum > 0 ? .1 : 0) + (this.boostSpeed>0?.25:0)+(this.speedBurst>0?.3:0)+(this.options.build==='mobility'?.08:0)) * (blocking&&!this.heroAbilities?.marchTime ? .55 : 1)*(this.zawgyi?.speedMultiplier||1)*(this.heroAbilities?.speedMultiplier||1);
+        const speed = this.dash > 0 ? 650 : HEROES[this.hero].speed * (1 + this.u('speed') * .08 + this.meta('speed') * .05 + (this.momentum > 0 ? .1 : 0) + (this.boostSpeed>0?.25:0)+(this.speedBurst>0?.3:0)+(this.options.build==='mobility'?.08:0)) * (blocking&&!this.heroAbilities?.marchTime ? .55 : 1)*(this.zawgyi?.speedMultiplier||1)*(this.heroAbilities?.speedMultiplier||1)*(this.pyusawhti?.speedMultiplier||1);
         {const p=this.moveOnGround(this.x,this.y,dx*speed*dt,dy*speed*dt,17);this.x=p.x;this.y=p.y;}
         const targetInReach=this.enemies.some(e=>e.active&&Math.hypot(e.x-this.x,e.y-this.y)<(isGun(this.weapon)?520:WEAPONS[this.weapon].range*(1+this.u('range')*.25)+e.r+25));
         if (this.attack <= 0&&targetInReach)this.basicAttack();
@@ -1551,7 +1568,7 @@ export class ArenaScene extends Phaser.Scene {
             const ring=point(-14,0);g.lineStyle(2,0xa7b4bf);g.strokeCircle(ring.x,ring.y,3.5);if(this.evolved('orbit')){g.lineStyle(3,0xb2a4d2,.45);g.lineBetween(x,y,x-Math.cos(angle)*28,y-Math.sin(angle)*28);}}
         }
         this.visuals.showDecoy(this.hero,this.decoy);
-        if(this.earlyPower&&this.hero!=='zawgyi'){const w=this.warningGfx,color=({zawgyi:0xffd183,ninja:0xb9a1f2,samurai:0xffb279,gunner:0xffd16c,tank:0x84e1da})[this.hero];const pose=this.hero==='gunner'&&isGunnerWeapon(this.weapon)?gunnerWeaponPose(this.weapon,this.x,this.y,this.angle,1-this.swing/WEAPON_EFFECTS[this.weapon].duration,this.swing>0,this.weapon==='pistols'&&this.attackSequence%2===1,{reload:this.reload,reloadDuration:this.reloadDuration,overdrive:this.overdrive}):weaponPose(this.weapon,this.x,this.y,this.angle,this.swing,this.swing>0,this.attackSequence,false,false,1+this.u('range')*.25,1+this.u('wide')*.25);w.fillStyle(color,.28+.15*Math.sin(this.elapsed*5));w.fillCircle(pose.tip.x,pose.tip.y,5);}
+        if(this.earlyPower&&this.hero!=='zawgyi'){const w=this.warningGfx,color=({zawgyi:0xffd183,ninja:0xb9a1f2,samurai:0xffb279,gunner:0xffd16c,tank:0x84e1da,pyusawhti:0xffd700,lethwei:0xff5722,kyansittha:0x00e5ff})[this.hero]||0xffd183;const pose=this.hero==='gunner'&&isGunnerWeapon(this.weapon)?gunnerWeaponPose(this.weapon,this.x,this.y,this.angle,1-this.swing/WEAPON_EFFECTS[this.weapon].duration,this.swing>0,this.weapon==='pistols'&&this.attackSequence%2===1,{reload:this.reload,reloadDuration:this.reloadDuration,overdrive:this.overdrive}):weaponPose(this.weapon,this.x,this.y,this.angle,this.swing,this.swing>0,this.attackSequence,false,false,1+this.u('range')*.25,1+this.u('wide')*.25);w.fillStyle(color,.28+.15*Math.sin(this.elapsed*5));w.fillCircle(pose.tip.x,pose.tip.y,5);}
 
         if(this.decoy){g.fillStyle(0x7d78a4,.35);g.fillEllipse(this.decoy.x,this.decoy.y,36,44);g.lineStyle(2,0xaba3c0,.6);g.strokeCircle(this.decoy.x,this.decoy.y,25);}
         this.areaGate?.draw(this.warningGfx);
@@ -1561,6 +1578,9 @@ export class ArenaScene extends Phaser.Scene {
         this.visuals.evolutionDetails(this.evolution,this.swing,this.elapsed);
         this.campArt?.render(this.elapsed,[...this.siegeEnemies],window.matchMedia('(prefers-reduced-motion: reduce)').matches,this.save.settings.mapView===2);
         this.zawgyi?.render(this.elapsed);
+        this.pyusawhti?.render(this.elapsed);
+        this.lethwei?.render(this.elapsed);
+        this.kyansittha?.render(this.elapsed);
         this.heroAbilities?.render();this.skillAim?.render();
         this.cosmeticFx?.render(this.elapsed,this.bullets,cosmeticEffectProfile(this.save,this.weapon),this.save.settings.mapView===2,window.matchMedia('(prefers-reduced-motion: reduce)').matches);
         this.outfitFx?.render(this.heroAbilities?.survivorFx?undefined:outfitEffectProfile(this.save,this.hero),{x:this.x,y:this.y,angle:this.angle,time:this.elapsed,dash:this.dash,counter:this.counter,overdrive:this.overdrive,reduced:window.matchMedia('(prefers-reduced-motion: reduce)').matches,wide:this.save.settings.mapView===2});
