@@ -56,8 +56,8 @@ Also include `{{ .Token }}` in the **Confirm signup** template if it is used for
 
 ## Progress behavior
 
-- First sign-in to a new account carries the current guest progress into that account.
-- Existing account and nonempty device progress: show both saves and let the player choose. No additive currency merge.
+- Guest play has unlimited Gold and Petals. A new account starts with zero currency and default equipment; guest rewards and purchases never transfer. Existing account progress is retained.
+- Existing account and nonempty account-owned device progress: show both saves and let the player choose. No additive currency merge.
 - Before resolving a conflict, both choices are backed up in local browser storage (`zls.account.backup.*`).
 - Account saves are locally cached by user ID. Signing out restores the guest save; another account never inherits the previous account's active save.
 - Cloud failures keep local progress. Retry is available from the account panel.

@@ -45,7 +45,6 @@ import { UPGRADES,upgradeChoices, type Upgrade } from './upgrades';
 import { AudioManager } from './audio';
 let stopGameViewport:(()=>void)|undefined;
 let save = loadSave(), game: Phaser.Game | undefined, scene: ArenaScene | undefined, choices: Upgrade[] = [], waveChoice = false, menuState = 'menu', purchasePending = false;
-if (PLAYTEST.unlimitedGold) save.gold = PLAYTEST.goldReserve;
 let selectedMode:RunMode=save.runSetup.mode==='short'?'endless':save.runSetup.mode,selectedBuild:BuildId=save.runSetup.build;
 let touchControls: TouchControls | undefined;
 let modeSwipeStart:{x:number;y:number}|undefined;
@@ -62,11 +61,11 @@ for(const event of ['contextmenu','selectstart','dragstart'])document.addEventLi
 const accounts=createAccounts({url:import.meta.env.VITE_SUPABASE_URL,key:import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY||import.meta.env.VITE_SUPABASE_ANON_KEY},{
  read:()=>progressBundle(save),safe:()=>!scene||scene.ended,
  store:()=>{storeSave(save);},
- apply:progress=>{if(scene&&!scene.ended)return;touchControls?.destroy();touchControls=undefined;stopGameViewport?.();stopGameViewport=undefined;game?.destroy(true);game=undefined;scene=undefined;save=acceptProgress(progress);selectedMode=save.runSetup.mode==='short'?'endless':save.runSetup.mode;selectedBuild=save.runSetup.build;storeSave(save);syncAudio();menu();}
+ apply:(progress,account)=>{if(scene&&!scene.ended)return;PLAYTEST.unlimitedGold=!account;PLAYTEST.unlimitedPetals=!account;touchControls?.destroy();touchControls=undefined;stopGameViewport?.();stopGameViewport=undefined;game?.destroy(true);game=undefined;scene=undefined;save=acceptProgress(progress);selectedMode=save.runSetup.mode==='short'?'endless':save.runSetup.mode;selectedBuild=save.runSetup.build;storeSave(save);syncAudio();menu();}
 });
 function artImage(kind:'hero'|'weapon',id:string){const skin=kind==='hero'?equippedSkin(save,id as HeroId):undefined;return skin?(id==='ninja'?ninjaSkinPortrait(skin):id==='gunner'?gunnerSkinPortrait(skin):id==='tank'?tankSkinPortrait(skin):id==='samurai'?samuraiPortrait(true,skin):baseArtImage(kind,id)):baseArtImage(kind,id);}
 function weaponShopImage(id:WeaponId){const skin=equippedWeaponSkin(save,id);return skin?(isSamuraiWeapon(id)?samuraiWeaponPortrait(id,skin):isGunnerWeapon(id)?gunnerSkinWeaponPortrait(skin,id):isTankWeapon(id)?tankSkinWeaponPortrait(skin,id):WEAPONS[id].hero==='ninja'?ninjaSkinWeaponPortrait(skin,id as 'katana'|'dual'|'kama'):baseWeaponShopImage(id)):baseWeaponShopImage(id);}
-function persist() { if (PLAYTEST.unlimitedGold) save.gold = PLAYTEST.goldReserve;
+function persist() {
     if (!storeSave(save))
         toast('Browser storage is unavailable. Progress lasts for this session.');
 }
@@ -115,7 +114,7 @@ function menu() {
 
  ${dailyMode?`<section class="daily-survivor-card" aria-label="Today's survivor"><div class="daily-survivor-top"><div class="daily-survivor-art" aria-hidden="true">${combatPortrait(dailyAppearance(save,daily),daily.hero!)}</div><div class="daily-survivor-info"><small>TODAY’S SURVIVOR</small><h3>${HEROES[daily.hero!].name}</h3><span>${WEAPONS[daily.weapon!].name}</span><p>Defend the beacon · 10 waves</p></div><span class="daily-survivor-badge">DAILY</span></div><div class="daily-survivor-actions">${button('▶ Practice one wave','daily-practice','quiet')}${button('View loadout →','daily-loadout','quiet')}</div><small class="daily-survivor-note">Free practice · No score or rewards</small></section>`:''}
  </section>
- <footer class="hub-footer"><nav aria-label="More game options">${button('Cosmetics','tab:cosmetics','quiet')}${button('Field Guide','guide','quiet')}${button('Settings','settings','quiet')}<a class="quiet" href="/privacy.html" target="_blank" rel="noopener">Privacy</a></nav><details class="hub-records"><summary>Personal records</summary>${save.bestWave||save.bestKills||save.bestTime?'<div class="records">':'<p class="camp-first-run">Your story starts here. Survive your first run to set a personal best.</p><div class="records" hidden>'}<div><b>${save.bestWave||'—'}</b><small>BEST WAVE</small></div><div><b>${format(save.bestTime)}</b><small>LONGEST STAND</small></div><div><b>${save.bestKills}</b><small>MOST KILLS</small></div><div><b>${save.shortWins}</b><small>WINS</small></div></div></details></footer></main>`,true);
+ <footer class="hub-footer"><nav aria-label="More game options">${button('Cosmetics','tab:cosmetics','quiet')}${button('Field Guide','guide','quiet')}${button('Settings','settings','quiet')}<a class="quiet" href="/privacy.html" target="_blank" rel="noopener">Privacy</a><a class="quiet" href="/terms.html" target="_blank" rel="noopener">Terms</a></nav><details class="hub-records"><summary>Personal records</summary>${save.bestWave||save.bestKills||save.bestTime?'<div class="records">':'<p class="camp-first-run">Your story starts here. Survive your first run to set a personal best.</p><div class="records" hidden>'}<div><b>${save.bestWave||'—'}</b><small>BEST WAVE</small></div><div><b>${format(save.bestTime)}</b><small>LONGEST STAND</small></div><div><b>${save.bestKills}</b><small>MOST KILLS</small></div><div><b>${save.shortWins}</b><small>WINS</small></div></div></details></footer></main>`,true);
  overlay.querySelector('.panel')?.classList.add('landing-panel');
  const canvas=overlay.querySelector<HTMLCanvasElement>('#home-scene');if(canvas)void startHomeScene(canvas,save.hero,save.weapon,false,{character:cosmeticColor(save,'character',save.hero),weapon:cosmeticColor(save,'weapon',save.weapon)},equippedSkin(save),equippedWeaponSkin(save,save.weapon));
 }
@@ -413,7 +412,7 @@ overlay.addEventListener('click', e => {
             return;
         const kind = b as 'heroes' | 'weapons' | 'permanent';
         const cost = kind === 'heroes' ? HEROES[c as HeroId].price : kind === 'weapons' ? WEAPONS[c as WeaponId].price : 250 + 150 * (save.permanent[c] || 0);
-        if (save.gold < cost) {
+        if (!PLAYTEST.unlimitedGold && save.gold < cost) {
             toast(`Need ${cost - save.gold} more gold. Keep fighting.`);
             return;
         }

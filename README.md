@@ -77,7 +77,7 @@ Combinations activate automatically when requirements are met. The build panel s
 
 ## Playtest configuration
 
-**Unlimited gold is currently enabled for testing.** Change `PLAYTEST.unlimitedGold` in [`src/config.ts`](src/config.ts) to `false` before testing the normal purchase economy or releasing the game.
+Guests have unlimited Gold and Petals. Signed-in accounts start with zero currency and default equipment, then retain earned rewards and purchases through Supabase cloud saves. Guest progress never transfers into an account. Existing account balances are preserved.
 
 Saves belong to the current browser and site origin. Moving between localhost, a phone's network address, or a hosted site creates separate save storage. Clearing browser storage removes local progress. Daily records are local; there is no online leaderboard.
 

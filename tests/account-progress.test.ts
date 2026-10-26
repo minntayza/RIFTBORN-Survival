@@ -7,14 +7,14 @@ class Memory {data=new Map<string,string>();getItem(k:string){return this.data.g
 class Remote implements ProgressRemote {rows=new Map<string,CloudProgress>();writes=0;fail=false;async read(id:string){if(this.fail)throw Error('offline');return this.rows.get(id)||null;}async write(id:string,progress:Progress,revision:number|null){if(this.fail)throw Error('offline');const prior=this.rows.get(id);if((prior?.revision??null)!==revision)throw new ProgressConflict();const row={progress:structuredClone(progress),revision:(revision||0)+1};this.rows.set(id,row);this.writes++;return row;}}
 const a:AccountUser={id:'a',name:'One'},b:AccountUser={id:'b',name:'Two'};
 function setup(){const remote=new Remote(),storage=new Memory();let current=emptyProgress(),safe=true;const service=new AccountProgress(remote,storage,()=>structuredClone(current),p=>{current=structuredClone(p);},()=>safe,()=>{});return{remote,storage,service,get local(){return current;},set local(p:Progress){current=p;},setSafe(v:boolean){safe=v;}};}
-test('guest progress is uploaded on first sign-in and isolated again on sign-out',async()=>{const t=setup();t.local.save.gold=80;await t.service.connect(a);assert.equal(t.remote.rows.get('a')!.progress.save.gold,80);t.local.save.gold=150;await t.service.flush();await t.service.connect(null);assert.equal(t.local.save.gold,80);assert.equal(t.remote.rows.get('a')!.progress.save.gold,150);t.service.dispose();});
-test('existing nonempty progress requires a choice and keeps both backups',async()=>{const t=setup();t.local.save.gold=60;const cloud=emptyProgress();cloud.save.bestWave=8;t.remote.rows.set('a',{progress:cloud,revision:3});await t.service.connect(a);assert.equal(t.service.state.phase,'conflict');assert.equal(t.remote.writes,0);await t.service.choose('local');assert.equal(t.remote.rows.get('a')!.revision,4);assert.equal(t.remote.rows.get('a')!.progress.save.gold,60);assert.ok(t.storage.getItem('zls.account.backup.cloud.a'));assert.ok(t.storage.getItem('zls.account.backup.local.a'));t.service.dispose();});
+test('new accounts start at zero and guest progress is isolated on sign-out',async()=>{const t=setup();t.local.save.gold=80;await t.service.connect(a);assert.equal(t.remote.rows.get('a')!.progress.save.gold,0);t.local.save.gold=150;await t.service.flush();await t.service.connect(null);assert.equal(t.local.save.gold,80);assert.equal(t.remote.rows.get('a')!.progress.save.gold,150);t.service.dispose();});
+test('existing nonempty progress requires a choice and keeps both backups',async()=>{const t=setup();t.local.save.gold=60;t.storage.setItem('zls.account.cache.a',packProgress(t.local));const cloud=emptyProgress();cloud.save.bestWave=8;t.remote.rows.set('a',{progress:cloud,revision:3});await t.service.connect(a);assert.equal(t.service.state.phase,'conflict');assert.equal(t.remote.writes,0);await t.service.choose('local');assert.equal(t.remote.rows.get('a')!.revision,4);assert.equal(t.remote.rows.get('a')!.progress.save.gold,60);assert.ok(t.storage.getItem('zls.account.backup.cloud.a'));assert.ok(t.storage.getItem('zls.account.backup.local.a'));t.service.dispose();});
 test('choosing cloud restores it without a redundant overwrite',async()=>{const t=setup();t.local.save.gold=70;const cloud=emptyProgress();cloud.save.gold=900;t.remote.rows.set('a',{progress:cloud,revision:2});await t.service.connect(a);await t.service.choose('cloud');assert.equal(t.local.save.gold,900);assert.equal(t.remote.writes,0);t.service.dispose();});
 test('fresh guest restores an existing cloud save',async()=>{const t=setup();const cloud=emptyProgress();cloud.save.bestWave=9;t.remote.rows.set('a',{progress:cloud,revision:2});await t.service.connect(a);assert.equal(t.local.save.bestWave,9);assert.equal(t.service.state.phase,'saved');t.service.dispose();});
-test('account switching never uploads the previous account save',async()=>{const t=setup();t.local.save.gold=12;await t.service.connect(a);t.local.save.gold=999;await t.service.flush();await t.service.connect(b);assert.equal(t.remote.rows.get('b')!.progress.save.gold,12);assert.equal(t.local.save.gold,12);assert.equal(t.remote.rows.get('a')!.progress.save.gold,999);t.service.dispose();});
+test('account switching never uploads the previous account save',async()=>{const t=setup();t.local.save.gold=12;await t.service.connect(a);t.local.save.gold=999;await t.service.flush();await t.service.connect(b);assert.equal(t.remote.rows.get('b')!.progress.save.gold,0);assert.equal(t.local.save.gold,0);assert.equal(t.remote.rows.get('a')!.progress.save.gold,999);t.service.dispose();});
 test('account changes during gameplay wait for camp',async()=>{const t=setup();t.setSafe(false);await t.service.connect(a);assert.equal(t.service.state.phase,'waiting');assert.equal(t.remote.writes,0);t.setSafe(true);await t.service.resume();assert.equal(t.service.state.phase,'saved');t.service.dispose();});
 test('concurrent device writes require a fresh choice',async()=>{const t=setup();await t.service.connect(a);const cloud=emptyProgress();cloud.save.bestWave=12;t.remote.rows.set('a',{progress:cloud,revision:2});t.local.save.gold=50;await t.service.flush();assert.equal(t.service.state.phase,'conflict');assert.equal(t.service.state.conflict!.cloud.progress.save.bestWave,12);assert.equal(t.remote.rows.get('a')!.progress.save.bestWave,12);t.service.dispose();});
-test('failed initial cloud read does not upload or discard local progress',async()=>{const t=setup();t.local.save.gold=35;t.remote.fail=true;await t.service.connect(a);assert.equal(t.service.state.phase,'offline');await t.service.flush();assert.equal(t.remote.writes,0);assert.equal(t.local.save.gold,35);t.remote.fail=false;await t.service.retry();assert.equal(t.remote.rows.get('a')!.progress.save.gold,35);t.service.dispose();});
+test('failed initial cloud read isolates guest progress and never uploads it',async()=>{const t=setup();t.local.save.gold=35;t.remote.fail=true;await t.service.connect(a);assert.equal(t.service.state.phase,'offline');await t.service.flush();assert.equal(t.remote.writes,0);assert.equal(t.local.save.gold,0);t.remote.fail=false;await t.service.retry();assert.equal(t.remote.rows.get('a')!.progress.save.gold,0);t.service.dispose();});
 test('a failed upload keeps a recoverable account cache',async()=>{const t=setup();await t.service.connect(a);t.remote.fail=true;t.local.save.gold=44;t.service.dirty();await t.service.flush();assert.equal(t.service.state.phase,'offline');assert.ok(t.storage.getItem('zls.account.cache.a'));assert.equal(t.local.save.gold,44);t.service.dispose();});
 test('invalid cloud progress is rejected',()=>{assert.throws(()=>checkedCloud({progress:{version:2},revision:1}));assert.throws(()=>checkedCloud({progress:emptyProgress(),revision:0}));});
 test('public configuration rejects secrets and unencrypted external projects',()=>{assert.equal(validAccountConfig({url:'https://example.supabase.co',key:'sb_publishable_test'}),true);assert.equal(validAccountConfig({url:'https://example.supabase.co',key:'sb_secret_test'}),false);const jwt=(role:string)=>'a.'+Buffer.from(JSON.stringify({role})).toString('base64url')+'.c';assert.equal(validAccountConfig({url:'https://example.supabase.co',key:jwt('service_role')}),false);assert.equal(validAccountConfig({url:'https://example.supabase.co',key:jwt('anon')}),true);assert.equal(validAccountConfig({url:'http://example.com',key:'sb_publishable_test'}),false);});
@@ -33,4 +33,34 @@ test('Google sign-in checks provider availability before leaving the game',async
  await assert.rejects(checkGoogleSignIn(config,async()=>new Response(JSON.stringify({external:{google:false}}))),/still being set up/);
  await assert.rejects(checkGoogleSignIn(config,async()=>{throw new TypeError('Failed to fetch');}),/Cannot reach sign-in/);
  await assert.rejects(checkGoogleSignIn(config,async()=>new Response('',{status:503})),AccountSignInUnavailable);
+});
+
+
+test('unlimited guest purchases and currency never transfer to an existing account',async()=>{
+ const t=setup();t.local.save.gold=1_000_000_000;t.local.save.petals=1_000_000_000;t.local.save.heroes.push('samurai');
+ const cloud=emptyProgress();cloud.save.gold=42;cloud.save.petals=8;t.remote.rows.set('a',{progress:cloud,revision:2});
+ await t.service.connect(a);assert.equal(t.service.state.phase,'saved');assert.equal(t.local.save.gold,42);assert.equal(t.local.save.petals,8);assert.equal(t.local.save.heroes.includes('samurai'),false);
+ await t.service.connect(null);assert.equal(t.local.save.gold,1_000_000_000);assert.equal(t.local.save.heroes.includes('samurai'),true);t.service.dispose();
+});
+test('earned account currency and purchases persist across sessions',async()=>{
+ const t=setup();await t.service.connect(a);t.local.save.gold=600;
+ const {purchase}=await import('../src/save');assert.equal(purchase(t.local.save,'permanent','health'),true);assert.equal(t.local.save.gold,350);
+ await t.service.flush();await t.service.connect(null);await t.service.connect(a);assert.equal(t.local.save.gold,350);assert.equal(t.local.save.permanent.health,1);t.service.dispose();
+});
+
+
+test('legacy account reserve is repaired once without losing 576 earned gold or petals',async()=>{
+ const t=setup();const legacy=emptyProgress();delete legacy.save.accountCurrencyVersion;legacy.save.gold=1_000_000_576;legacy.save.petals=50;
+ const {checkedCloud}=await import('../src/account-progress');
+ t.remote.rows.set('a',checkedCloud({progress:legacy,revision:1}));
+ await t.service.connect(a);assert.equal(t.local.save.gold,576);assert.equal(t.local.save.petals,50);
+ assert.equal(t.remote.rows.get('a')!.progress.save.gold,576);
+ t.local.save.gold+=100;await t.service.flush();await t.service.connect(null);await t.service.connect(a);
+ assert.equal(t.local.save.gold,676);assert.equal(t.local.save.petals,50);t.service.dispose();
+});
+test('guest purchases need no numeric reserve while accounts spend earned gold',async()=>{
+ const {PLAYTEST}=await import('../src/config');const {freshSave,purchase}=await import('../src/save');const previous=PLAYTEST.unlimitedGold;
+ try{const guest=freshSave();PLAYTEST.unlimitedGold=true;assert.equal(purchase(guest,'permanent','health'),true);assert.equal(guest.gold,0);
+ PLAYTEST.unlimitedGold=false;const account=freshSave();assert.equal(purchase(account,'permanent','health'),false);account.gold=576;assert.equal(purchase(account,'permanent','health'),true);assert.equal(account.gold,326);
+ }finally{PLAYTEST.unlimitedGold=previous;}
 });

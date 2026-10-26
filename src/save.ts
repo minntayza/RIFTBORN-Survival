@@ -3,7 +3,7 @@ import {validZawgyiLoadout,type ZawgyiLoadout} from './zawgyi';
 import {validRun,type RunRecovery} from './run-recovery';
 import {COSMETICS} from './cosmetics';
 import type { TechniqueId,RunMode,BuildId } from './retention';
-import { HEROES, WEAPONS, PERMANENT, type HeroId, type WeaponId } from './config';
+import { HEROES, WEAPONS, PERMANENT, PLAYTEST, type HeroId, type WeaponId } from './config';
 export type Save = {
     runSetup:{mode:RunMode;build:BuildId};
     version: 1;
@@ -11,6 +11,7 @@ export type Save = {
     heroAbilities:Record<AbilityHero,AbilityPair>;
     archive: Record<string,1|2>;
     gold: number;
+    accountCurrencyVersion?: 1;
     petals:number;
     cosmetics:{owned:string[];equipped:Record<string,string>};
     heroes: HeroId[];
@@ -43,7 +44,7 @@ const num = (x: unknown, max = 1e9) => typeof x === 'number' && Number.isFinite(
 export const compatible = (h: HeroId, w: WeaponId) => WEAPONS[w]?.hero === h;
 export function validateSave(raw: unknown): Save { const d = freshSave(); if (!raw || typeof raw !== 'object')
     return d; const r = raw as Partial<Save>; if (r.version !== 1)
-    return d; d.gold = num(r.gold); d.heroes = Array.from(new Set(['ninja' as HeroId, ...(Array.isArray(r.heroes) ? r.heroes.filter(h => typeof h === 'string' && Object.hasOwn(HEROES, h)) : [])])); d.weapons = Array.from(new Set([...d.weapons, ...(Array.isArray(r.weapons) ? r.weapons.filter(w => typeof w === 'string' && Object.hasOwn(WEAPONS, w)) : [])])); d.hero = r.hero && d.heroes.includes(r.hero) ? r.hero : 'ninja'; d.weapon = r.weapon && d.weapons.includes(r.weapon) && compatible(d.hero, r.weapon) ? r.weapon : d.weapons.find(w => compatible(d.hero, w))!; for (const [k, v] of Object.entries(PERMANENT))
+    return d; d.accountCurrencyVersion=r.accountCurrencyVersion===1?1:undefined; d.gold = num(r.gold,Number.MAX_SAFE_INTEGER); d.heroes = Array.from(new Set(['ninja' as HeroId, ...(Array.isArray(r.heroes) ? r.heroes.filter(h => typeof h === 'string' && Object.hasOwn(HEROES, h)) : [])])); d.weapons = Array.from(new Set([...d.weapons, ...(Array.isArray(r.weapons) ? r.weapons.filter(w => typeof w === 'string' && Object.hasOwn(WEAPONS, w)) : [])])); d.hero = r.hero && d.heroes.includes(r.hero) ? r.hero : 'ninja'; d.weapon = r.weapon && d.weapons.includes(r.weapon) && compatible(d.hero, r.weapon) ? r.weapon : d.weapons.find(w => compatible(d.hero, w))!; for (const [k, v] of Object.entries(PERMANENT))
     d.permanent[k] = num(r.permanent?.[k], v.cap); d.bestWave = num(r.bestWave); d.bestTime = num(r.bestTime); d.bestKills = num(r.bestKills); if (r.mastery && typeof r.mastery === 'object')
     for (const h of Object.keys(HEROES)) {
         const m = r.mastery[h];
@@ -104,8 +105,8 @@ else {
     if (!p || (s.permanent[id] || 0) >= p.cap)
         return false;
     cost = 250 + 150 * (s.permanent[id] || 0);
-} if (s.gold < cost)
-    return false; s.gold -= cost; if (kind === 'permanent')
+} if (!PLAYTEST.unlimitedGold && s.gold < cost)
+    return false; if(!PLAYTEST.unlimitedGold)s.gold -= cost; if (kind === 'permanent')
     s.permanent[id] = (s.permanent[id] || 0) + 1;
 else
     (s[kind] as string[]).push(id); return true; }
