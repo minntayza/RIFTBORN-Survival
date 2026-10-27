@@ -1,7 +1,7 @@
 import {skillIcon} from './skill-icons';
 
 export const KYANSITTHA_SKILLS = {
- crescentsweep: { name: 'Crescent Sweep & Lunge', cooldown: 8, icon: '⚔', description: 'Sweep in a 240° arc to knock hordes back, followed by a lunging thrust that pierces a straight line.' },
+ crescentsweep: { name: 'Triple Crescent Flurry', cooldown: 8, icon: '⚔', description: 'Surge forward while unleashing 3 sweeping spear cleaves in rapid succession, dealing massive area damage all along your path.' },
  phalanx: { name: 'Bagan Phalanx', cooldown: 12, icon: '🛡', description: 'Plant your spear to raise a golden energy wall for 4.5s. Destroys hostile bullets and repels approaching enemies.' },
  arindamathunder: { name: "Arindama's Thunderbolt", cooldown: 15, icon: '⚡', description: 'Hurl the divine Arindama spear into a target area. Unleashes a massive earthquake and lightning shockwaves, pinning heavy enemies.' }
 } as const;

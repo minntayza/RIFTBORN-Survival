@@ -21,12 +21,38 @@ type LightningSpear = {
 	detonated: boolean;
 };
 
+type SweepStrike = {
+	x: number;
+	y: number;
+	angle: number;
+	sweepIndex: number;
+	age: number;
+	maxAge: number;
+	radius: number;
+	startAngle: number;
+	endAngle: number;
+};
+
+type PathPoint = {
+	x: number;
+	y: number;
+	angle: number;
+	age: number;
+	maxAge: number;
+};
+
 export class KyansitthaCombat {
 	readonly equipped: [KyansitthaSkill, KyansitthaSkill];
 	cooldowns: [number, number] = [0, 0];
-	sweepTime = 0;
-	thrustTime = 0;
-	sweepAim = 0;
+	flurryTime = 0;
+	readonly maxFlurryTime = 0.72;
+	flurryAim = 0;
+	flurryStartX = 0;
+	flurryStartY = 0;
+	flurryStrikesTriggered = 0;
+	readonly sweepStrikes: SweepStrike[] = [];
+	readonly pathTrail: PathPoint[] = [];
+
 	phalanx: PhalanxWall = { active: false, x: 0, y: 0, angle: 0, duration: 0, maxDuration: 4.5, width: 140 };
 	readonly spears: LightningSpear[] = [];
 	private ground;
@@ -36,6 +62,82 @@ export class KyansitthaCombat {
 		this.equipped = validKyansitthaLoadout(s.save.kyansitthaSkills);
 		this.ground = s.add.graphics().setDepth(1.1);
 		this.effects = s.add.graphics().setDepth(4.7);
+	}
+
+	private triggerStrike(index: number) {
+		const s = this.s;
+		this.flurryStrikesTriggered = index + 1;
+		const baseDmg = WEAPONS[s.weapon]?.damage || 52;
+		const whirlLevel = s.u('spearwhirl');
+		const sweepRadius = 185 * (1 + whirlLevel * 0.18);
+
+		let startAngle = 0;
+		let endAngle = 0;
+
+		if (index === 0) {
+			// Strike 1: Powerful wide rightward crescent cleave
+			startAngle = this.flurryAim - 2.1;
+			endAngle = this.flurryAim + 1.5;
+			s.audio.play('naginata');
+		} else if (index === 1) {
+			// Strike 2: Counter-sweeping wide leftward back-cleave
+			startAngle = this.flurryAim + 2.1;
+			endAngle = this.flurryAim - 1.5;
+			s.audio.play('naginata');
+		} else {
+			// Strike 3: Heavy 360° Grand Royal Bagan Cyclone!
+			startAngle = this.flurryAim - Math.PI;
+			endAngle = this.flurryAim + Math.PI;
+			s.audio.play('tank-slam');
+			s.cameras.main.shake(140, 0.004);
+		}
+
+		this.sweepStrikes.push({
+			x: s.x,
+			y: s.y,
+			angle: this.flurryAim,
+			sweepIndex: index,
+			age: 0,
+			maxAge: index === 2 ? 0.44 : 0.34,
+			radius: sweepRadius,
+			startAngle,
+			endAngle
+		});
+
+		// Calculate Area Damage for this strike
+		const multiplier = index === 2 ? 2.6 : 1.6;
+		const damage = baseDmg * multiplier * (1 + whirlLevel * 0.22) * (1 + s.u('thunderthrust') * 0.25);
+		const knockback = index === 2 ? 120 : 80;
+
+		for (const e of s.enemies) {
+			if (!e.active) continue;
+			const dist = Math.hypot(e.x - s.x, e.y - s.y);
+			if (dist <= sweepRadius + e.r) {
+				let inArc = true;
+				if (index < 2) {
+					const angleToEnemy = Math.atan2(e.y - s.y, e.x - s.x);
+					const diff = Math.atan2(Math.sin(angleToEnemy - this.flurryAim), Math.cos(angleToEnemy - this.flurryAim));
+					inArc = whirlLevel > 0 || Math.abs(diff) <= 2.2;
+				}
+
+				if (inArc) {
+					if (s.evolved('spearwhirl')) {
+						// Vacuum surrounding enemies into the center of spear reach
+						e.x += (s.x - e.x) * 0.22;
+						e.y += (s.y - e.y) * 0.22;
+					}
+					s.hit(e, damage, knockback, false, false, index === 2 ? 'Royal Cyclone Cleave' : 'Crescent Cleave');
+					e.stagger = Math.max(e.stagger || 0, index === 2 ? 1.2 : 0.75);
+					s.burst(e.x, e.y, index === 2 ? 0xffd700 : 0x00e676, index === 2 ? 12 : 6);
+
+					// If evolved with thunderthrust, call divine lightning on all enemies caught in final whirlwind!
+					if (index === 2 && s.evolved('thunderthrust')) {
+						s.hit(e, damage * 0.8, 50, false, false, 'Divine Lightning');
+						s.burst(e.x, e.y, 0x00e5ff, 8);
+					}
+				}
+			}
+		}
 	}
 
 	activate(slot: number, dx = 0, dy = 0) {
@@ -48,11 +150,18 @@ export class KyansitthaCombat {
 		this.cooldowns[slot] = KYANSITTHA_SKILLS[id].cooldown * (s.options.build === 'mobility' ? 0.9 : 1);
 
 		if (id === 'crescentsweep') {
-			this.sweepTime = 0.28;
-			this.thrustTime = 0.55;
-			this.sweepAim = angle;
-			s.audio.play('naginata');
-			s.notifyCombat('CRESCENT SWEEP & LUNGE');
+			this.flurryTime = this.maxFlurryTime;
+			this.flurryAim = angle;
+			this.flurryStartX = s.x;
+			this.flurryStartY = s.y;
+			this.flurryStrikesTriggered = 0;
+			this.sweepStrikes.length = 0;
+			this.pathTrail.length = 0;
+
+			// Trigger Strike 1 immediately!
+			this.triggerStrike(0);
+
+			s.notifyCombat('TRIPLE CRESCENT FLURRY');
 		} else if (id === 'phalanx') {
 			const width = 150 * (1 + s.u('royalguard') * 0.3);
 			this.phalanx = {
@@ -98,52 +207,78 @@ export class KyansitthaCombat {
 			this.cooldowns[i as 0 | 1] = Math.max(0, this.cooldowns[i as 0 | 1] - dt);
 		}
 
-		// Handle Crescent Sweep
-		if (this.sweepTime > 0) {
-			this.sweepTime = Math.max(0, this.sweepTime - dt);
-			const sweepRadius = (WEAPONS[s.weapon]?.range || 160) * (s.u('spearwhirl') > 0 ? 1.3 : 1.1);
+		// Handle Triple Crescent Flurry: 3 sweeping cleaves while advancing
+		if (this.flurryTime > 0) {
+			this.flurryTime = Math.max(0, this.flurryTime - dt);
+			const progress = 1 - this.flurryTime / this.maxFlurryTime;
+
+			// Advance forward while sweeping! ("သွားနေတုန်း")
+			const speed = 440 * (1 + (s.u('thunderthrust') > 0 ? 0.35 : 0)) * dt;
+			const bound = s.moveOnGround(s.x, s.y, Math.cos(this.flurryAim) * speed, Math.sin(this.flurryAim) * speed, 16);
+			s.x = bound.x;
+			s.y = bound.y;
+			s.angle = this.flurryAim;
+			s.invuln = Math.max(s.invuln, 0.1);
+
+			// Synchronize spear swing animation with each of the 3 strikes
+			const strikeSubPhase = (this.flurryTime % 0.24) / 0.24;
+			s.swing = Math.sin((1 - strikeSubPhase) * Math.PI) * 0.38;
+
+			// Record path trail points
+			if (this.pathTrail.length === 0 || Math.hypot(s.x - this.pathTrail[this.pathTrail.length - 1].x, s.y - this.pathTrail[this.pathTrail.length - 1].y) >= 16) {
+				this.pathTrail.push({
+					x: s.x,
+					y: s.y,
+					angle: this.flurryAim,
+					age: 0,
+					maxAge: 0.55
+				});
+			}
+
+			// Deal continuous cutting damage along the traveled corridor ("spear ဝှေ့တဲ့ လမ်းတစ်လျှောက် damage ပေးမယ်")
+			const lx = Math.cos(this.flurryAim);
+			const ly = Math.sin(this.flurryAim);
+			const totalDashDist = Math.hypot(s.x - this.flurryStartX, s.y - this.flurryStartY);
+			const baseDmg = WEAPONS[s.weapon]?.damage || 52;
+
 			for (const e of s.enemies) {
 				if (!e.active) continue;
-				const d = Math.hypot(e.x - s.x, e.y - s.y);
-				if (d <= sweepRadius + e.r) {
-					if (s.evolved('spearwhirl')) {
-						e.x += (s.x - e.x) * 0.12;
-						e.y += (s.y - e.y) * 0.12;
-					}
-					const diff = Math.atan2(e.y - s.y, e.x - s.x) - this.sweepAim;
-					const normalized = Math.atan2(Math.sin(diff), Math.cos(diff));
-					if (s.u('spearwhirl') > 0 || Math.abs(normalized) <= 2.1) {
-						s.hit(e, (WEAPONS[s.weapon]?.damage || 52) * (0.9 + s.u('spearwhirl') * 0.15), 70);
-						s.burst(e.x, e.y, 0x76ff03, 5);
+				const dx = e.x - this.flurryStartX;
+				const dy = e.y - this.flurryStartY;
+				const proj = dx * lx + dy * ly;
+				if (proj >= -25 && proj <= totalDashDist + e.r) {
+					const perp = Math.abs(dx * (-ly) + dy * lx);
+					if (perp <= 60 + e.r) {
+						s.hit(e, baseDmg * 2.2 * dt, 15, false, false, 'Spear Flurry Wake');
+						e.stagger = Math.max(e.stagger || 0, 0.4);
 					}
 				}
 			}
+
+			// Trigger Strike 2 at progress >= 0.35
+			if (this.flurryStrikesTriggered === 1 && progress >= 0.35) {
+				this.triggerStrike(1);
+			}
+
+			// Trigger Strike 3 at progress >= 0.68
+			if (this.flurryStrikesTriggered === 2 && progress >= 0.68) {
+				this.triggerStrike(2);
+			}
 		}
 
-		// Handle Forward Lunge
-		if (this.thrustTime > 0) {
-			this.thrustTime = Math.max(0, this.thrustTime - dt);
-			if (this.thrustTime <= 0.28 && this.thrustTime > 0.2) {
-				const lungeDist = 220 * (1 + (s.u('thunderthrust') > 0 ? 0.4 : 0));
-				const lx = Math.cos(this.sweepAim);
-				const ly = Math.sin(this.sweepAim);
-				for (const e of s.enemies) {
-					if (!e.active) continue;
-					const dx = e.x - s.x;
-					const dy = e.y - s.y;
-					const dot = dx * lx + dy * ly;
-					if (dot > 0 && dot <= lungeDist) {
-						const projX = dot * lx;
-						const projY = dot * ly;
-						const perpDist = Math.hypot(dx - projX, dy - projY);
-						if (perpDist <= 32 + e.r) {
-							const lungeDmg = (WEAPONS[s.weapon]?.damage || 52) * 1.6 * (1 + s.u('thunderthrust') * 0.3);
-							s.hit(e, lungeDmg, 90);
-							e.stagger = Math.max(e.stagger || 0, 0.6);
-							s.burst(e.x, e.y, s.evolved('thunderthrust') ? 0x00e5ff : 0xffd700, 6);
-						}
-					}
-				}
+		// Update active Sweep Strikes
+		for (let i = this.sweepStrikes.length - 1; i >= 0; i--) {
+			this.sweepStrikes[i].age += dt;
+			if (this.sweepStrikes[i].age >= this.sweepStrikes[i].maxAge) {
+				this.sweepStrikes.splice(i, 1);
+			}
+		}
+
+		// Update Path Trail
+		for (let i = this.pathTrail.length - 1; i >= 0; i--) {
+			this.pathTrail[i].age += dt;
+			if (this.pathTrail[i].age >= this.pathTrail[i].maxAge) {
+				this.pathTrail.splice(i, 1);
 			}
 		}
 
@@ -213,8 +348,9 @@ export class KyansitthaCombat {
 	}
 
 	clear() {
-		this.sweepTime = 0;
-		this.thrustTime = 0;
+		this.flurryTime = 0;
+		this.sweepStrikes.length = 0;
+		this.pathTrail.length = 0;
 		this.phalanx.active = false;
 		this.spears.length = 0;
 	}
@@ -225,119 +361,137 @@ export class KyansitthaCombat {
 		g.clear();
 		f.clear();
 
-		// 1. Crescent Sweep: Volumetric Emerald & Jade Dragon Blade Ribbon
-		if (this.sweepTime > 0) {
-			const sweepRadius = (WEAPONS[this.s.weapon]?.range || 160) * 1.14;
-			const progress = 1 - this.sweepTime / 0.28;
-			const alpha = Math.max(0, 1 - progress * 0.7);
+		// 1. Triple Crescent Flurry: Path Trail Corridor & Ground Furrows ("spear ဝှေ့တဲ့ လမ်းတစ်လျှောက်")
+		for (let i = 1; i < this.pathTrail.length; i++) {
+			const p1 = this.pathTrail[i - 1];
+			const p2 = this.pathTrail[i];
+			const alpha = (1 - p2.age / p2.maxAge) * 0.7;
 
-			// Outer emerald wind vortex
-			g.lineStyle(14, 0x00e676, alpha * 0.45);
-			g.beginPath();
-			g.arc(this.s.x, this.s.y, sweepRadius, this.sweepAim - 2.2, this.sweepAim + 2.2);
-			g.strokePath();
+			// Ground Scorched Earth Furrow along travel path
+			f.lineStyle(28, 0x14331a, alpha * 0.5);
+			f.lineBetween(p1.x, p1.y, p2.x, p2.y);
+			f.lineStyle(12, 0x00e676, alpha * 0.4);
+			f.lineBetween(p1.x, p1.y, p2.x, p2.y);
 
-			// Core radiant jade blade ribbon
-			g.lineStyle(6, 0x69f0ae, alpha * 0.95);
-			g.beginPath();
-			g.arc(this.s.x, this.s.y, sweepRadius - 2, this.sweepAim - 2.1, this.sweepAim + 2.1);
-			g.strokePath();
-
-			// Razor white-hot cutting edge
-			g.lineStyle(2, 0xffffff, alpha);
-			g.beginPath();
-			g.arc(this.s.x, this.s.y, sweepRadius - 4, this.sweepAim - 2.0, this.sweepAim + 2.0);
-			g.strokePath();
-
-			// Centrifugal cutting sparks flying tangentially
-			for (let i = 0; i < 7; i++) {
-				const sparkA = this.sweepAim - 2.0 + (i / 6) * 4.0;
-				const r = sweepRadius + (Math.sin(time * 15 + i) * 10);
-				const sx = this.s.x + Math.cos(sparkA) * r;
-				const sy = this.s.y + Math.sin(sparkA) * r;
-				// Tangential vector
-				const tanX = -Math.sin(sparkA) * (6 + i * 2);
-				const tanY = Math.cos(sparkA) * (6 + i * 2);
-				g.fillStyle(0xffffff, alpha);
-				g.fillCircle(sx, sy, 2);
-				g.lineStyle(1.5, 0x76ff03, alpha * 0.8);
-				g.lineBetween(sx, sy, sx + tanX, sy + tanY);
-			}
-
-			// Leading blade glint
-			const tipA = this.sweepAim + 2.1;
-			g.fillStyle(0xffffff, 1);
-			g.fillCircle(this.s.x + Math.cos(tipA) * sweepRadius, this.s.y + Math.sin(tipA) * sweepRadius, 5.5);
-			g.lineStyle(1.5, 0x00e5ff, 0.9);
-			g.strokeCircle(this.s.x + Math.cos(tipA) * sweepRadius, this.s.y + Math.sin(tipA) * sweepRadius, 8);
+			// Cutting emerald speed ribbons in effects layer
+			g.lineStyle(4, 0x64ffda, alpha * 0.8);
+			g.lineBetween(p1.x, p1.y, p2.x, p2.y);
+			g.lineStyle(1.8, 0xffffff, alpha * 0.95);
+			g.lineBetween(p1.x, p1.y, p2.x, p2.y);
 		}
 
-		// 2. Piercing Lunge: Spiraling Golden-Cyan Conical Drill Beam
-		if (this.thrustTime > 0.18 && this.thrustTime <= 0.28) {
-			const lungeDist = 230;
-			const lx = this.s.x + Math.cos(this.sweepAim) * lungeDist;
-			const ly = this.s.y + Math.sin(this.sweepAim) * lungeDist;
-			const perpA = this.sweepAim + Math.PI / 2;
+		// 2. Volumetric Crescent Blade Waves & Grand Bagan Cyclone
+		for (const sw of this.sweepStrikes) {
+			const progress = sw.age / sw.maxAge;
+			const fade = Math.max(0, 1 - progress);
+			const swX = sw.x;
+			const swY = sw.y;
 
-			// Ground fracture lines under thrust trajectory
-			f.lineStyle(3, 0x1b5e20, 0.6);
-			f.lineBetween(this.s.x, this.s.y, lx, ly);
-			f.lineStyle(1.5, 0x00e676, 0.4);
-			for (let i = 1; i <= 6; i++) {
-				const frac = i / 7;
-				const gx = this.s.x + Math.cos(this.sweepAim) * (lungeDist * frac);
-				const gy = this.s.y + Math.sin(this.sweepAim) * (lungeDist * frac);
-				const off = (i % 2 === 0 ? 1 : -1) * 9;
-				f.lineBetween(gx, gy, gx + Math.cos(perpA) * off, gy + Math.sin(perpA) * off);
+			if (sw.sweepIndex < 2) {
+				// Strikes 1 & 2: Volumetric Emerald & Jade Crescent Arc
+				const r = sw.radius * (0.94 + progress * 0.12);
+
+				// Ground crescent scorch crater
+				f.lineStyle(20, 0x1b4020, fade * 0.45);
+				f.beginPath();
+				f.arc(swX, swY, r * 0.92, sw.startAngle, sw.endAngle, sw.startAngle > sw.endAngle);
+				f.strokePath();
+
+				// Tier 1: Outer emerald dragon aura wave
+				g.lineStyle(22, sw.sweepIndex === 0 ? 0x00e676 : 0x00e5ff, fade * 0.45);
+				g.beginPath();
+				g.arc(swX, swY, r, sw.startAngle, sw.endAngle, sw.startAngle > sw.endAngle);
+				g.strokePath();
+
+				// Tier 2: Cyan jade plasma ribbon
+				g.lineStyle(10, 0x69f0ae, fade * 0.85);
+				g.beginPath();
+				g.arc(swX, swY, r - 2, sw.startAngle, sw.endAngle, sw.startAngle > sw.endAngle);
+				g.strokePath();
+
+				// Tier 3: Radiant golden core
+				g.lineStyle(4.5, 0xffd700, fade * 0.95);
+				g.beginPath();
+				g.arc(swX, swY, r - 4, sw.startAngle, sw.endAngle, sw.startAngle > sw.endAngle);
+				g.strokePath();
+
+				// Tier 4: Razor white-hot cutting edge
+				g.lineStyle(2, 0xffffff, fade);
+				g.beginPath();
+				g.arc(swX, swY, r - 5, sw.startAngle, sw.endAngle, sw.startAngle > sw.endAngle);
+				g.strokePath();
+
+				// Tangential cutting sparks flying off the blade
+				const span = Math.abs(sw.endAngle - sw.startAngle);
+				const minA = Math.min(sw.startAngle, sw.endAngle);
+				for (let i = 0; i < 7; i++) {
+					const sparkA = minA + (i / 6) * span;
+					const sr = r + Math.sin(time * 18 + i) * 12;
+					const sx = swX + Math.cos(sparkA) * sr;
+					const sy = swY + Math.sin(sparkA) * sr;
+					const tanDir = sw.startAngle < sw.endAngle ? 1 : -1;
+					const tanX = -Math.sin(sparkA) * (8 + i * 2) * tanDir;
+					const tanY = Math.cos(sparkA) * (8 + i * 2) * tanDir;
+
+					g.fillStyle(0xffffff, fade);
+					g.fillCircle(sx, sy, 2);
+					g.lineStyle(1.5, 0x76ff03, fade * 0.8);
+					g.lineBetween(sx, sy, sx + tanX, sy + tanY);
+				}
+
+				// Leading Spear Tip Star Flare
+				const tipX = swX + Math.cos(sw.endAngle) * r;
+				const tipY = swY + Math.sin(sw.endAngle) * r;
+				g.fillStyle(0xffffff, fade);
+				g.fillCircle(tipX, tipY, 6);
+				g.lineStyle(2.5, 0xffd700, fade * 0.95);
+				g.strokeCircle(tipX, tipY, 11);
+				g.lineStyle(1.5, 0x00e5ff, fade * 0.85);
+				g.strokeCircle(tipX, tipY, 16);
+			} else {
+				// Strike 3: Heavy 360° Grand Royal Bagan Cyclone!
+				const r = sw.radius * (0.85 + progress * 0.35);
+
+				// Ground scorched circular crater
+				f.fillStyle(0x13331a, fade * 0.38);
+				f.fillCircle(swX, swY, r * 0.85);
+				f.lineStyle(20, 0x1b4020, fade * 0.5);
+				f.strokeCircle(swX, swY, r);
+
+				// Expanding Volumetric Cyclone Rings
+				g.lineStyle(26, 0x00e676, fade * 0.45);
+				g.strokeCircle(swX, swY, r);
+				g.lineStyle(14, 0x00e5ff, fade * 0.82);
+				g.strokeCircle(swX, swY, r);
+				g.lineStyle(6, 0xffd700, fade * 0.95);
+				g.strokeCircle(swX, swY, r);
+				g.lineStyle(2.5, 0xffffff, fade);
+				g.strokeCircle(swX, swY, r);
+
+				// Inner secondary compression shockwave ring
+				g.lineStyle(4, 0x76ff03, fade * 0.85);
+				g.strokeCircle(swX, swY, r * 0.65);
+
+				// 12 Radial Sacred Lightning Fissures bursting outward
+				for (let i = 0; i < 12; i++) {
+					const a = (i * Math.PI) / 6 + progress * 0.6;
+					const inner = r * 0.3;
+					const outer = r * 1.18;
+					g.lineStyle(2.5, 0x64ffda, fade * 0.9);
+					g.lineBetween(
+						swX + Math.cos(a) * inner,
+						swY + Math.sin(a) * inner,
+						swX + Math.cos(a) * outer,
+						swY + Math.sin(a) * outer
+					);
+				}
+
+				// Blinding Core Starburst
+				g.fillStyle(0xffffff, fade * 0.95);
+				g.fillCircle(swX, swY, 18);
+				g.lineStyle(3, 0xffd700, fade);
+				g.strokeCircle(swX, swY, 28);
 			}
-
-			// Main piercing energy shaft
-			g.lineStyle(14, 0x00e676, 0.4);
-			g.lineBetween(this.s.x, this.s.y, lx, ly);
-			g.lineStyle(6, 0xffd700, 0.85);
-			g.lineBetween(this.s.x, this.s.y, lx, ly);
-			g.lineStyle(2, 0xffffff, 1);
-			g.lineBetween(this.s.x, this.s.y, lx, ly);
-
-			// Spiraling sonic drill flutes
-			for (let i = 1; i <= 5; i++) {
-				const frac = i / 6;
-				const px = this.s.x + Math.cos(this.sweepAim) * (lungeDist * frac);
-				const py = this.s.y + Math.sin(this.sweepAim) * (lungeDist * frac);
-				const ringW = 16 * (1 - frac * 0.45);
-
-				// Sonic compression rings
-				g.lineStyle(2.5, 0x64ffda, 0.95);
-				g.lineBetween(
-					px - Math.cos(perpA) * ringW,
-					py - Math.sin(perpA) * ringW,
-					px + Math.cos(perpA) * ringW,
-					py + Math.sin(perpA) * ringW
-				);
-
-				// Forward conical arrowheads
-				g.lineStyle(1.5, 0xffffff, 0.8);
-				g.lineBetween(
-					px - Math.cos(perpA) * ringW,
-					py - Math.sin(perpA) * ringW,
-					px + Math.cos(this.sweepAim) * 10,
-					py + Math.sin(this.sweepAim) * 10
-				);
-				g.lineBetween(
-					px + Math.cos(perpA) * ringW,
-					py + Math.sin(perpA) * ringW,
-					px + Math.cos(this.sweepAim) * 10,
-					py + Math.sin(this.sweepAim) * 10
-				);
-			}
-
-			// Conical spearhead impact tip
-			g.fillStyle(0xffffff, 1);
-			g.fillCircle(lx, ly, 7);
-			g.lineStyle(3, 0xffd700, 0.95);
-			g.strokeCircle(lx, ly, 11);
-			g.lineStyle(1.5, 0x00e5ff, 0.9);
-			g.strokeCircle(lx, ly, 16);
 		}
 
 		// 3. Bagan Phalanx Wall: Royal Interlocking Singha Shield Barricade
