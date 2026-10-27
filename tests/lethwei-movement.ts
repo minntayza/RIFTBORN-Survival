@@ -11,7 +11,7 @@ function check(name:string,ok:boolean){checks.push(`${ok?'PASS':'FAIL'} · ${nam
 function step(n:number){scene.paused=false;for(let i=0;i<n;i++)scene.update(0,16);scene.paused=true;}
 scene.onArenaReady=()=>{
  scene.plan=[];scene.spawnIndex=0;scene.waveTime=-1e6;scene.xpNeed=1e9;scene.enemies.forEach(e=>e.active=false);scene.countdown=0;scene.render();
- check('All nine fighter textures load in the combat renderer',FIGHTER_PARTS.every(p=>scene.textures.exists(LETHWEI_ART.key+'-'+p)));
+ check('All seven fighter textures load in the combat renderer',FIGHTER_PARTS.every(p=>scene.textures.exists(LETHWEI_ART.key+'-'+p)));
  scene.x=600;scene.y=380;const start=scene.x;scene.touch={enabled:true,x:1,y:0};step(20);scene.touch={enabled:false,x:0,y:0};
  check('Movement runs through the actual game update',scene.x>start+20);
  scene.angle=0;scene.attack=0;scene.basicAttack();
