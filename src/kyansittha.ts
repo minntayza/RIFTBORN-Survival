@@ -38,90 +38,104 @@ export function kyansitthaSkillIcon(id: KyansitthaSkill) {
 }
 
 export function kyansitthaPortrait(cls = 'art-image') {
- return `<svg class="${cls}" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 280" role="img" aria-label="King Kyansittha of Bagan with divine Arindama spear">
-  <ellipse cx="120" cy="265" rx="72" ry="9" fill="#050a13" opacity=".45"/>
-  <!-- Legs in royal dark emerald longyi -->
-  <path d="M85 180 L115 178 L112 232 L106 260 L78 260 L86 230 Z" fill="#1b3320" stroke="#080e19" stroke-width="3.5"/>
-  <path d="M120 178 L150 180 L147 230 L162 255 L135 260 L122 230 Z" fill="#1b3320" stroke="#080e19" stroke-width="3.5"/>
-  <!-- Bagan Royal Waist Armor & Sash -->
-  <path d="M78 138 L160 138 L154 195 L84 195 Z" fill="#2d5a27" stroke="#080e19" stroke-width="3.5"/>
-  <path d="M84 146 L152 146 M86 166 L150 166" stroke="#ffd700" stroke-width="2"/>
-  <path d="M110 138 L116 195 L126 195 L122 138 Z" fill="#c59b27"/>
-  <!-- Torso & Golden Bagan Cuirass -->
-  <path d="M80 82 L156 82 L158 142 L80 142 Z" fill="#386b30" stroke="#080e19" stroke-width="3.5"/>
-  <path d="M88 82 L120 138 L148 82" fill="none" stroke="#d4af37" stroke-width="3.5"/>
-  <circle cx="118" cy="108" r="8" fill="#ffd700" stroke="#080e19" stroke-width="2"/>
-  <!-- Arms & Golden Bracers -->
-  <path d="M80 84 L56 122 L68 145 L88 116 Z" fill="#2d5a27" stroke="#080e19" stroke-width="3"/>
-  <path d="M156 84 L180 122 L168 145 L146 116 Z" fill="#2d5a27" stroke="#080e19" stroke-width="3"/>
-  <rect x="54" y="124" width="16" height="20" rx="3" fill="#d4af37" stroke="#080e19" stroke-width="2"/>
-  <rect x="166" y="124" width="16" height="20" rx="3" fill="#d4af37" stroke="#080e19" stroke-width="2"/>
-  <!-- Royal Arindama Spear in Hand -->
-  <g transform="translate(178 30) rotate(15)">
-   <line x1="0" y1="-20" x2="0" y2="210" stroke="#5d4037" stroke-width="5"/>
-   <line x1="0" y1="-20" x2="0" y2="210" stroke="#8d6e63" stroke-width="2.5"/>
-   <!-- Spearhead (အရိန္ဒမာ လှံသွား) -->
-   <path d="M-8 -20 L0 -70 L8 -20 L4 0 L-4 0 Z" fill="#ffd700" stroke="#080e19" stroke-width="2.5"/>
-   <path d="M-4 -20 L0 -64 L4 -20 Z" fill="#ffffff"/>
-   <circle cx="0" cy="-10" r="4" fill="#00e676"/>
-   <!-- Tassel / Horsehair banner -->
-   <path d="M4 -5 Q18 10 8 30" fill="none" stroke="#d32f2f" stroke-width="3"/>
+ return `<svg class="${cls}" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" role="img" aria-label="King Kyansittha of Bagan with divine Arindama spear">
+  <!-- Ground Shadow -->
+  <ellipse cx="64" cy="120" rx="36" ry="6" fill="#050a13" opacity=".4"/>
+  <!-- Royal Crimson Capelet flowing behind -->
+  <path d="M38 48 L90 48 L98 106 L30 106 Z" fill="#b71c1c" stroke="#080e19" stroke-width="2.5"/>
+  <!-- Royal Emerald Longyi Skirt & Armored Greaves -->
+  <path d="M42 86 L86 86 L90 116 L38 116 Z" fill="#1b3320" stroke="#080e19" stroke-width="2.5"/>
+  <rect x="44" y="94" width="16" height="18" rx="2" fill="#ffd700" stroke="#b8860b" stroke-width="1.5"/>
+  <rect x="68" y="94" width="16" height="18" rx="2" fill="#ffd700" stroke="#b8860b" stroke-width="1.5"/>
+  <rect x="42" y="112" width="18" height="8" rx="2" fill="#b8860b" stroke="#080e19" stroke-width="1.5"/>
+  <rect x="68" y="112" width="18" height="8" rx="2" fill="#b8860b" stroke="#080e19" stroke-width="1.5"/>
+  <!-- Torso / Golden Scaled Cuirass -->
+  <path d="M42 54 L86 54 L88 88 L40 88 Z" fill="#386b30" stroke="#080e19" stroke-width="2.5"/>
+  <rect x="46" y="58" width="36" height="24" rx="3" fill="#ffd700" stroke="#b8860b" stroke-width="1.8"/>
+  <!-- Royal Lion / Sun Medallion -->
+  <circle cx="64" cy="70" r="8" fill="#ffb300" stroke="#080e19" stroke-width="1.5"/>
+  <circle cx="64" cy="70" r="4.5" fill="#00e676"/>
+  <!-- Armored Gauntlets holding spear -->
+  <path d="M34 62 L22 84 L30 88 L42 70 Z" fill="#d4af37" stroke="#080e19" stroke-width="2"/>
+  <path d="M86 62 L98 84 L90 88 L78 70 Z" fill="#d4af37" stroke="#080e19" stroke-width="2"/>
+  <!-- Divine Arindama Spear held upright at side -->
+  <g transform="translate(100 14) rotate(12)">
+   <line x1="0" y1="-8" x2="0" y2="108" stroke="#4e342e" stroke-width="4.5"/>
+   <line x1="0" y1="-8" x2="0" y2="108" stroke="#8d6e63" stroke-width="2"/>
+   <!-- Red Plume -->
+   <ellipse cx="-4" cy="10" rx="5" ry="8" fill="#d32f2f"/>
+   <!-- Spearhead Socket -->
+   <rect x="-4" y="6" width="8" height="5" fill="#ffd700"/>
+   <!-- Leaf Blade -->
+   <polygon points="0,-18 7,6 0,8 -7,6" fill="#ffffff" stroke="#ffd700" stroke-width="2"/>
+   <line x1="0" y1="-16" x2="0" y2="6" stroke="#00e5ff" stroke-width="1.5"/>
   </g>
-  <!-- Head with Bagan Royal Crested Crown / Helmet -->
-  <circle cx="118" cy="55" r="23" fill="#d8a070" stroke="#080e19" stroke-width="3.5"/>
-  <!-- Bagan Golden Crown (မကိုဋ်) -->
-  <path d="M96 52 L140 52 L136 36 L118 10 L100 36 Z" fill="#ffd700" stroke="#080e19" stroke-width="3"/>
-  <circle cx="118" cy="10" r="3" fill="#00e676"/>
-  <circle cx="118" cy="36" r="4" fill="#d32f2f"/>
-  <path d="M104 42 L132 42" stroke="#b8860b" stroke-width="2"/>
-  <!-- Face details -->
-  <path d="M106 54 L114 53 M124 53 L132 54" stroke="#22150c" stroke-width="2.5" stroke-linecap="round"/>
-  <ellipse cx="110" cy="58" rx="2" ry="2.5" fill="#22150c"/>
-  <ellipse cx="128" cy="58" rx="2" ry="2.5" fill="#22150c"/>
-  <!-- Royal Mustache -->
-  <path d="M110 68 Q118 64 126 68 Q132 72 136 70 M110 68 Q104 72 100 70" fill="none" stroke="#1c1611" stroke-width="2.5" stroke-linecap="round"/>
+  <!-- Chibi Head -->
+  <circle cx="64" cy="38" r="21" fill="#f5cba7" stroke="#080e19" stroke-width="2.5"/>
+  <!-- Bagan King's Spired Crown / Helmet (မကိုဋ်သရဖူ) -->
+  <path d="M44 30 L84 30 L80 16 L64 4 L48 16 Z" fill="#ffd700" stroke="#080e19" stroke-width="2.2"/>
+  <circle cx="64" cy="14" r="3.5" fill="#00e676"/>
+  <circle cx="53" cy="22" r="2.2" fill="#d32f2f"/>
+  <circle cx="75" cy="22" r="2.2" fill="#d32f2f"/>
+  <!-- Resolute Eyes -->
+  <ellipse cx="55" cy="37" rx="3.5" ry="4.5" fill="#1c1611"/>
+  <ellipse cx="73" cy="37" rx="3.5" ry="4.5" fill="#1c1611"/>
+  <circle cx="56" cy="35" r="1.5" fill="#ffffff"/>
+  <circle cx="74" cy="35" r="1.5" fill="#ffffff"/>
+  <path d="M52 31 Q56 28 60 31 M70 31 Q74 28 78 31" stroke="#1c1611" stroke-width="2.5" stroke-linecap="round"/>
+  <!-- Bagan Royal Mustache (နှုတ်ခမ်းမွေး) -->
+  <path d="M55 45 Q64 42 73 45 Q78 48 81 46 M55 45 Q50 48 47 46" fill="none" stroke="#1c1611" stroke-width="2.5" stroke-linecap="round"/>
  </svg>`;
 }
 
 export function arindamaSpearPortrait(cls = 'weapon-reference-art') {
- return `<svg class="${cls}" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" role="img" aria-label="Arindama Spear of King Kyansittha">
+ return `<svg class="${cls}" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" role="img" aria-label="Arindama Spear illustration">
+  <defs>
+   <linearGradient id="arindamaGold" x1="0%" y1="0%" x2="100%" y2="100%">
+    <stop offset="0%" stop-color="#fff9c4"/>
+    <stop offset="50%" stop-color="#ffd700"/>
+    <stop offset="100%" stop-color="#b8860b"/>
+   </linearGradient>
+  </defs>
   <g transform="rotate(35 64 64)">
-   <line x1="64" y1="-15" x2="64" y2="140" stroke="#4e342e" stroke-width="6"/>
-   <line x1="64" y1="-15" x2="64" y2="140" stroke="#8d6e63" stroke-width="2.5"/>
+   <line x1="64" y1="-20" x2="64" y2="140" stroke="#4e342e" stroke-width="6"/>
+   <line x1="64" y1="-20" x2="64" y2="140" stroke="#8d6e63" stroke-width="2.5"/>
    <!-- Divine Golden Spear Blade -->
-   <path d="M54 -15 L64 -65 L74 -15 L68 5 L60 5 Z" fill="#ffd700" stroke="#3e2723" stroke-width="2.5"/>
-   <path d="M58 -15 L64 -60 L70 -15 Z" fill="#fff9c4"/>
+   <polygon points="64,-72 76,-16 68,6 60,6 52,-16" fill="url(#arindamaGold)" stroke="#3e2723" stroke-width="2.5"/>
+   <polygon points="64,-66 71,-16 64,0 57,-16" fill="#ffffff"/>
+   <!-- Lightning Core Arc -->
+   <line x1="64" y1="-62" x2="64" y2="2" stroke="#00e5ff" stroke-width="2.5"/>
    <!-- Emerald jewel core -->
-   <circle cx="64" cy="-5" r="5" fill="#00e676" stroke="#1b5e20" stroke-width="1.5"/>
-   <!-- Golden wing crossguards -->
-   <path d="M50 0 Q64 -8 78 0 L76 8 Q64 4 52 8 Z" fill="#ffb300" stroke="#3e2723" stroke-width="1.5"/>
-   <!-- Crimson Royal Tassel -->
-   <path d="M68 6 Q80 20 74 38 Q70 24 68 12" fill="#d32f2f"/>
+   <circle cx="64" cy="-4" r="5" fill="#00e676" stroke="#1b5e20" stroke-width="1.5"/>
+   <!-- Red Horsehair Plume (လှံအမွှေး) -->
+   <path d="M68 6 Q84 22 76 42 Q70 26 68 12 Z" fill="#d32f2f"/>
   </g>
  </svg>`;
 }
 
 export function baganPikePortrait(cls = 'weapon-reference-art') {
- return `<svg class="${cls}" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" role="img" aria-label="Bagan Crescent Pike">
+ return `<svg class="${cls}" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" role="img" aria-label="Bagan Crescent Pike illustration">
   <g transform="rotate(35 64 64)">
-   <line x1="64" y1="-10" x2="64" y2="140" stroke="#37474f" stroke-width="5.5"/>
-   <line x1="64" y1="-10" x2="64" y2="140" stroke="#78909c" stroke-width="2"/>
-   <!-- Crescent Side Blade & Spear Point -->
-   <path d="M64 -50 L64 5 M58 -35 L64 -50 L70 -35" stroke="#eceff1" stroke-width="3" fill="none"/>
-   <path d="M64 -15 Q90 -10 82 25 Q74 5 64 0" fill="#90a4ae" stroke="#263238" stroke-width="2"/>
-   <circle cx="64" cy="0" r="4" fill="#ffb300"/>
+   <line x1="64" y1="-15" x2="64" y2="140" stroke="#37474f" stroke-width="6"/>
+   <line x1="64" y1="-15" x2="64" y2="140" stroke="#78909c" stroke-width="2.5"/>
+   <!-- Spear Point -->
+   <polygon points="64,-65 72,-15 64,0 56,-15" fill="#eceff1" stroke="#263238" stroke-width="2.5"/>
+   <!-- Crescent Side Blade -->
+   <path d="M64 -15 Q96 -10 86 30 Q76 8 64 4 Z" fill="#90a4ae" stroke="#263238" stroke-width="2.5"/>
+   <circle cx="64" cy="4" r="4.5" fill="#ffd700" stroke="#080e19" stroke-width="1.5"/>
   </g>
  </svg>`;
 }
 
 export function royalLancePortrait(cls = 'weapon-reference-art') {
- return `<svg class="${cls}" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" role="img" aria-label="Royal Vanguard Lance">
+ return `<svg class="${cls}" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" role="img" aria-label="Royal Vanguard Lance illustration">
   <g transform="rotate(35 64 64)">
-   <line x1="64" y1="-25" x2="64" y2="140" stroke="#bf360c" stroke-width="6"/>
-   <!-- Cone Guard -->
-   <path d="M50 45 L78 45 L72 75 L56 75 Z" fill="#d4af37" stroke="#3e2723" stroke-width="2.5"/>
-   <path d="M58 -25 L64 -65 L70 -25 L68 25 L60 25 Z" fill="#ffd54f" stroke="#3e2723" stroke-width="2.5"/>
-   <circle cx="64" cy="55" r="4" fill="#ffffff"/>
+   <line x1="64" y1="-28" x2="64" y2="140" stroke="#b71c1c" stroke-width="6.5"/>
+   <!-- Fluted Golden Vamplate Guard -->
+   <polygon points="46,45 82,45 74,80 54,80" fill="#ffd700" stroke="#3e2723" stroke-width="2.5"/>
+   <!-- Massive Penetrating Lance Tip -->
+   <polygon points="64,-70 72,-28 68,20 60,20 56,-28" fill="#ffd54f" stroke="#3e2723" stroke-width="2.5"/>
+   <circle cx="64" cy="55" r="4.5" fill="#ffffff" stroke="#b8860b" stroke-width="1.5"/>
   </g>
  </svg>`;
 }

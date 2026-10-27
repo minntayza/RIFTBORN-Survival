@@ -11,9 +11,9 @@ export const WEAPON_EFFECTS:Record<WeaponId,Geometry>={
  aungzeyabow:{grip:{x:-12,y:0},tip:{x:45,y:0},size:95,duration:.28,style:'bow-shot',color:0xf6cb62},
  solarcrossbow:{grip:{x:-14,y:2},tip:{x:38,y:0},size:82,duration:.14,style:'solar-shot',color:0xffaa44},
  greatbow:{grip:{x:-16,y:0},tip:{x:54,y:0},size:115,duration:.44,style:'heavy-shot',color:0xff7733},
-  hempwraps:{grip:{x:0,y:0},tip:{x:50,y:0},size:112,duration:.18,style:'fist-strike',color:0xbd3a42},
-  ironwraps:{grip:{x:0,y:0},tip:{x:54,y:0},size:118,duration:.26,style:'iron-strike',color:0x889aa8},
-  tigerwraps:{grip:{x:0,y:0},tip:{x:52,y:0},size:115,duration:.2,style:'claw-strike',color:0xd46830},
+  hempwraps:{grip:{x:0,y:0},tip:{x:44,y:0},size:102,duration:.18,style:'fist-strike',color:0xbd3a42},
+  ironwraps:{grip:{x:0,y:0},tip:{x:48,y:0},size:108,duration:.26,style:'iron-strike',color:0x889aa8},
+  tigerwraps:{grip:{x:0,y:0},tip:{x:46,y:0},size:106,duration:.2,style:'claw-strike',color:0xd46830},
   arindamaspear:{grip:{x:-36,y:0},tip:{x:68,y:0},size:160,duration:.38,style:'arindama-thrust',color:0x72c438},
   baganpike:{grip:{x:-32,y:0},tip:{x:58,y:-16},size:150,duration:.42,style:'crescent-sweep',color:0xb5c84d},
   royallance:{grip:{x:-40,y:0},tip:{x:74,y:0},size:175,duration:.48,style:'heavy-lance',color:0xd4af37},
@@ -38,7 +38,7 @@ export const WEAPON_EFFECTS:Record<WeaponId,Geometry>={
   const g=WEAPON_EFFECTS[id],t=Math.max(0,Math.min(1,phase)),ease=t*t*(3-2*t),shield=id==='shield'||id==='spiked',gun=isGun(id);
   const facing=Math.cos(aim)<0?-1:1,samuraiFacing=articulated==='samurai'||articulated==='tank'&&shield?facing:1;
   let rotation=aim,forward=shield?24:7,side=shield?0:(offhand?-13:13);
-  if(active){if(shield)forward+=Math.sin(Math.PI*t)*18;else if(gun)forward-=Math.sin(Math.PI*t)*(id==='shotgun'?8:id==='smg'?2:4);else if(id==='hammer'){rotation+=t<.3?-.9*t/.3:-.9+(t-.3)/.7*1.5;forward+=Math.sin(Math.PI*t)*4;}else if(isLethweiWeapon(id)){forward+=Math.sin(Math.PI*t)*28;const direction=(sequence%2===0)!==offhand?1:-1;rotation+=direction*(0.35*arcScale-ease*0.7*arcScale);}else{const arc=id==='naginata'?2.4:id==='kama'?2.8:id==='nodachi'?2:id==='cursed'?2.1:1.7;const direction=id==='dual'&&((sequence%2===0)!==offhand)?-1:1;rotation+=direction*(arc*arcScale/2-ease*arc*arcScale);}}
+  if(active){if(shield)forward+=Math.sin(Math.PI*t)*18;else if(gun)forward-=Math.sin(Math.PI*t)*(id==='shotgun'?8:id==='smg'?2:4);else if(id==='hammer'){rotation+=t<.3?-.9*t/.3:-.9+(t-.3)/.7*1.5;forward+=Math.sin(Math.PI*t)*4;}else if(isLethweiWeapon(id)){forward+=Math.sin(Math.PI*t)*22;const direction=(sequence%2===0)!==offhand?1:-1;rotation+=direction*(0.35*arcScale-ease*0.7*arcScale);}else{const arc=id==='naginata'?2.4:id==='kama'?2.8:id==='nodachi'?2:id==='cursed'?2.1:1.7;const direction=id==='dual'&&((sequence%2===0)!==offhand)?-1:1;rotation+=direction*(arc*arcScale/2-ease*arc*arcScale);}}
  if(blocking&&shield)forward+=5;
  if(articulated==='tank'&&shield){const push=!active?0:t<.26?-4*(t/.26):t<.5?-4+15*(1-Math.pow(1-(t-.26)/.24,3)):11*(1-(t-.5)/.5);forward=18+push-(blocking&&!active?3:0);}
  if(articulated&&!gun&&!shield)rotation=aim+(active?(articulated==='samurai'?samuraiSwing(id,t)*facing:ninjaWeaponSwing(id,t,sequence,offhand)*(articulated==='tank'?facing:1))*arcScale:0);
@@ -72,7 +72,7 @@ export function meleeContact(id:WeaponId,x:number,y:number,aim:number,enemy:Poin
  const pose=weaponPose(id,x,y,aim,i/16*.55,true,sequence,offhand,false,reach,arcScale,articulated),tip=pose.tip;
  if(articulated&&id==='kama'){if(pose.hook&&(segmentDistance(enemy,pose.grip,pose.hook)<=radius+11||segmentDistance(enemy,pose.hook,tip)<=radius+11))return true;}
  else if(id==='hammer'||id==='kama'){if(Math.hypot(enemy.x-tip.x,enemy.y-tip.y)<=radius+(id==='hammer'?14:11))return true;}
- else if(isLethweiWeapon(id)){if(Math.hypot(enemy.x-tip.x,enemy.y-tip.y)<=radius+24||segmentDistance(enemy,pose.grip,tip)<=radius+18)return true;}
+ else if(isLethweiWeapon(id)){if(Math.hypot(enemy.x-tip.x,enemy.y-tip.y)<=radius+18||segmentDistance(enemy,pose.grip,tip)<=radius+14)return true;}
  else if(id==='shield'||id==='spiked'){const dx=-Math.sin(pose.rotation)*20,dy=Math.cos(pose.rotation)*20;if(segmentDistance(enemy,{x:tip.x-dx,y:tip.y-dy},{x:tip.x+dx,y:tip.y+dy})<=radius+5)return true;}
  else{const start=id==='naginata'?.7:.2;const a={x:pose.grip.x+(tip.x-pose.grip.x)*start,y:pose.grip.y+(tip.y-pose.grip.y)*start};if(segmentDistance(enemy,a,tip)<=radius+4)return true;}
  }return false;

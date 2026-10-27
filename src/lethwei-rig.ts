@@ -95,3 +95,85 @@ export class LethweiRig{
  campLayer(offset:number){fighterPose().forEach((p,i)=>this.parts.get(p.part)!.setDepth(3+i*.012+offset));}
  defeat(){for(const s of this.parts.values())s.setAlpha(.4);}
 }
+
+export class LethweiCloneRig {
+ private parts = new Map<FighterPart, Phaser.GameObjects.Image>();
+ private motion = new FighterMotion();
+
+ constructor(scene: Phaser.Scene, depth = 3.28) {
+  try {
+   const source = scene.textures.get(LETHWEI_ART.key)?.getSourceImage() as HTMLImageElement | undefined;
+   const legs = scene.textures.get(LETHWEI_LEGS.key)?.getSourceImage() as HTMLImageElement | undefined;
+   const forearms = scene.textures.get(LETHWEI_FOREARMS.key)?.getSourceImage() as HTMLImageElement | undefined;
+   const nearForearm = scene.textures.get(LETHWEI_NEAR_FOREARM.key)?.getSourceImage() as HTMLImageElement | undefined;
+
+   for (const part of FIGHTER_PARTS) {
+    const key = LETHWEI_ART.key + '-' + part;
+    if (!scene.textures.exists(key) && source && legs && forearms && nearForearm) {
+     scene.textures.addCanvas(key, fighterPart(source, part, legs, forearms, nearForearm));
+    }
+    if (scene.textures.exists(key)) {
+     const img = scene.add.image(0, 0, key)
+      .setDepth(depth)
+      .setVisible(false)
+      .setAlpha(0.88)
+      .setTint(0xffd54f);
+     this.parts.set(part, img);
+    }
+   }
+  } catch {}
+ }
+
+ render(
+  x: number,
+  y: number,
+  aim: number,
+  time: number,
+  moving: boolean,
+  attack: number,
+  sequence: number,
+  duration = 0.2
+ ) {
+  const flip = Math.cos(aim) < 0;
+  const scale = 0.54;
+  const motion = this.motion.sample(x, y, time);
+  const breath = Math.sin(time * 6) * 0.04;
+  const poses = fighterPose(
+   time,
+   moving,
+   attack,
+   sequence,
+   motion,
+   duration,
+   Math.atan2(Math.sin(aim), Math.abs(Math.cos(aim)))
+  );
+
+  poses.forEach((p, i) => {
+   const img = this.parts.get(p.part);
+   if (img) {
+    img
+     .setVisible(true)
+     .setOrigin(flip ? 1 - p.ox : p.ox, p.oy)
+     .setPosition(x + p.x * scale * (flip ? -1 : 1), y + (p.y - 4) * scale)
+     .setDisplaySize(p.w * scale, p.h * scale)
+     .setRotation(p.r * (flip ? -1 : 1))
+     .setFlipX(flip)
+     .setAlpha(0.85 + breath)
+     .setTint(0xffd54f);
+   }
+  });
+ }
+
+ setVisible(visible: boolean) {
+  for (const img of this.parts.values()) {
+   img.setVisible(visible);
+  }
+ }
+
+ destroy() {
+  for (const img of this.parts.values()) {
+   img.destroy();
+  }
+  this.parts.clear();
+ }
+}

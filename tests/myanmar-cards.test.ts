@@ -71,12 +71,12 @@ test('myanmar hero cards are exclusive and never offered to other classes',()=>{
 test('lethwei master weapons have extended attack reach and punch forward extension',()=>{
  for(const id of ['hempwraps','ironwraps','tigerwraps'] as const){
   assert.ok(isLethweiWeapon(id));
-  assert.ok(WEAPONS[id].range >= 120, `${id} range must be at least 120 for comfortable gameplay`);
+  assert.ok(WEAPONS[id].range >= 105, `${id} range must be at least 105 for comfortable gameplay`);
   // Forward punch extension check
   const rest = weaponPose(id, 0, 0, 0, 0, false);
   const strike = weaponPose(id, 0, 0, 0, 0.5, true);
-  assert.ok(strike.tip.x > rest.tip.x + 20, `${id} must lunge forward during strike`);
-  // Hits zombie at 75px distance comfortably
-  assert.equal(meleeContact(id, 0, 0, 0, {x: 75, y: 0}, 14), true, `${id} should hit enemy at 75px distance`);
+  assert.ok(strike.tip.x > rest.tip.x + 15, `${id} must lunge forward during strike`);
+  // Hits zombie at 68px distance comfortably
+  assert.equal(meleeContact(id, 0, 0, 0, {x: 68, y: 0}, 14), true, `${id} should hit enemy at 68px distance`);
  }
 });

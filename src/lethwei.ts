@@ -3,7 +3,7 @@ import {skillIcon} from './skill-icons';
 export const LETHWEI_SKILLS = {
  blitz: { name: 'Nine-Limb Blitz', cooldown: 8, icon: '⚔', description: 'Dash forward with a flying knee, elbow strike, and headbutt, knocking back and stunning foes.' },
  ironchin: { name: 'Iron Chin', cooldown: 11, icon: '🛡', description: 'Harden your stance: gain 50% damage reduction for 3.5s and reflect 70% melee damage taken back as a shockwave.' },
- lethweiring: { name: 'Lethwei Ring', cooldown: 16, icon: '⬡', description: 'Establish a 220px spiritual Lethwei boxing ring for 9s. Gain 40% damage reduction inside. Two fighting spirit clones spawn to auto-pummel nearby enemies, and ring ropes bounce foes back inside.' }
+ lethweiring: { name: 'Lethwei Ring', cooldown: 20, icon: '⬡', description: 'Establish a sacred square Lethwei ring for 6s (20s cooldown). Gain 20% damage reduction inside. A spirit clone aids you, and elastic ring ropes bounce foes back inside.' }
 } as const;
 
 export type LethweiSkill = keyof typeof LETHWEI_SKILLS;
@@ -38,35 +38,64 @@ export function lethweiSkillIcon(id: LethweiSkill) {
 }
 
 export function lethweiPortrait(cls = 'art-image') {
- return `<svg class="${cls}" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1141 1349" role="img" aria-label="Lethwei Master with wrapped fists and traditional Htoe Kwin tattoos"><image href="/assets/characters/lethwei-tiger-portrait-v1.png" width="1141" height="1349"/></svg>`;
+ return `<svg class="${cls}" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" role="img" aria-label="Lethwei Master with wrapped fists and traditional Htoe Kwin tattoos"><image href="/assets/characters/lethwei-tiger-portrait-v1.png" x="8" y="0" width="112" height="128" preserveAspectRatio="xMidYMid slice"/></svg>`;
 }
 
 export function hempWrapsPortrait(cls = 'weapon-reference-art') {
- return `<svg class="${cls}" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" role="img" aria-label="Raw Hemp Handwraps">
-  <rect x="36" y="32" width="56" height="64" rx="12" fill="#d7c4a3" stroke="#4a3525" stroke-width="3"/>
-  <path d="M36 46 L92 56 M36 60 L92 70 M36 74 L92 84" stroke="#8c6f4b" stroke-width="3.5"/>
-  <path d="M42 32 L42 96 M86 32 L86 96" stroke="#aa8c64" stroke-width="2" stroke-dasharray="4 2"/>
-  <circle cx="64" cy="64" r="8" fill="#a83232" opacity=".6"/>
+ return `<svg class="${cls}" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" role="img" aria-label="Hemp Wraps illustration">
+  <defs>
+   <linearGradient id="hempGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+    <stop offset="0%" stop-color="#f5e6ca"/>
+    <stop offset="50%" stop-color="#d7c4a3"/>
+    <stop offset="100%" stop-color="#aa8c64"/>
+   </linearGradient>
+  </defs>
+  <rect x="32" y="28" width="64" height="72" rx="14" fill="url(#hempGrad)" stroke="#3e2723" stroke-width="3"/>
+  <!-- Multi-layered wound hemp fibers -->
+  <path d="M32 44 L96 52 M32 58 L96 66 M32 72 L96 80 M32 86 L96 94" stroke="#6d4c24" stroke-width="3.5" stroke-linecap="round"/>
+  <!-- Knuckle cord wrap accents -->
+  <rect x="38" y="32" width="52" height="10" rx="3" fill="#8d6e63" stroke="#3e2723" stroke-width="2"/>
+  <!-- Traditional Burmese fighter blood seal -->
+  <circle cx="64" cy="64" r="9" fill="#b71c1c" opacity=".85"/>
+  <circle cx="64" cy="64" r="4" fill="#ffd700"/>
  </svg>`;
 }
 
 export function ironWrapsPortrait(cls = 'weapon-reference-art') {
- return `<svg class="${cls}" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" role="img" aria-label="Iron Studded Wraps">
-  <rect x="34" y="30" width="60" height="68" rx="12" fill="#546e7a" stroke="#1c2b36" stroke-width="3.5"/>
-  <path d="M34 46 L94 46 M34 82 L94 82" stroke="#263238" stroke-width="4"/>
-  <!-- Iron Studs -->
-  <circle cx="48" cy="64" r="5" fill="#cfd8dc" stroke="#263238" stroke-width="2"/>
-  <circle cx="64" cy="64" r="6" fill="#eceff1" stroke="#263238" stroke-width="2"/>
-  <circle cx="80" cy="64" r="5" fill="#cfd8dc" stroke="#263238" stroke-width="2"/>
+ return `<svg class="${cls}" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" role="img" aria-label="Iron Studded Wraps illustration">
+  <defs>
+   <linearGradient id="ironGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+    <stop offset="0%" stop-color="#90a4ae"/>
+    <stop offset="50%" stop-color="#546e7a"/>
+    <stop offset="100%" stop-color="#263238"/>
+   </linearGradient>
+  </defs>
+  <rect x="30" y="26" width="68" height="76" rx="14" fill="url(#ironGrad)" stroke="#102027" stroke-width="3.5"/>
+  <rect x="36" y="32" width="56" height="12" rx="4" fill="#37474f" stroke="#102027" stroke-width="2"/>
+  <path d="M30 50 L98 50 M30 84 L98 84" stroke="#102027" stroke-width="4"/>
+  <!-- Reinforced Iron Knuckle Spikes / Studs -->
+  <circle cx="44" cy="66" r="6" fill="#eceff1" stroke="#102027" stroke-width="2.5"/>
+  <circle cx="64" cy="66" r="7.5" fill="#ffffff" stroke="#102027" stroke-width="2.5"/>
+  <circle cx="84" cy="66" r="6" fill="#eceff1" stroke="#102027" stroke-width="2.5"/>
  </svg>`;
 }
 
 export function tigerWrapsPortrait(cls = 'weapon-reference-art') {
- return `<svg class="${cls}" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" role="img" aria-label="Tiger Strike Wraps">
-  <rect x="34" y="30" width="60" height="68" rx="12" fill="#e65100" stroke="#3e2723" stroke-width="3.5"/>
-  <!-- Tiger Stripes -->
-  <path d="M34 44 Q54 48 42 60 M94 44 Q74 48 86 60 M34 76 Q56 74 44 86 M94 76 Q72 74 84 86" fill="none" stroke="#212121" stroke-width="4" stroke-linecap="round"/>
-  <!-- Tiger Claws at top -->
-  <path d="M46 30 L48 18 L54 30 M61 30 L64 16 L67 30 M74 30 L80 18 L82 30" fill="#f5f5f5" stroke="#3e2723" stroke-width="2"/>
+ return `<svg class="${cls}" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" role="img" aria-label="Tiger Strike Wraps illustration">
+  <defs>
+   <linearGradient id="tigerGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+    <stop offset="0%" stop-color="#ff9800"/>
+    <stop offset="50%" stop-color="#e65100"/>
+    <stop offset="100%" stop-color="#bf360c"/>
+   </linearGradient>
+  </defs>
+  <rect x="30" y="26" width="68" height="76" rx="14" fill="url(#tigerGrad)" stroke="#212121" stroke-width="3.5"/>
+  <!-- Fierce Tiger Claw Marks -->
+  <path d="M30 42 Q60 48 42 62 M98 42 Q68 48 86 62 M30 74 Q62 72 46 86 M98 74 Q66 72 82 86" fill="none" stroke="#212121" stroke-width="4.5" stroke-linecap="round"/>
+  <!-- Razor Tiger Claws at Knuckles -->
+  <polygon points="44,28 48,14 54,28" fill="#ffffff" stroke="#212121" stroke-width="2"/>
+  <polygon points="61,28 64,12 67,28" fill="#ffffff" stroke="#212121" stroke-width="2"/>
+  <polygon points="74,28 80,14 84,28" fill="#ffffff" stroke="#212121" stroke-width="2"/>
+  <circle cx="64" cy="64" r="5" fill="#ffd700"/>
  </svg>`;
 }

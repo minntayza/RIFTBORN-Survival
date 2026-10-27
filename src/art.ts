@@ -169,9 +169,9 @@ export function actorCanvas(kind: 'hero' | 'enemy', id: HeroId | EnemyId, frame:
     // Local forward is -Y; the quarter turn converts it to +X for world aiming.
     // Feet and trailing cloth are behind the shoulders, with the face on the leading edge.
     const hero=kind==='hero',h=id as HeroId,e=id as EnemyId;
-    const skin=hero?(h==='ninja'?'#344469':h==='tank'?'#466a7c':'#c0a189'):'#'+ENEMIES[e].color.toString(16);
-    const body=hero?(h==='ninja'?'#273653':h==='samurai'?'#9e424d':h==='gunner'?'#d7a545':'#497c85'):(e==='boss'?'#723641':e==='armoured'?'#657889':e==='rifle'?'#647153':e==='cleaver'?'#806d57':e==='spear'?'#576e6b':e==='brute'?'#c56f43':e==='abomination'?'#875276':e==='bioScreer'?'#596b46':e==='shadowLurker'?'#352c4b':'#405548');
-    const broad=hero&&h==='tank'||!hero&&(e==='boss'||e==='brute'||e==='abomination');
+    const skin=hero?(h==='ninja'?'#344469':h==='tank'?'#466a7c':h==='lethwei'?'#b8825c':h==='pyusawhti'?'#cfa47c':'#c0a189'):'#'+ENEMIES[e].color.toString(16);
+    const body=hero?(h==='ninja'?'#273653':h==='samurai'?'#9e424d':h==='gunner'?'#d7a545':h==='pyusawhti'?'#962f1d':h==='kyansittha'?'#185a3a':h==='lethwei'?'#7a1818':'#497c85'):(e==='boss'?'#723641':e==='armoured'?'#657889':e==='rifle'?'#647153':e==='cleaver'?'#806d57':e==='spear'?'#576e6b':e==='brute'?'#c56f43':e==='abomination'?'#875276':e==='bioScreer'?'#596b46':e==='shadowLurker'?'#352c4b':'#405548');
+    const broad=hero&&(h==='tank'||h==='lethwei'||h==='kyansittha')||!hero&&(e==='boss'||e==='brute'||e==='abomination');
     ellipse(-10,18+walk,6,10,'#172233');ellipse(10,18-walk,6,10,'#172233');
     if(hero&&h==='ninja')shape([[-6,7],[-18,27+walk],[-29,36],[-14,33],[3,13]],'#7562b0');
     if(hero&&h==='samurai'||!hero&&e==='boss')shape([[-20,7],[-23,29],[-7,24],[0,30],[19,27],[20,7]],body);
@@ -183,7 +183,7 @@ export function actorCanvas(kind: 'hero' | 'enemy', id: HeroId | EnemyId, frame:
     ellipse(-19,-10,5,6,hero?'#c1a182':skin);ellipse(19,-10,5,6,hero?'#c1a182':skin);
     // Crown and face overlap the torso, rather than forming a full upright figure.
     ellipse(0,-4,15,15,skin);
-    const cap=hero?(h==='ninja'?'#344469':h==='samurai'?'#242332':h==='gunner'?'#554036':'#466a7c'):(e==='rifle'?'#6b795b':e==='armoured'||e==='spear'?'#728981':skin);
+    const cap=hero?(h==='ninja'?'#344469':h==='samurai'?'#242332':h==='gunner'?'#554036':h==='pyusawhti'?'#f1c40f':h==='kyansittha'?'#d4af37':h==='lethwei'?'#c0392b':'#466a7c'):(e==='rifle'?'#6b795b':e==='armoured'||e==='spear'?'#728981':skin);
     ellipse(0,-1,14,11,cap);
     shape([[-11,-12],[11,-12],[9,-18],[0,-21],[-9,-18]],hero&&h==='ninja'?'#777097':skin);
     line(-9,-15,9,-15,hero?(h==='gunner'?'#233b51':'#172b38'):'#243330',4);
