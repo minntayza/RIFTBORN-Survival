@@ -58,9 +58,11 @@ export class PyusawhtiCombat {
 
   if (id === 'multishot') {
    const baseDmg = (WEAPONS[s.weapon]?.damage || 28) * 1.1;
-   for (let i = -3; i <= 3; i++) {
-    const a = angle + i * 0.15;
-    const speed = 720;
+   const flankBonus = s.u('arrowstorm') * 2;
+   const totalArrows = s.evolved('arrowstorm') ? 8 : (7 + flankBonus);
+   for (let i = 0; i < totalArrows; i++) {
+    const a = s.evolved('arrowstorm') ? (i * Math.PI * 2 / 8) : (angle + (i - Math.floor(totalArrows / 2)) * 0.13);
+    const speed = 720 * (1 + s.u('windfocuscard') * 0.25);
     this.arrows.push({
      x: s.x + Math.cos(a) * 20,
      y: s.y + Math.sin(a) * 20,
@@ -68,20 +70,21 @@ export class PyusawhtiCombat {
      vy: Math.sin(a) * speed,
      angle: a,
      damage: baseDmg,
-     pierce: 3,
+     pierce: 3 + s.u('piercingeye') * 2 + (s.evolved('piercingeye') ? 99 : 0),
      remainingRange: 650,
+     sunburst: s.evolved('sunburstcard') || Math.random() < s.u('sunburstcard') * 0.25,
      hitEnemies: new Set()
     });
    }
    s.audio.play('shotgun');
    s.notifyCombat('GALE VOLLEY');
   } else if (id === 'windfocus') {
-   this.windFocusTime = 5;
+   this.windFocusTime = 5 + s.u('windfocuscard') * 1.2;
    s.audio.play('overdrive');
    s.notifyCombat('WIND FOCUS');
   } else if (id === 'banepierce') {
-   const baseDmg = (WEAPONS[s.weapon]?.damage || 28) * 3.4;
-   const speed = 640;
+   const baseDmg = (WEAPONS[s.weapon]?.damage || 28) * 3.4 * (1 + s.u('beasthunter') * 0.3);
+   const speed = 640 * (1 + s.u('windfocuscard') * 0.25);
    this.arrows.push({
     x: s.x + Math.cos(angle) * 25,
     y: s.y + Math.sin(angle) * 25,
@@ -107,23 +110,37 @@ export class PyusawhtiCombat {
   if (s.paused || s.ended || s.swing > 0) return;
   s.attackSequence++;
   const w = WEAPONS[s.weapon];
-  const speed = s.weapon === 'solarcrossbow' ? 820 : s.weapon === 'greatbow' ? 580 : 700;
-  const pierce = (this.windFocusTime > 0 ? 12 : s.weapon === 'greatbow' ? 2 : 1) + s.u('pierce');
+  const speed = (s.weapon === 'solarcrossbow' ? 820 : s.weapon === 'greatbow' ? 580 : 700) * (1 + s.u('windfocuscard') * 0.25);
+  const pierce = (this.windFocusTime > 0 ? 12 : s.weapon === 'greatbow' ? 2 : 1) + s.u('pierce') + s.u('piercingeye') * 2 + (s.evolved('piercingeye') ? 99 : 0);
   const damage = (w?.damage || 28) * (this.windFocusTime > 0 ? 1.2 : 1) * (1 + s.u('damage') * 0.15);
 
   s.swing = (w?.cooldown || 0.35) / this.attackRateMultiplier;
-  this.arrows.push({
-   x: s.x + Math.cos(s.angle) * 22,
-   y: s.y + Math.sin(s.angle) * 22,
-   vx: Math.cos(s.angle) * speed,
-   vy: Math.sin(s.angle) * speed,
-   angle: s.angle,
-   damage,
-   pierce,
-   remainingRange: w?.range || 650,
-   sunburst: s.weapon === 'greatbow',
-   hitEnemies: new Set()
-  });
+
+  const angles = [s.angle];
+  if (s.evolved('arrowstorm')) {
+   for (let i = 1; i < 8; i++) angles.push(s.angle + (i * Math.PI * 2 / 8));
+  } else if (s.u('arrowstorm') > 0) {
+   const extra = s.u('arrowstorm');
+   for (let i = 1; i <= extra; i++) {
+    angles.push(s.angle - i * 0.12);
+    angles.push(s.angle + i * 0.12);
+   }
+  }
+
+  for (const a of angles) {
+   this.arrows.push({
+    x: s.x + Math.cos(a) * 22,
+    y: s.y + Math.sin(a) * 22,
+    vx: Math.cos(a) * speed,
+    vy: Math.sin(a) * speed,
+    angle: a,
+    damage,
+    pierce,
+    remainingRange: w?.range || 650,
+    sunburst: s.weapon === 'greatbow' || s.evolved('sunburstcard') || Math.random() < s.u('sunburstcard') * 0.25,
+    hitEnemies: new Set()
+   });
+  }
 
   s.audio.play('reload-swish');
  }
@@ -134,8 +151,12 @@ export class PyusawhtiCombat {
   for (const e of s.enemies) {
    if (e.active && Math.hypot(e.x - x, e.y - y) <= radius + e.r) {
     s.hit(e, damage, 45, false, false, 'Sunburst');
-    if (e.active) e.burn = Math.max(e.burn, 3.5);
+    if (e.active) e.burn = Math.max(e.burn || 0, 3.5);
    }
+  }
+  if (s.evolved('sunburstcard')) {
+   if (s.firePatches.length >= 20) s.firePatches.shift();
+   s.firePatches.push({ x, y, life: 3.5 });
   }
   s.audio.play('tank-slam');
  }
@@ -174,7 +195,13 @@ export class PyusawhtiCombat {
     const hitRadius = e.r + (a.giant ? 16 : 8);
     if (Math.hypot(e.x - a.x, e.y - a.y) <= hitRadius) {
      a.hitEnemies.add(e);
-     s.hit(e, a.damage, a.giant ? 60 : 18);
+     const isBoss = ['elite', 'boss', 'shooterBoss', 'commander'].includes(e.type);
+     s.hit(e, a.damage * (isBoss ? (1 + s.u('beasthunter') * 0.3) : 1), a.giant ? 60 : 18);
+     if (isBoss && e.hp <= 0 && s.evolved('beasthunter')) {
+      s.invuln = Math.max(s.invuln, 4);
+      s.heal(25);
+      s.notifyCombat('LEGEND OF BAGAN · INVULNERABLE');
+     }
      s.burst(a.x, a.y, a.giant ? 0xffd700 : 0xf4cb55, a.giant ? 10 : 4);
      a.pierce--;
      if (a.giant) {

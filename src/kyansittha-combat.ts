@@ -54,6 +54,7 @@ export class KyansitthaCombat {
    s.audio.play('naginata');
    s.notifyCombat('CRESCENT SWEEP & LUNGE');
   } else if (id === 'phalanx') {
+   const width = 150 * (1 + s.u('royalguard') * 0.3);
    this.phalanx = {
     active: true,
     x: s.x + Math.cos(angle) * 55,
@@ -61,14 +62,12 @@ export class KyansitthaCombat {
     angle,
     duration: 4.5,
     maxDuration: 4.5,
-    width: 150
+    width
    };
    s.audio.play('lotus-guard');
-   s.notifyCombat('BAGAN PHALANX');
+   s.notifyCombat(s.evolved('royalguard') ? 'INVINCIBLE PHALANX' : 'BAGAN PHALANX');
   } else if (id === 'arindamathunder') {
    const targetDist = 260;
-   const tx = s.x + Math.cos(angle) * targetDist;
-   const ty = s.y + Math.sin(angle) * targetDist;
    const bound = s.moveOnGround(s.x, s.y, Math.cos(angle) * targetDist, Math.sin(angle) * targetDist, 15);
 
    this.spears.push({
@@ -76,13 +75,13 @@ export class KyansitthaCombat {
     y: bound.y,
     life: 2.2,
     maxLife: 2.2,
-    damage: (WEAPONS[s.weapon]?.damage || 52) * 3.2,
+    damage: (WEAPONS[s.weapon]?.damage || 52) * 3.2 * (1 + s.u('arindamapower') * 0.25),
     detonated: false
    });
 
    s.cameras.main.shake(160, 0.004);
    s.audio.play('tank-slam');
-   s.notifyCombat("ARINDAMA'S THUNDERBOLT");
+   s.notifyCombat(s.evolved('arindamapower') ? 'WRATH OF ARINDAMA' : "ARINDAMA'S THUNDERBOLT");
   }
   return true;
  }
@@ -102,15 +101,19 @@ export class KyansitthaCombat {
   // Handle Crescent Sweep
   if (this.sweepTime > 0) {
    this.sweepTime = Math.max(0, this.sweepTime - dt);
-   const sweepRadius = (WEAPONS[s.weapon]?.range || 160) * 1.1;
+   const sweepRadius = (WEAPONS[s.weapon]?.range || 160) * (s.u('spearwhirl') > 0 ? 1.3 : 1.1);
    for (const e of s.enemies) {
     if (!e.active) continue;
     const d = Math.hypot(e.x - s.x, e.y - s.y);
     if (d <= sweepRadius + e.r) {
+     if (s.evolved('spearwhirl')) {
+      e.x += (s.x - e.x) * 0.12;
+      e.y += (s.y - e.y) * 0.12;
+     }
      const diff = Math.atan2(e.y - s.y, e.x - s.x) - this.sweepAim;
      const normalized = Math.atan2(Math.sin(diff), Math.cos(diff));
-     if (Math.abs(normalized) <= 2.1) {
-      s.hit(e, (WEAPONS[s.weapon]?.damage || 52) * 0.9, 70);
+     if (s.u('spearwhirl') > 0 || Math.abs(normalized) <= 2.1) {
+      s.hit(e, (WEAPONS[s.weapon]?.damage || 52) * (0.9 + s.u('spearwhirl') * 0.15), 70);
       s.burst(e.x, e.y, 0x76ff03, 5);
      }
     }
@@ -121,7 +124,7 @@ export class KyansitthaCombat {
   if (this.thrustTime > 0) {
    this.thrustTime = Math.max(0, this.thrustTime - dt);
    if (this.thrustTime <= 0.28 && this.thrustTime > 0.2) {
-    const lungeDist = 220;
+    const lungeDist = 220 * (1 + (s.u('thunderthrust') > 0 ? 0.4 : 0));
     const lx = Math.cos(this.sweepAim);
     const ly = Math.sin(this.sweepAim);
     for (const e of s.enemies) {
@@ -134,9 +137,10 @@ export class KyansitthaCombat {
       const projY = dot * ly;
       const perpDist = Math.hypot(dx - projX, dy - projY);
       if (perpDist <= 32 + e.r) {
-       s.hit(e, (WEAPONS[s.weapon]?.damage || 52) * 1.6, 90);
-       e.stagger = Math.max(e.stagger, 0.6);
-       s.burst(e.x, e.y, 0xffd700, 6);
+       const lungeDmg = (WEAPONS[s.weapon]?.damage || 52) * 1.6 * (1 + s.u('thunderthrust') * 0.3);
+       s.hit(e, lungeDmg, 90);
+       e.stagger = Math.max(e.stagger || 0, 0.6);
+       s.burst(e.x, e.y, s.evolved('thunderthrust') ? 0x00e5ff : 0xffd700, 6);
       }
      }
     }
@@ -161,15 +165,20 @@ export class KyansitthaCombat {
      const lateralDist = Math.abs(dx * normX + dy * normY);
 
      if (distFromPlane <= 28 + e.r && lateralDist <= pw.width / 2 + e.r) {
-      // Repel and damage
-      e.x += Math.cos(pw.angle) * 25;
-      e.y += Math.sin(pw.angle) * 25;
-      s.hit(e, 26 * dt * 4, 30, false, false, 'Bagan Phalanx');
-      e.slow = Math.max(e.slow, 0.6);
-      s.burst(e.x, e.y, 0x64ffda, 3);
+      // Repel and damage cleanly
+      e.x += Math.cos(pw.angle) * 35;
+      e.y += Math.sin(pw.angle) * 35;
+      s.hit(e, 26, 45, false, false, 'Bagan Phalanx');
+      e.slow = Math.max(e.slow || 0, 0.6);
+      s.burst(e.x, e.y, 0x64ffda, 4);
      }
     }
    }
+  }
+
+  // Bagan Valour aura: heal if evolved and near enemies
+  if (s.evolved('baganvalour') && s.hp < s.maxHp) {
+   s.heal(2 * dt);
   }
 
   // Handle Arindama Lightning Spears

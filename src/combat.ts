@@ -583,6 +583,7 @@ export class ArenaScene extends Phaser.Scene {
         this.stats.dealt += actual;
         const source=sourceOverride||(elemental?WEAPONS[this.weapon].name:'Evolution & follow-ups');this.damageSources[source]=(this.damageSources[source]||0)+actual;
         if(elemental&&this.hero==='samurai'&&this.identitySequence!==this.attackSequence){this.identitySequence=this.attackSequence;this.identityCharge=Math.min(100,this.identityCharge+20);}
+        if(this.hero==='lethwei'&&this.identitySequence!==this.attackSequence){this.identitySequence=this.attackSequence;this.identityCharge=Math.min(100,this.identityCharge+20);}
 
         this.hitConfirm={time:.2,x:contactX,y:contactY,crit};
         if(elemental)this.cosmeticFx?.impact(cosmeticEffectProfile(this.save,this.weapon),contactX,contactY,this.elapsed,crit);
@@ -789,10 +790,12 @@ export class ArenaScene extends Phaser.Scene {
             this.impactRing(tip.x,tip.y,70,color);for(let i=0;i<5;i++){const a=i*1.3;g.lineStyle(2,0x172128,.8);g.lineBetween(tip.x,tip.y,tip.x+Math.cos(a)*34,tip.y+Math.sin(a)*34);}this.audio.play('hammer');
         }else if(id==='shield'||id==='spiked'){
             g.lineStyle(4,color,.8);g.beginPath();g.arc(tip.x,tip.y,id==='spiked'?25:20,aim-1.1,aim+1.1);g.strokePath();if(id==='spiked')this.burst(tip.x,tip.y,color,5);
-        }else if(id==='nodachi'){g.lineStyle(3,color,.8);g.lineBetween(tip.x-12,tip.y-10,tip.x+12,tip.y+10);this.burst(tip.x,tip.y,color,3);}
+        }else if(id==='nodachi'){g.lineStyle(3,color,.8);g.lineBetween(tip.x-12,tip.y-10,tip.x+12,tip.y+10);this.burst(tip.x,tip.y,color,3);
+        }else if(this.hero==='lethwei'||['hempwraps','ironwraps','tigerwraps'].includes(id)){g.lineStyle(3,color,.85);g.strokeCircle(tip.x,tip.y,16);this.burst(tip.x,tip.y,color,4);}
         else if(strike.echo){g.lineStyle(2,color,.6);g.beginPath();g.arc(pose.grip.x,pose.grip.y,Math.hypot(tip.x-pose.grip.x,tip.y-pose.grip.y),aim-.7,aim+.7);g.strokePath();}
         this.tweens.add({targets:g,alpha:0,duration:id==='hammer'?350:140,onComplete:()=>g.destroy()});
         if(!strike.echo&&this.hero==='samurai'&&identityReady){this.identityCharge=0;this.identityProcs++;this.windSlash(WEAPONS[id].damage*.7,tip,aim);}
+        if(!strike.echo&&this.hero==='lethwei'&&identityReady){this.identityCharge=0;this.identityProcs++;for(const e of this.enemies)if(e.active&&Math.hypot(e.x-tip.x,e.y-tip.y)<130+e.r)this.hit(e,WEAPONS[id].damage*1.2,45,false,false,'Warrior Spirit');this.impactRing(tip.x,tip.y,130,0xff5722);this.audio.play('tank-slam');}
         if(!strike.echo){if(this.hero==='samurai'&&this.u('dragon-slash')&&sequence%3===0){const level=this.u('dragon-slash'),reach=235+level*20+(this.evolved('dragon-slash')?70:0);this.dash=Math.max(this.dash,.16);this.invuln=Math.max(this.invuln,.16);this.dashX=Math.cos(aim);this.dashY=Math.sin(aim);for(const e of this.enemies){const dx=e.x-this.x,dy=e.y-this.y,d=Math.hypot(dx,dy),a=Math.atan2(dy,dx);if(e.active&&d<reach+e.r&&Math.abs(Phaser.Math.Angle.Wrap(a-aim))<.62){this.hit(e,WEAPONS[id].damage*(.6+level*.25),WEAPONS[id].knock);e.burn=Math.max(e.burn,1.4+level*.45+(this.evolved('dragon-slash')?1.2:0));if(this.evolved('dragon-slash'))this.hit(e,WEAPONS[id].damage*.4,0);}}this.visuals.samuraiSkills.dragon(this.x,this.y,aim,reach,level+(this.evolved('dragon-slash')?1:0),this.elapsed);this.audio.play('dragon-slash');}if(sequence%3===0&&(this.evolved('wide')||this.evolved('spikes'))){this.slash(strike.damage*.4,strike.range,Math.PI*2,aim,this.hero!=='tank');if(this.hero==='tank')this.visuals.tankSkills.slam(this.x,this.y,strike.range,this.u('spikes'),this.elapsed,'crown');else this.impactRing(this.x,this.y,strike.range,0xb8abd1);}if(this.evolution.reach>=2)this.windSlash(WEAPONS[id].damage*(.5+this.evolution.reach*.2),tip,aim);if(this.u('wind')){this.windSlash(WEAPONS[id].damage*.6,tip,aim);if(this.evolved('wind')){this.windSlash(WEAPONS[id].damage*.6,tip,aim+.2);}}if(this.evolution.power>=2){for(const e of this.enemies)if(e.active&&Math.hypot(e.x-tip.x,e.y-tip.y)<105+e.r)this.hit(e,WEAPONS[id].damage*.25*this.evolution.power,12);this.impactRing(tip.x,tip.y,105);}}
         if(this.hero==='tank'&&this.blockCharge>=100){this.blockCharge=0;this.slash(WEAPONS[id].damage*2,170,Math.PI*2,aim,false);this.visuals.tankSkills.slam(this.x,this.y,170,1,this.elapsed,'charge');}
     }
@@ -865,6 +868,7 @@ export class ArenaScene extends Phaser.Scene {
         if(this.lethwei){
             value*=this.lethwei.damageReductionMultiplier;
             this.lethwei.onDamageTaken(value);
+            this.identityCharge=Math.min(100,this.identityCharge+20);
         }
         value *= 1 - this.meta('defense') * .05;
         if(e)a=Math.atan2(e.y-this.y,e.x-this.x);
@@ -893,8 +897,11 @@ export class ArenaScene extends Phaser.Scene {
     }
     apply(id: string) {
         if(id.startsWith('evolve:')){const base=id.slice(7),card=UPGRADES.find(u=>u.id===base);if(!card||!CARD_EVOLUTIONS[base]||this.u(base)<card.max||this.evolved(base))return;this.cardEvolutions[base]=true;this.save.archive[`card:${base}`]=2;
-            if(['health','wide','crit','magnet','regen','damage','cooldown','range','bleed','counter','magazine','pierce','reload','stamina','block','spikes','rush'].includes(base))this.levels[base]++;
-            if(base==='health'){this.maxHp*=1.15;this.heal(this.maxHp*.35);this.ironHeart.activate();}this.reveal(CARD_EVOLUTIONS[base].name);this.audio.play('level');this.paused=false;return;
+            if(['health','wide','crit','magnet','regen','damage','cooldown','range','bleed','counter','magazine','pierce','reload','stamina','block','spikes','rush','arrowstorm','windfocuscard','sunburstcard','beasthunter','piercingeye','nineweapons','ironshins','headbutt','ringmaster','goldenbelt','arindamapower','royalguard','spearwhirl','baganvalour','thunderthrust'].includes(base))this.levels[base]++;
+            if(base==='health'){this.maxHp*=1.15;this.heal(this.maxHp*.35);this.ironHeart.activate();}
+            if(base==='goldenbelt')this.heal(this.maxHp*.5);
+            if(base==='baganvalour')this.heal(this.maxHp*.3);
+            this.reveal(CARD_EVOLUTIONS[base].name);this.audio.play('level');this.paused=false;return;
         }
         this.levels[id] = (this.levels[id] || 0) + 1;
         if (id === 'health') {

@@ -44,6 +44,9 @@ export class LethweiCombat {
   if (this.ironChinTime > 0) {
    red *= 0.5; // 50% reduction
   }
+  if (this.s.u('goldenbelt') > 0 && this.s.hp < this.s.maxHp * 0.5) {
+   red *= 0.65; // 35% extra reduction
+  }
   return red;
  }
 
@@ -57,7 +60,7 @@ export class LethweiCombat {
   this.cooldowns[slot] = LETHWEI_SKILLS[id].cooldown * (s.options.build === 'mobility' ? 0.9 : 1);
 
   if (id === 'blitz') {
-   this.blitzTime = 0.32;
+   this.blitzTime = 0.32 * (1 + s.u('ironshins') * 0.1);
    this.blitzAim = angle;
    s.protect(0.35);
    s.audio.play('moon-dash');
@@ -76,12 +79,20 @@ export class LethweiCombat {
     maxDuration: 9
    };
    this.clones.length = 0;
-   // Spawn 2 clones on opposite flanks
-   this.clones.push({ x: s.x - 45, y: s.y - 30, angle: 0, punchCooldown: 0.2, punchVisual: 0 });
-   this.clones.push({ x: s.x + 45, y: s.y + 30, angle: Math.PI, punchCooldown: 0.4, punchVisual: 0 });
+   const cloneCount = s.evolved('ringmaster') ? 4 : 2;
+   for (let i = 0; i < cloneCount; i++) {
+    const a = (i * Math.PI * 2) / cloneCount;
+    this.clones.push({
+     x: s.x + Math.cos(a) * 45,
+     y: s.y + Math.sin(a) * 45,
+     angle: a,
+     punchCooldown: 0.2 + i * 0.15,
+     punchVisual: 0
+    });
+   }
    s.cameras.main.shake(140, 0.0035);
    s.audio.play('tank-slam');
-   s.notifyCombat('LETHWEI RING OF HONOR');
+   s.notifyCombat(s.evolved('ringmaster') ? 'LETHWEI COLOSSEUM' : 'LETHWEI RING OF HONOR');
   }
   return true;
  }
@@ -124,10 +135,12 @@ export class LethweiCombat {
    s.y = next.y;
 
    for (const e of s.enemies) {
-    if (e.active && Math.hypot(e.x - s.x, e.y - s.y) <= 38 + e.r) {
-     s.hit(e, (WEAPONS[s.weapon]?.damage || 25) * 1.8, 65);
-     e.stagger = Math.max(e.stagger, 0.7);
-     s.burst(e.x, e.y, 0xff5252, 6);
+    if (e.active && Math.hypot(e.x - s.x, e.y - s.y) <= 52 + e.r) {
+     const dmg = (WEAPONS[s.weapon]?.damage || 25) * 1.8 * (1 + s.u('nineweapons') * 0.3);
+     s.hit(e, dmg, 65);
+     e.stagger = Math.max(e.stagger || 0, 0.7 + s.u('headbutt') * 0.25);
+     if (s.evolved('headbutt')) e.flash = 0.4;
+     s.burst(e.x, e.y, s.evolved('nineweapons') ? 0xff9800 : 0xff5252, s.evolved('nineweapons') ? 12 : 6);
     }
    }
 
@@ -146,10 +159,10 @@ export class LethweiCombat {
      if (!e.active) continue;
      const dist = Math.hypot(e.x - this.ring.x, e.y - this.ring.y);
      if (Math.abs(dist - this.ring.radius) <= 18 + e.r) {
-      // Rebound inward
+      // Rebound inward safely
       const angleIn = Math.atan2(this.ring.y - e.y, this.ring.x - e.x);
-      e.x += Math.cos(angleIn) * 35;
-      e.y += Math.sin(angleIn) * 35;
+      e.x = this.ring.x - Math.cos(angleIn) * (this.ring.radius - 28);
+      e.y = this.ring.y - Math.sin(angleIn) * (this.ring.radius - 28);
       s.hit(e, 22, 40, false, false, 'Ring Ropes');
       s.burst(e.x, e.y, 0xffd700, 5);
      }
@@ -174,7 +187,7 @@ export class LethweiCombat {
 
      if (target) {
       c.angle = Math.atan2(target.y - c.y, target.x - c.x);
-      if (minDist > 32) {
+      if (minDist > 50) {
        const speed = 280 * dt;
        c.x += Math.cos(c.angle) * speed;
        c.y += Math.sin(c.angle) * speed;
