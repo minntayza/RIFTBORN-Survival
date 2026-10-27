@@ -38,42 +38,7 @@ export function lethweiSkillIcon(id: LethweiSkill) {
 }
 
 export function lethweiPortrait(cls = 'art-image') {
- return `<svg class="${cls}" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 280" role="img" aria-label="Lethwei Master traditional Burmese bare-knuckle champion">
-  <ellipse cx="120" cy="265" rx="72" ry="9" fill="#050a13" opacity=".45"/>
-  <!-- Muscular Legs with Burmese traditional black-ink tattoo (ထိုးကွင်း) -->
-  <path d="M85 180 L115 178 L112 232 L106 260 L78 260 L86 230 Z" fill="#2d1b20" stroke="#080e19" stroke-width="3.5"/>
-  <path d="M120 178 L150 180 L147 230 L162 255 L135 260 L122 230 Z" fill="#2d1b20" stroke="#080e19" stroke-width="3.5"/>
-  <!-- Thigh tattoo marks (ထိုးကွင်း မင်ကြောင်) -->
-  <path d="M86 200 Q98 208 110 200 M88 220 Q99 226 108 220" stroke="#121820" stroke-width="3"/>
-  <path d="M124 200 Q136 208 146 200 M124 220 Q135 226 144 220" stroke="#121820" stroke-width="3"/>
-  <!-- Fighting Shorts / Waistcloth with red sash -->
-  <path d="M78 142 L160 142 L150 190 L88 190 Z" fill="#8b0000" stroke="#080e19" stroke-width="3.5"/>
-  <path d="M78 142 L160 142 L158 155 L78 155 Z" fill="#d32f2f"/>
-  <path d="M110 155 L118 195 L128 195 L122 155 Z" fill="#ffd700"/>
-  <!-- Muscular bare torso & chest -->
-  <path d="M80 84 L156 84 L158 144 L80 144 Z" fill="#c48a58" stroke="#080e19" stroke-width="3.5"/>
-  <!-- Pectoral / Abdominal definition -->
-  <path d="M118 88 L118 140" stroke="#8a5328" stroke-width="2.5"/>
-  <path d="M92 108 Q118 116 144 108" fill="none" stroke="#8a5328" stroke-width="2.5"/>
-  <path d="M98 126 Q118 132 138 126" fill="none" stroke="#8a5328" stroke-width="2"/>
-  <!-- Powerful Arms with Hemp Handwraps -->
-  <path d="M80 88 L46 120 L58 148 L86 118 Z" fill="#c48a58" stroke="#080e19" stroke-width="3"/>
-  <path d="M156 88 L190 120 L178 148 L150 118 Z" fill="#c48a58" stroke="#080e19" stroke-width="3"/>
-  <!-- Hemp Handwraps (သျှောင်ချည် လက်ပတ်) -->
-  <rect x="42" y="132" width="22" height="26" rx="4" fill="#e8dcc4" stroke="#4a3728" stroke-width="2"/>
-  <path d="M42 138 L64 144 M42 146 L64 152" stroke="#8c7355" stroke-width="2"/>
-  <rect x="172" y="132" width="22" height="26" rx="4" fill="#e8dcc4" stroke="#4a3728" stroke-width="2"/>
-  <path d="M172 138 L194 144 M172 146 L194 152" stroke="#8c7355" stroke-width="2"/>
-  <!-- Head with Red Headband / Mongkhon style headband -->
-  <circle cx="118" cy="55" r="23" fill="#c48a58" stroke="#080e19" stroke-width="3.5"/>
-  <path d="M95 48 L141 48 L141 57 L95 57 Z" fill="#d32f2f" stroke="#080e19" stroke-width="2"/>
-  <path d="M96 46 L90 70 M93 46 L86 65" stroke="#d32f2f" stroke-width="3" stroke-linecap="round"/>
-  <!-- Face & Stern Fighter Expression -->
-  <path d="M104 53 L114 55 M122 55 L132 53" stroke="#22150c" stroke-width="3" stroke-linecap="round"/>
-  <ellipse cx="109" cy="60" rx="2.5" ry="2" fill="#22150c"/>
-  <ellipse cx="127" cy="60" rx="2.5" ry="2" fill="#22150c"/>
-  <path d="M112 70 L124 70" stroke="#4a2208" stroke-width="2.5" stroke-linecap="round"/>
- </svg>`;
+ return `<svg class="${cls}" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1141 1349" role="img" aria-label="Lethwei Master with wrapped fists and traditional Htoe Kwin tattoos"><image href="/assets/characters/lethwei-tiger-portrait-v1.png" width="1141" height="1349"/></svg>`;
 }
 
 export function hempWrapsPortrait(cls = 'weapon-reference-art') {

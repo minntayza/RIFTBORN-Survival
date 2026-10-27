@@ -1,0 +1,9 @@
+import {drawFighter,LETHWEI_ART,LETHWEI_LEGS,FighterMotion} from '../src/lethwei-rig';
+const canvas=document.querySelector<HTMLCanvasElement>('#preview')!,g=canvas.getContext('2d')!,image=new Image(),legs=new Image();
+const motion=new FighterMotion();
+let moving=false,flip=false,zoom=1,paused=false,time=0,travel=0,attack=0,seq=0,last=0;
+const bind=(id:string,action:(b:HTMLButtonElement)=>void)=>{const b=document.querySelector<HTMLButtonElement>('#'+id)!;b.onclick=()=>action(b);};
+bind('walk',b=>{moving=!moving;b.textContent=moving?'Rest':'Walk';});bind('punch',()=>{attack=.2;seq++;});bind('face',b=>{flip=!flip;b.textContent=flip?'Face right':'Face left';});bind('zoom',b=>{zoom=zoom===1?2:1;b.textContent=zoom===1?'2× gameplay':'1× gameplay';});bind('pause',b=>{paused=!paused;b.textContent=paused?'Resume':'Pause';});
+bind('step',()=>{paused=true;moving=true;time+=.15;travel+=22.5;document.querySelector('#pause')!.textContent='Resume';});bind('strike',()=>{paused=true;attack=.1;seq++;document.querySelector('#pause')!.textContent='Resume';});
+Promise.all([new Promise<void>(resolve=>image.onload=()=>resolve()),new Promise<void>(resolve=>legs.onload=()=>resolve())]).then(()=>requestAnimationFrame(frame));image.src=LETHWEI_ART.url;legs.src=LETHWEI_LEGS.url;
+function frame(now:number){const dt=Math.min(.04,(now-last)/1000||0);last=now;if(!paused){time+=dt;if(moving)travel+=150*dt;attack=Math.max(0,attack-dt);}const state=motion.sample(travel,0,time);g.clearRect(0,0,1000,650);for(const [x,y,scale,label] of [[300,240,2.4,'Portrait'],[750,300,.58*zoom,zoom+'× gameplay']] as const){g.save();g.translate(x,y);g.scale(scale,scale);g.fillStyle='rgba(0,0,0,.18)';g.beginPath();g.ellipse(0,79,38,5,0,0,Math.PI*2);g.fill();drawFighter(g,image,legs,time,moving,attack,seq,flip,state);g.restore();g.fillStyle='#ffedbd';g.font='18px system-ui';g.fillText(label,x-55,520);}requestAnimationFrame(frame);}

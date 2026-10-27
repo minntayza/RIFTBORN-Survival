@@ -1,3 +1,4 @@
+import {LethweiRig} from './lethwei-rig';
 import {FUTURE_ARMS,registerFutureArms} from './future-ghost-arms';
 import {ANCIENT_ARMS,registerAncientArms} from './ancient-shadow-arms';
 import {ninjaCosmeticPose,ninjaCosmeticShoulder,ninjaOutfitFit} from './ninja-cosmetic-pose';
@@ -75,13 +76,14 @@ export class ArenaVisuals {
             const prior=this.campDepths.get(part),base=prior&&part.depth===prior.applied?prior.base:part.depth;
             part.setDepth(base+offset);this.campDepths.set(part,{base,applied:base+offset});
         }
-        this.zawgyiRig?.campLayer(offset);
+        this.zawgyiRig?.campLayer(offset);this.lethweiRig?.campLayer(offset);
     }
     zawgyiRuby=false;
     zawgyiCharges=0;
     zawgyiLift=0;
     zawgyiSlam=-1;
     private zawgyiRig?:ZawgyiRig;
+    private lethweiRig?:LethweiRig;
     private tankEffects?:TankSkillEffects;
     get tankSkills(){return this.tankEffects??=new TankSkillEffects(this.scene);}
 
@@ -463,7 +465,7 @@ export class ArenaVisuals {
         });
         textures.addCanvas(key,/^cute-(tank|gunner|samurai|ninja)-/.test(key)?gameplayArtwork(colorfulCharacter(canvas,/(ninja|samurai)/.test(key))):canvas);
     }
-    defeat() { this.hero.setRotation(this.hero.rotation + 1.2).setAlpha(.5).setScale(.5); this.weapon.setVisible(false); this.offhand.setVisible(false);this.cuteArms.forEach(arm=>arm.setVisible(false));this.ninjaArmFx.clear();this.ninjaBones.forEach(bone=>bone.setVisible(false)); }
+    defeat() { this.lethweiRig?.defeat(); this.hero.setRotation(this.hero.rotation + 1.2).setAlpha(.5).setScale(.5); this.weapon.setVisible(false); this.offhand.setVisible(false);this.cuteArms.forEach(arm=>arm.setVisible(false));this.ninjaArmFx.clear();this.ninjaBones.forEach(bone=>bone.setVisible(false)); }
     death(e: EnemyVisual, time: number) { const key=e.faction==='robot'?(e.type==='spitter'?'cute-pulse-0':`robot-unit-${e.type}-0`):(e.type==='basic'?'cute-wanderer-0':`enemy-${e.type}-0`);const size=e.r*3.4*zombieVisualScale(e.type,this.scene.cameras.main.zoom);let slot = this.ghosts.find(s => s.expires <= time); if (!slot) {
         if (this.ghosts.length >= 24)
             return;
@@ -477,7 +479,7 @@ export class ArenaVisuals {
         const moved = Math.hypot(x - this.lastX, y - this.lastY) > .2, frame = moved ? 1 + Math.floor(time * 10) % 2 : 0;
         this.lastX = x;
         this.lastY = y;
-        if(hero!=='zawgyi'){
+        if(hero!=='zawgyi'&&hero!=='lethwei'){
         const survivorOutfitUrl=(hero==='samurai'||hero==='gunner')?imageSourceUrl(this.scene.textures.get(hero==='samurai'?SAMURAI_ATLAS.key:GUNNER_ATLAS.key).getSourceImage() as HTMLImageElement):'',survivorRedesigned=isRedesignedSurvivor(survivorOutfitUrl);
         const articulatedHero=hero==='ninja'||hero==='samurai'||hero==='gunner'||hero==='tank',weaponRig=hero==='samurai'?'samurai':hero==='tank'?'tank':hero==='ninja';
         const tankFrame=tankMotion&&tankMotion.frame>=0?tankMotion.frame:moved?1+Math.floor(time*10)%24:0;
@@ -564,7 +566,7 @@ export class ArenaVisuals {
             s.expires = time + .22;
             s.image.setTexture(hero==='tank'?'cute-tank-full':hero==='gunner'?'cute-gunner-full':hero==='samurai'?'cute-samurai-full':hero==='ninja'?'cute-ninja-full':`hero-${hero}-${frame}`).setPosition(x, y).setDisplaySize(78, 78).setRotation(articulatedHero?0:angle).setFlipX(hero==='samurai'&&!isRedesignedSurvivor(imageSourceUrl(this.scene.textures.get(SAMURAI_ATLAS.key).getSourceImage() as HTMLImageElement))?samuraiFlipX(angle):(hero==='ninja'||hero==='gunner'||hero==='tank'||hero==='samurai')&&Math.cos(angle)<0).setTint(hero==='samurai'?(survivorMotion?.trailColor??HEROES[hero].color):HEROES[hero].color).setVisible(true);
         }
-        }else{this.hero.setVisible(false);this.weapon.setVisible(false);this.offhand.setVisible(false);this.cuteArms.forEach(a=>a.setVisible(false));this.ninjaBones.forEach(a=>a.setVisible(false));this.attackFx.clear();(this.zawgyiRig??=new ZawgyiRig(this.scene)).render(x,y,angle,time,moved,swing,sequence,this.zawgyiLift,invuln,this.zawgyiSlam,this.zawgyiRuby,this.zawgyiCharges);}
+        }else{this.hero.setVisible(false);this.weapon.setVisible(false);this.offhand.setVisible(false);this.cuteArms.forEach(a=>a.setVisible(false));this.ninjaBones.forEach(a=>a.setVisible(false));this.attackFx.clear();if(hero==='lethwei')(this.lethweiRig??=new LethweiRig(this.scene)).render(x,y,angle,time,moved,swing,sequence,WEAPON_EFFECTS[weapon].duration);else (this.zawgyiRig??=new ZawgyiRig(this.scene)).render(x,y,angle,time,moved,swing,sequence,this.zawgyiLift,invuln,this.zawgyiSlam,this.zawgyiRuby,this.zawgyiCharges);}
         for (const s of this.afterimages) {
             const left = s.expires - time;
             s.image.setVisible(left > 0).setAlpha(Math.max(0, left / .22) * .4);

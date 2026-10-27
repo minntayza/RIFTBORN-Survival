@@ -1,3 +1,4 @@
+import {LETHWEI_ART,LETHWEI_LEGS} from './lethwei-rig';
 import {FUTURE_ARMS} from './future-ghost-arms';
 import {ANCIENT_ARMS} from './ancient-shadow-arms';
 import {Cataclysm} from './cataclysm';
@@ -199,6 +200,7 @@ export class ArenaScene extends Phaser.Scene {
         if(ninjaWeapon)this.load.image('ninja-cosmetic-weapons',ninjaWeapon);
 
         const assets=[
+            ...(this.hero==='lethwei'?[[LETHWEI_ART.key,LETHWEI_ART.url],[LETHWEI_LEGS.key,LETHWEI_LEGS.url]]:[]),
             ...(this.camp?[['last-camp-beacon','/assets/maps/last-camp/beacon-v1.png'],['last-camp-court','/assets/maps/last-camp/courtyard-v1.png']]:[]),
             ...(this.hero==='zawgyi'?[[ZAWGYI_ART.key,ZAWGYI_ART.url],['zawgyi-ruby-sun','/assets/characters/zawgyi-ruby-sun-v1.png']]:[]),
             ...(this.hero==='tank'&&equippedSkin(this.save,this.hero)?[['tank-outfit-arm-art',tankArmAsset(equippedSkin(this.save,this.hero)!)]]:[]),
