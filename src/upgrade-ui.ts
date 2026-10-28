@@ -3,12 +3,13 @@ import {zawgyiCardArt} from './zawgyi-card-art';
 import {artImage,heroFigureImage} from './art';
 import {upgradeRole,UPGRADES,type Upgrade} from './upgrades';
 import {CARD_EVOLUTIONS} from './card-evolutions';
+import {evolutionCardImage} from './evolution-art';
 import type {HeroId,WeaponId} from './config';
 const UPGRADE_ICONS:Record<string,string>={health:'\u2665',speed:'\u2197',crit:'\u2726',magnet:'\u25ce',regen:'\u271a',ward:'\u25c7',fire:'\u2600',orbit:'\u2737',damage:'\u2694',wide:'\u25d4',double:'\u2161',cooldown:'\u27a4',trail:'\u25b0',clone:'\u2667',smoke:'\u25c9','dragon-slash':'\u2668',range:'\u2194',bleed:'\u2022',counter:'\u25c8',wind:'\u224b',magazine:'\u25a3',pierce:'\u2192',ricochet:'\u2311',explosive:'\u2739',reload:'\u21bb',stamina:'\u25a3',block:'\u25d2',reflect:'\u21c4',spikes:'\u2737',rush:'\u25c9',arrowstorm:'\u290a',windfocuscard:'\u2197',sunburstcard:'\u2600',beasthunter:'\u2694',piercingeye:'\u2726',nineweapons:'\u270a',ironshins:'\u2197',headbutt:'\u2738',ringmaster:'\u25eb',goldenbelt:'\u265b',arindamapower:'\u26a1',royalguard:'\u25e1',spearwhirl:'\u25d4',baganvalour:'\u265b',thunderthrust:'\u224b',heal:'\u271a'};
 const FULL_CARD_IDS:Partial<Record<HeroId,readonly string[]>>={
  zawgyi:['twindatlone','lotusflame','earthshaker','elixir','celestial'],
- ninja:['health','speed','crit','magnet','regen','ward','fire','orbit','damage','wide','double','cooldown','trail','clone','smoke'],
- samurai:['health','speed','crit','magnet','regen','ward','fire','orbit','damage','cooldown','range','bleed','counter','wind','dragon-slash'],
+ ninja:['health','speed','crit','magnet','regen','ward','fire','orbit','damage','wide','double','cooldown','trail','clone'],
+ samurai:['health','speed','crit','magnet','regen','ward','fire','orbit','damage','cooldown','range','bleed','counter','wind'],
  gunner:['health','speed','crit','magnet','regen','ward','fire','orbit','damage','cooldown','magazine','pierce','ricochet','explosive','reload'],
  tank:['health','speed','crit','magnet','regen','ward','fire','orbit','damage','cooldown','stamina','block','reflect','spikes','rush'],
  pyusawhti:['health','speed','crit','magnet','regen','ward','fire','orbit','damage','cooldown','arrowstorm','windfocuscard','sunburstcard','beasthunter','piercingeye'],
@@ -19,10 +20,7 @@ const upgradeIcon=(u:Upgrade)=>UPGRADE_ICONS[u.evolves||u.id]||'\u2726';
 export function upgradeVisual(u:Upgrade,hero:HeroId,weapon:WeaponId):string{
  const baseId=u.evolves||u.id;
  if(u.evolves){
-  // Evolutions share the regular cards' full illustration treatment, never the tiny actor fallback.
-  const specialArt:Record<string,string>={celestial:'zawgyi-ruby-sun-evolution-v1.png',twindatlone:'zawgyi-royal-evolution-v2.png',lotusflame:'zawgyi-azure-evolution-v1.png',orbit:'phantom-blades-v2.png'};
-  const art=specialArt[baseId]?`<div class="upgrade-demo upgrade-concept-demo" role="img" aria-label="${u.name} evolution artwork"><img class="upgrade-reference-art" src="/assets/card-concepts/${specialArt[baseId]}" alt=""/></div>`:upgradeVisual({...u,id:baseId,evolves:undefined},hero,weapon);
-  return art.replace('upgrade-concept-demo','upgrade-concept-demo evolution-illustration').replace('</div>','<span class="evolution-art-badge">✦ EVOLUTION</span></div>');
+  return `<div class="upgrade-demo upgrade-concept-demo evolution-illustration evolved-card-demo" role="img" aria-label="${u.name} evolution artwork"><img class="upgrade-reference-art evolution-card-reference" src="${evolutionCardImage(hero,baseId)}" alt="" aria-hidden="true"><span class="evolution-art-badge">★ EVOLUTION</span></div>`;
  }
  const myanmarArt=myanmarCardArt(baseId);if(myanmarArt)return `<div class="upgrade-demo upgrade-concept-demo" role="img" aria-label="${u.name} effect artwork">${myanmarArt}</div>`;
  const mysticArt=zawgyiCardArt(baseId);if(mysticArt)return `<div class="upgrade-demo upgrade-concept-demo" role="img" aria-label="${u.name} effect artwork">${mysticArt}</div>`;
@@ -77,7 +75,7 @@ export function visualUpgradeCard(u:Upgrade,index:number,_hero:HeroId,_weapon:We
  const maxStars=Number.isFinite(u.max)?u.max:5;
  const stars=Array.from({length:5},(_,i)=>`<span class="${i<level?'filled':''} ${i>=u.max?'locked':''}" aria-hidden="true">\u2605</span>`).join('');
  const tag=preview?'article':'button',action=preview?'':` data-action="upgrade:${index}"`;
- const hasDesignedArt=!!u.evolves||(FULL_CARD_IDS[_hero]||[]).includes(u.id);
+ const hasDesignedArt=Boolean(FULL_CARD_IDS[_hero]?.includes(u.evolves||u.id));
  return `<${tag} class="upgrade choice-card ${hasDesignedArt?'levelup-designed-card':''} ${preview?'preview-card':''} ${u.evolves?'evolution-card':''}" data-card-role="${role}"${action} aria-label="${preview?'Preview':'Choose'} ${u.name}: ${cardBenefit(u)}. ${v.after}. ${level} of ${maxStars} levels">
   <span class="choice-top"><small>${category}</small>${level===0?'<b class="choice-new">NEW</b>':`<kbd>${index+1}</kbd>`}</span>
   <h3>${u.name}</h3>

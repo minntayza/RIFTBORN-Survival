@@ -1163,7 +1163,7 @@ button:disabled{box-shadow:none;filter:saturate(.55)}
 .field-build-content .guide-evolution p{color:#adc3bf;font-size:13px;line-height:1.65}
 .field-build-content .archive-state{font-size:9px!important;letter-spacing:.04em;color:#bad1b2!important;margin:0 0 12px}
 .field-build-content .build-source{font-size:11px;color:#94b3b1}
-.field-build-content .evolution-card-reference{display:block;width:100%;height:220px;object-fit:contain;margin:14px 0;border-radius:9px}
+.field-build-content .evolution-card-reference{display:block;width:100%;height:100%;object-fit:contain;margin:0;border-radius:8px}
 .build-requirements{display:flex;flex-wrap:wrap;gap:7px;margin:16px 0 10px}
 .build-requirements span{font-size:9px;color:#e5d3a3;border:1px solid #62705a;border-radius:6px;padding:6px 8px;background:#34423a}
 .field-build-content .guide-evolution>small:last-child{color:#91aaa9}
@@ -1193,7 +1193,7 @@ button:disabled{box-shadow:none;filter:saturate(.55)}
  .field-build-content .guide-grid,.field-build-content .levelup-preview-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
  .field-build-content .guide-evolution,.field-build-content .preview-card{padding:12px}
  .field-build-content .guide-evolution h3,.field-build-content .preview-card h3{font-size:16px}
- .field-build-content .evolution-card-reference{height:165px}.field-build-content .preview-card .upgrade-demo{height:135px}
+ .field-build-content .preview-card .upgrade-demo{height:135px}
  .field-build-content .preview-card .card-benefit{font-size:11px;min-height:0}.field-build-content .preview-card .choice-value{font-size:12px}
  .field-build-content .weapon-evolution-layout>.guide-grid{grid-template-columns:1fr}
  .field-build-content .guide-weapon{grid-template-columns:70px minmax(0,1fr);padding:12px;gap:12px}
@@ -1319,7 +1319,6 @@ button:disabled{box-shadow:none;filter:saturate(.55)}
  .field-build-content .weapon-evolution-card h3{font-size:21px}
  .field-build-content .weapon-evolution-art{height:150px}.field-build-content .weapon-evolution-art.final{height:170px}
  .field-build-content .evolution-step p{font-size:13px;line-height:1.65}
- .field-build-content .evolution-card-reference{height:220px}
  .field-guide-panel>.actions{display:flex;flex-wrap:wrap}.field-guide-panel>.actions button{width:100%;min-height:44px}
 }
 @media(max-width:350px){.field-build-content .guide-weapon{grid-template-columns:1fr}.field-build-content .guide-weapon .weapon-art{width:100%;height:100px}}
@@ -1385,8 +1384,12 @@ button:disabled{box-shadow:none;filter:saturate(.55)}
 .levelup-panel .choice-card[data-card-role=offence]{--reward:#ef9d86}
 .levelup-panel .choice-card[data-card-role=survival]{--reward:#afd594}
 .levelup-panel .choice-card.evolution-card{--reward:#efce7c}
-.levelup-panel .upgrade-cards .choice-card{position:relative;border:1px solid color-mix(in srgb,var(--reward) 65%,#324451);border-bottom:4px solid color-mix(in srgb,var(--reward) 35%,#172530);border-radius:16px;padding:8px 8px 16px;background:#20323d;box-shadow:0 6px 0 #0c1922,0 10px 22px #0003,inset 0 0 0 3px #ffffff04;transform-origin:50% 95%;animation:reward-card-arrive .28s ease-out both}
-.levelup-panel .choice-card:nth-child(2){animation-delay:.055s}.levelup-panel .choice-card:nth-child(3){animation-delay:.11s}
+.levelup-panel .upgrade-cards .choice-card{position:relative;border:1px solid color-mix(in srgb,var(--reward) 65%,#324451);border-bottom:4px solid color-mix(in srgb,var(--reward) 35%,#172530);border-radius:16px;padding:8px 8px 16px;background:#20323d;box-shadow:0 6px 0 #0c1922,0 10px 22px #0003,inset 0 0 0 3px #ffffff04;transform-origin:50% 95%;animation:reward-card-arrive .46s cubic-bezier(.22,1,.36,1) both}
+.levelup-panel .choice-card:nth-child(1){animation-delay:.03s}
+.levelup-panel .choice-card:nth-child(2){animation-delay:.11s}
+.levelup-panel .choice-card:nth-child(3){animation-delay:.19s}
+.levelup-panel .choice-card.evolution-card{--reward:#efce7c;border-color:#e3c16d;animation:evo-card-arrive .55s cubic-bezier(.22,1,.36,1) both,evo-card-pulse 2.4s ease-in-out infinite .6s!important}
+.levelup-panel .choice-card.evolution-card .upgrade-reference-art{animation:evo-art-shimmer 2.2s ease-in-out infinite alternate}
 .levelup-panel .choice-card .upgrade-demo{height:215px;margin:0;background:#172a33;border:1px solid #789d9022;border-radius:11px;overflow:hidden;isolation:isolate}
 .levelup-panel .choice-card .upgrade-demo:after{content:'';position:absolute;inset:0;border:1px solid color-mix(in srgb,var(--reward) 40%,transparent);border-radius:inherit;pointer-events:none;box-shadow:inset 0 -15px 20px #14252a44}
 .levelup-panel .choice-card .upgrade-reference-art{border-radius:9px;transition:transform .2s;filter:saturate(1.14) contrast(1.04)}
@@ -1396,13 +1399,18 @@ button:disabled{box-shadow:none;filter:saturate(.55)}
 .reward-progress-pips i{display:block;flex:1;height:5px;border-radius:5px;background:#0e202b;border:1px solid #5a766b66}
 .reward-progress-pips .earned{background:var(--reward);border-color:var(--reward)}
 .reward-progress-pips .next{background:var(--reward);opacity:.6;animation:reward-next-pip 1.6s ease-in-out infinite}
-.levelup-panel .choice-card:hover,.levelup-panel .choice-card:focus-visible{background:#29414a;border-color:var(--reward);transform:translateY(-6px);box-shadow:0 8px 0 #0b1923,0 0 22px color-mix(in srgb,var(--reward) 18%,transparent)}
+.levelup-panel .choice-card:hover,.levelup-panel .choice-card:focus-visible{background:#29414a;border-color:var(--reward);transform:translateY(-8px) scale(1.02);box-shadow:0 10px 0 #0b1923,0 0 26px color-mix(in srgb,var(--reward) 28%,transparent);transition:transform .16s ease-out,box-shadow .16s ease-out}
+.levelup-panel .choice-card.evolution-card:hover{animation:evo-card-hover-shake .32s ease-in-out infinite alternate!important}
 .levelup-panel .choice-card:hover .upgrade-reference-art{transform:scale(1.035)}
 .levelup-panel .choice-card:active{transform:translateY(2px) scale(.98);box-shadow:0 2px 0 #0b1923}
 .levelup-panel .choice-card.card-picked{animation:reward-card-chosen .22s ease-out forwards!important;animation-delay:0s!important;border-color:#f6e2a3;background:#3e5141}
-@keyframes reward-card-arrive{from{opacity:0;transform:translateY(16px) scale(.96)}to{opacity:1;transform:translateY(0) scale(1)}}
+@keyframes reward-card-arrive{0%{opacity:0;transform:translateY(42px) scale(.88) rotate(-3deg)}48%{opacity:1;transform:translateY(-8px) scale(1.04) rotate(2deg)}62%{transform:translateY(4px) scale(.98) rotate(-1.5deg)}76%{transform:translateY(-2px) scale(1.015) rotate(1deg)}88%{transform:translateY(1px) scale(.995) rotate(-.5deg)}100%{opacity:1;transform:translateY(0) scale(1) rotate(0deg)}}
+@keyframes evo-card-arrive{0%{opacity:0;transform:translateY(55px) scale(.82) rotate(-5deg);filter:brightness(1.6) drop-shadow(0 0 20px #ffd875)}44%{opacity:1;transform:translateY(-12px) scale(1.08) rotate(3.5deg);filter:brightness(1.4) drop-shadow(0 0 32px #ffd875)}56%{transform:translateY(6px) scale(.96) rotate(-3deg)}68%{transform:translateY(-4px) scale(1.03) rotate(2deg)}80%{transform:translateY(2px) scale(.985) rotate(-1.2deg)}90%{transform:translateY(-1px) scale(1.01) rotate(.6deg)}100%{opacity:1;transform:translateY(0) scale(1) rotate(0deg);filter:brightness(1)}}
+@keyframes evo-card-pulse{0%,100%{box-shadow:0 6px 0 #0c1922,0 10px 22px #0003,0 0 16px #e3c16d33;border-color:#e3c16d}50%{box-shadow:0 6px 0 #0c1922,0 14px 28px #0005,0 0 30px #ffd87588,inset 0 0 16px #ffd87522;border-color:#fff1b0}}
+@keyframes evo-card-hover-shake{0%{transform:translateY(-8px) scale(1.03) rotate(-.8deg)}100%{transform:translateY(-9px) scale(1.03) rotate(.8deg)}}
+@keyframes evo-art-shimmer{0%{filter:saturate(1.1) contrast(1.04) brightness(1)}100%{filter:saturate(1.25) contrast(1.08) brightness(1.12) drop-shadow(0 0 8px #ffd87555)}}
 @keyframes reward-next-pip{50%{opacity:1}}
-@keyframes reward-card-chosen{to{transform:translateY(-10px) scale(1.04);filter:brightness(1.2);box-shadow:0 0 30px #f0d48d55}}
+@keyframes reward-card-chosen{0%{transform:scale(1)}35%{transform:scale(.94) rotate(-1deg)}70%{transform:scale(1.08) rotate(1.5deg);filter:brightness(1.35);box-shadow:0 0 38px #f0d48d99}100%{transform:translateY(-14px) scale(1.06) rotate(0deg);filter:brightness(1.25);box-shadow:0 0 45px #f0d48dcc}}
 @media(max-width:650px){
  .levelup-panel .cards.upgrade-cards{gap:7px;margin:18px 0 24px}
  .levelup-panel .upgrade-cards .choice-card{border-radius:12px;padding:5px 4px 12px;border-bottom-width:3px;box-shadow:0 4px 0 #0c1922,0 7px 13px #0003}
