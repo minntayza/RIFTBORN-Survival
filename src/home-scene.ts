@@ -6,8 +6,8 @@ import {colorfulCharacter,outlinedWeapon} from './equipment-presentation';
 import {isRedesignedSurvivor,survivorShoulder,survivorArmPose} from './survivor-redesign';
 import {tankEquipmentPose,tankArmPose,isRedesignedTank} from './tank-redesign';
 import {drawZawgyi} from './zawgyi-rig-art';
-import {drawPyusawhti} from './pyusawhti-rig';
-import {drawKyansittha} from './kyansittha-rig';
+import {drawPyusawhti, PYUSAWHTI_RIG_ASSETS} from './pyusawhti-rig';
+import {drawKyansittha, KYANSITTHA_RIG_ASSETS} from './kyansittha-rig';
 import {ZAWGYI_ART} from './zawgyi';
 import {tankArmAsset,registerTankArmArtwork,tankOutfitShoulder} from './tank-arm-art';
 import {tankSkinArm} from './tank-cosmetics';
@@ -57,6 +57,7 @@ export async function startHomeScene(canvas:HTMLCanvasElement,hero:HeroId,weapon
  g.save();g.translate(canvas.width/2-64*scale,canvas.height/2-55*scale);g.scale(scale,scale);drawZawgyi(g,image,0,false);g.restore();canvas.dataset.ready='true';return;
  }
  if(hero==='pyusawhti'){
+ await Promise.all(Object.values(PYUSAWHTI_RIG_ASSETS).map(a=>load(a.url)));
  if(!canvas.isConnected)return;
  canvas.width=portrait?420:600;canvas.height=420;
  const g=canvas.getContext('2d')!,scale=portrait?2.5:2.7;
@@ -64,6 +65,7 @@ export async function startHomeScene(canvas:HTMLCanvasElement,hero:HeroId,weapon
  g.save();g.translate(canvas.width/2,canvas.height/2);g.scale(scale,scale);drawPyusawhti(g,0,false,0,0);g.restore();canvas.dataset.ready='true';return;
  }
  if(hero==='kyansittha'){
+ await Promise.all(Object.values(KYANSITTHA_RIG_ASSETS).map(a=>load(a.url)));
  if(!canvas.isConnected)return;
  canvas.width=portrait?420:600;canvas.height=420;
  const g=canvas.getContext('2d')!,scale=portrait?2.5:2.7;

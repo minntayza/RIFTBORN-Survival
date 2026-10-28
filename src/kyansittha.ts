@@ -38,54 +38,7 @@ export function kyansitthaSkillIcon(id: KyansitthaSkill) {
 }
 
 export function kyansitthaPortrait(cls = 'art-image') {
- return `<svg class="${cls}" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" role="img" aria-label="King Kyansittha of Bagan with divine Arindama spear">
-  <!-- Ground Shadow -->
-  <ellipse cx="64" cy="120" rx="36" ry="6" fill="#050a13" opacity=".4"/>
-  <!-- Royal Crimson Capelet flowing behind -->
-  <path d="M38 48 L90 48 L98 106 L30 106 Z" fill="#b71c1c" stroke="#080e19" stroke-width="2.5"/>
-  <!-- Royal Emerald Longyi Skirt & Armored Greaves -->
-  <path d="M42 86 L86 86 L90 116 L38 116 Z" fill="#1b3320" stroke="#080e19" stroke-width="2.5"/>
-  <rect x="44" y="94" width="16" height="18" rx="2" fill="#ffd700" stroke="#b8860b" stroke-width="1.5"/>
-  <rect x="68" y="94" width="16" height="18" rx="2" fill="#ffd700" stroke="#b8860b" stroke-width="1.5"/>
-  <rect x="42" y="112" width="18" height="8" rx="2" fill="#b8860b" stroke="#080e19" stroke-width="1.5"/>
-  <rect x="68" y="112" width="18" height="8" rx="2" fill="#b8860b" stroke="#080e19" stroke-width="1.5"/>
-  <!-- Torso / Golden Scaled Cuirass -->
-  <path d="M42 54 L86 54 L88 88 L40 88 Z" fill="#386b30" stroke="#080e19" stroke-width="2.5"/>
-  <rect x="46" y="58" width="36" height="24" rx="3" fill="#ffd700" stroke="#b8860b" stroke-width="1.8"/>
-  <!-- Royal Lion / Sun Medallion -->
-  <circle cx="64" cy="70" r="8" fill="#ffb300" stroke="#080e19" stroke-width="1.5"/>
-  <circle cx="64" cy="70" r="4.5" fill="#00e676"/>
-  <!-- Armored Gauntlets holding spear -->
-  <path d="M34 62 L22 84 L30 88 L42 70 Z" fill="#d4af37" stroke="#080e19" stroke-width="2"/>
-  <path d="M86 62 L98 84 L90 88 L78 70 Z" fill="#d4af37" stroke="#080e19" stroke-width="2"/>
-  <!-- Divine Arindama Spear held upright at side -->
-  <g transform="translate(100 14) rotate(12)">
-   <line x1="0" y1="-8" x2="0" y2="108" stroke="#4e342e" stroke-width="4.5"/>
-   <line x1="0" y1="-8" x2="0" y2="108" stroke="#8d6e63" stroke-width="2"/>
-   <!-- Red Plume -->
-   <ellipse cx="-4" cy="10" rx="5" ry="8" fill="#d32f2f"/>
-   <!-- Spearhead Socket -->
-   <rect x="-4" y="6" width="8" height="5" fill="#ffd700"/>
-   <!-- Leaf Blade -->
-   <polygon points="0,-18 7,6 0,8 -7,6" fill="#ffffff" stroke="#ffd700" stroke-width="2"/>
-   <line x1="0" y1="-16" x2="0" y2="6" stroke="#00e5ff" stroke-width="1.5"/>
-  </g>
-  <!-- Chibi Head -->
-  <circle cx="64" cy="38" r="21" fill="#f5cba7" stroke="#080e19" stroke-width="2.5"/>
-  <!-- Bagan King's Spired Crown / Helmet (မကိုဋ်သရဖူ) -->
-  <path d="M44 30 L84 30 L80 16 L64 4 L48 16 Z" fill="#ffd700" stroke="#080e19" stroke-width="2.2"/>
-  <circle cx="64" cy="14" r="3.5" fill="#00e676"/>
-  <circle cx="53" cy="22" r="2.2" fill="#d32f2f"/>
-  <circle cx="75" cy="22" r="2.2" fill="#d32f2f"/>
-  <!-- Resolute Eyes -->
-  <ellipse cx="55" cy="37" rx="3.5" ry="4.5" fill="#1c1611"/>
-  <ellipse cx="73" cy="37" rx="3.5" ry="4.5" fill="#1c1611"/>
-  <circle cx="56" cy="35" r="1.5" fill="#ffffff"/>
-  <circle cx="74" cy="35" r="1.5" fill="#ffffff"/>
-  <path d="M52 31 Q56 28 60 31 M70 31 Q74 28 78 31" stroke="#1c1611" stroke-width="2.5" stroke-linecap="round"/>
-  <!-- Bagan Royal Mustache (နှုတ်ခမ်းမွေး) -->
-  <path d="M55 45 Q64 42 73 45 Q78 48 81 46 M55 45 Q50 48 47 46" fill="none" stroke="#1c1611" stroke-width="2.5" stroke-linecap="round"/>
- </svg>`;
+ return `<svg class="${cls}" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" role="img" aria-label="King Kyansittha of Bagan with divine Arindama spear"><image href="/assets/characters/kyansittha-portrait-v2.png" x="6" y="0" width="116" height="128" preserveAspectRatio="xMidYMid meet"/></svg>`;
 }
 
 export function arindamaSpearPortrait(cls = 'weapon-reference-art') {

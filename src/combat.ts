@@ -1,4 +1,6 @@
 import {LETHWEI_ART,LETHWEI_LEGS,LETHWEI_FOREARMS,LETHWEI_NEAR_FOREARM} from './lethwei-rig';
+import {KYANSITTHA_RIG_ASSETS} from './kyansittha-rig';
+import {PYUSAWHTI_RIG_ASSETS} from './pyusawhti-rig';
 import {FUTURE_ARMS} from './future-ghost-arms';
 import {ANCIENT_ARMS} from './ancient-shadow-arms';
 import {Cataclysm} from './cataclysm';
@@ -201,6 +203,8 @@ export class ArenaScene extends Phaser.Scene {
 
         const assets=[
             ...(this.hero==='lethwei'?[[LETHWEI_ART.key,LETHWEI_ART.url],[LETHWEI_LEGS.key,LETHWEI_LEGS.url],[LETHWEI_FOREARMS.key,LETHWEI_FOREARMS.url],[LETHWEI_NEAR_FOREARM.key,LETHWEI_NEAR_FOREARM.url]]:[]),
+            ...(this.hero==='kyansittha'?Object.values(KYANSITTHA_RIG_ASSETS).map(a=>[a.key,a.url]):[]),
+            ...(this.hero==='pyusawhti'?Object.values(PYUSAWHTI_RIG_ASSETS).map(a=>[a.key,a.url]):[]),
             ...(this.camp?[['last-camp-beacon','/assets/maps/last-camp/beacon-v1.png'],['last-camp-court','/assets/maps/last-camp/courtyard-v1.png']]:[]),
             ...(this.hero==='zawgyi'?[[ZAWGYI_ART.key,ZAWGYI_ART.url],['zawgyi-ruby-sun','/assets/characters/zawgyi-ruby-sun-v1.png']]:[]),
             ...(this.hero==='tank'&&equippedSkin(this.save,this.hero)?[['tank-outfit-arm-art',tankArmAsset(equippedSkin(this.save,this.hero)!)]]:[]),

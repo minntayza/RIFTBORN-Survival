@@ -40,57 +40,7 @@ export function pyusawhtiSkillIcon(id: PyusawhtiSkill) {
 }
 
 export function pyusawhtiPortrait(cls = 'art-image') {
- return `<svg class="${cls}" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" role="img" aria-label="Pyusawhti the Divine Archer of Bagan">
-  <!-- Ground Shadow -->
-  <ellipse cx="64" cy="120" rx="34" ry="5.5" fill="#050a13" opacity=".4"/>
-  <!-- Quiver over shoulder with golden arrows -->
-  <g transform="translate(86 36) rotate(-22)">
-   <rect x="-6" y="-22" width="13" height="42" rx="3" fill="#6d4c24" stroke="#080e19" stroke-width="2"/>
-   <rect x="-7" y="-14" width="15" height="4" fill="#ffd700"/>
-   <rect x="-7" y="6" width="15" height="4" fill="#ffd700"/>
-   <!-- Arrow shafts & red fletching -->
-   <rect x="-4" y="-34" width="2.5" height="13" fill="#ffd54f"/>
-   <path d="M-4 -34 L-1.5 -40 L1 -34 Z" fill="#d32f2f"/>
-   <rect x="2" y="-31" width="2.5" height="10" fill="#ffd54f"/>
-   <path d="M2 -31 L4.5 -37 L7 -31 Z" fill="#d32f2f"/>
-  </g>
-  <!-- Royal Longyi & Boots -->
-  <path d="M44 86 L84 86 L88 116 L40 116 Z" fill="#b8860b" stroke="#080e19" stroke-width="2.5"/>
-  <path d="M42 96 L86 96 M41 106 L87 106" stroke="#ffe066" stroke-width="1.8"/>
-  <rect x="42" y="114" width="18" height="6" rx="2" fill="#1b2838" stroke="#080e19" stroke-width="1.5"/>
-  <rect x="68" y="114" width="18" height="6" rx="2" fill="#1b2838" stroke="#080e19" stroke-width="1.5"/>
-  <!-- Torso & Golden Sun Cuirass -->
-  <path d="M43 54 L85 54 L87 87 L41 87 Z" fill="#d4af37" stroke="#080e19" stroke-width="2.5"/>
-  <circle cx="64" cy="70" r="9" fill="#ffd700" stroke="#b8860b" stroke-width="1.8"/>
-  <circle cx="64" cy="70" r="4" fill="#d32f2f"/>
-  <path d="M45 58 L54 68 M83 58 L74 68" stroke="#fff1a8" stroke-width="2"/>
-  <!-- Bracers & Hands -->
-  <path d="M36 60 L24 82 L32 86 L44 68 Z" fill="#b57a22" stroke="#080e19" stroke-width="2"/>
-  <path d="M84 60 L96 82 L88 86 L76 68 Z" fill="#b57a22" stroke="#080e19" stroke-width="2"/>
-  <!-- Aung Zeya Bow held in left hand -->
-  <path d="M20 20 Q5 68 22 116" fill="none" stroke="#ffd700" stroke-width="4.5" stroke-linecap="round"/>
-  <path d="M20 20 Q10 68 22 116" fill="none" stroke="#fff9c4" stroke-width="1.8" stroke-linecap="round"/>
-  <circle cx="20" cy="20" r="3" fill="#00e676"/>
-  <circle cx="22" cy="116" r="3" fill="#00e676"/>
-  <line x1="20" y1="20" x2="22" y2="116" stroke="#ffffff" stroke-width="1.2" stroke-dasharray="3 2"/>
-  <!-- Chibi Head -->
-  <circle cx="64" cy="38" r="21" fill="#f5cba7" stroke="#080e19" stroke-width="2.5"/>
-  <!-- Bagan Golden Crown (မကိုဋ်) -->
-  <path d="M46 30 L82 30 L78 18 L64 6 L50 18 Z" fill="#ffd700" stroke="#080e19" stroke-width="2.2"/>
-  <circle cx="64" cy="16" r="3.5" fill="#d32f2f"/>
-  <circle cx="53" cy="24" r="2" fill="#00e676"/>
-  <circle cx="75" cy="24" r="2" fill="#00e676"/>
-  <!-- Royal Archer Hair Knot -->
-  <ellipse cx="64" cy="26" rx="8" ry="4" fill="#181310"/>
-  <!-- Expressive Eyes -->
-  <ellipse cx="55" cy="38" rx="3.5" ry="4.5" fill="#1c1611"/>
-  <ellipse cx="73" cy="38" rx="3.5" ry="4.5" fill="#1c1611"/>
-  <circle cx="56" cy="36" r="1.5" fill="#ffffff"/>
-  <circle cx="74" cy="36" r="1.5" fill="#ffffff"/>
-  <path d="M52 32 Q56 29 60 32 M70 32 Q74 29 78 32" stroke="#1c1611" stroke-width="2" stroke-linecap="round"/>
-  <!-- Confident Smile -->
-  <path d="M60 46 Q64 50 68 46" fill="none" stroke="#8d502a" stroke-width="2" stroke-linecap="round"/>
- </svg>`;
+ return `<svg class="${cls}" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" role="img" aria-label="Prince Pyusawhti of Bagan"><image href="/assets/characters/pyusawhti-portrait-v2.png" x="6" y="0" width="116" height="128" preserveAspectRatio="xMidYMid meet"/></svg>`;
 }
 
 export function aungZeyaBowPortrait(cls = 'weapon-reference-art') {
