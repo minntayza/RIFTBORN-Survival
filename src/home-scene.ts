@@ -6,8 +6,6 @@ import {colorfulCharacter,outlinedWeapon} from './equipment-presentation';
 import {isRedesignedSurvivor,survivorShoulder,survivorArmPose} from './survivor-redesign';
 import {tankEquipmentPose,tankArmPose,isRedesignedTank} from './tank-redesign';
 import {drawZawgyi} from './zawgyi-rig-art';
-import {drawPyusawhti, PYUSAWHTI_RIG_ASSETS} from './pyusawhti-rig';
-import {drawKyansittha, KYANSITTHA_RIG_ASSETS} from './kyansittha-rig';
 import {ZAWGYI_ART} from './zawgyi';
 import {tankArmAsset,registerTankArmArtwork,tankOutfitShoulder} from './tank-arm-art';
 import {tankSkinArm} from './tank-cosmetics';
@@ -56,21 +54,45 @@ export async function startHomeScene(canvas:HTMLCanvasElement,hero:HeroId,weapon
  g.fillStyle='#07151866';g.beginPath();g.ellipse(canvas.width/2,canvas.height/2+67*scale,portrait?38:60,10,0,0,Math.PI*2);g.fill();
  g.save();g.translate(canvas.width/2-64*scale,canvas.height/2-55*scale);g.scale(scale,scale);drawZawgyi(g,image,0,false);g.restore();canvas.dataset.ready='true';return;
  }
- if(hero==='pyusawhti'){
- await Promise.all(Object.values(PYUSAWHTI_RIG_ASSETS).map(a=>load(a.url)));
- if(!canvas.isConnected)return;
- canvas.width=portrait?420:600;canvas.height=420;
- const g=canvas.getContext('2d')!,scale=portrait?2.5:2.7;
- g.fillStyle='#07151866';g.beginPath();g.ellipse(canvas.width/2,canvas.height/2+50*scale,portrait?38:60,10,0,0,Math.PI*2);g.fill();
- g.save();g.translate(canvas.width/2,canvas.height/2);g.scale(scale,scale);drawPyusawhti(g,0,false,0,0);g.restore();canvas.dataset.ready='true';return;
+ if (hero === 'pyusawhti') {
+  const image = await load('/assets/characters/pyusawhti-portrait-v2.png');
+  if (!canvas.isConnected) return;
+  canvas.width = portrait ? 420 : 600;
+  canvas.height = 420;
+  const g = canvas.getContext('2d')!;
+  const targetH = portrait ? 260 : 280;
+  const targetW = image.width * (targetH / image.height);
+  const cx = canvas.width / 2;
+  const groundY = canvas.height / 2 + (portrait ? 120 : 130);
+  g.fillStyle = '#07151866';
+  g.beginPath();
+  g.ellipse(cx, groundY, portrait ? 55 : 68, 11, 0, 0, Math.PI * 2);
+  g.fill();
+  g.imageSmoothingEnabled = true;
+  g.imageSmoothingQuality = 'high';
+  g.drawImage(image, cx - targetW / 2, groundY - targetH + 10, targetW, targetH);
+  canvas.dataset.ready = 'true';
+  return;
  }
- if(hero==='kyansittha'){
- await Promise.all(Object.values(KYANSITTHA_RIG_ASSETS).map(a=>load(a.url)));
- if(!canvas.isConnected)return;
- canvas.width=portrait?420:600;canvas.height=420;
- const g=canvas.getContext('2d')!,scale=portrait?2.5:2.7;
- g.fillStyle='#07151866';g.beginPath();g.ellipse(canvas.width/2,canvas.height/2+50*scale,portrait?38:60,10,0,0,Math.PI*2);g.fill();
- g.save();g.translate(canvas.width/2,canvas.height/2);g.scale(scale,scale);drawKyansittha(g,0,false,0,0);g.restore();canvas.dataset.ready='true';return;
+ if (hero === 'kyansittha') {
+  const image = await load('/assets/characters/kyansittha-portrait-v2.png');
+  if (!canvas.isConnected) return;
+  canvas.width = portrait ? 420 : 600;
+  canvas.height = 420;
+  const g = canvas.getContext('2d')!;
+  const targetH = portrait ? 260 : 280;
+  const targetW = image.width * (targetH / image.height);
+  const cx = canvas.width / 2;
+  const groundY = canvas.height / 2 + (portrait ? 120 : 130);
+  g.fillStyle = '#07151866';
+  g.beginPath();
+  g.ellipse(cx, groundY, portrait ? 55 : 68, 11, 0, 0, Math.PI * 2);
+  g.fill();
+  g.imageSmoothingEnabled = true;
+  g.imageSmoothingQuality = 'high';
+  g.drawImage(image, cx - targetW / 2, groundY - targetH + 10, targetW, targetH);
+  canvas.dataset.ready = 'true';
+  return;
  }
 
  if(hero==='ninja'&&skin?.includes('ninja-ancient'))registerAncientArms(await load(ANCIENT_ARMS.url));

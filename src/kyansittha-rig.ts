@@ -38,9 +38,9 @@ export function drawKyansittha(
 		g.scale(-1, 1);
 	}
 
-	const breathe = Math.sin(time * 3) * 1.5;
+	const breathe = Math.sin(time * 3) * 1.2;
 	const walkPhase = time * 12;
-	const walkBob = moving ? Math.abs(Math.sin(walkPhase)) * 2 : 0;
+	const walkBob = moving ? Math.abs(Math.sin(walkPhase)) * 1.5 : 0;
 	const legSwingL = moving ? Math.sin(walkPhase) * 0.35 : 0;
 	const legSwingR = moving ? Math.sin(walkPhase + Math.PI) * 0.35 : 0;
 
@@ -51,52 +51,55 @@ export function drawKyansittha(
 	const armRImg = getImage(KYANSITTHA_RIG_ASSETS.armRight.url);
 	const spearImg = getImage(KYANSITTHA_RIG_ASSETS.spear.url);
 
-	// 1. Legs
+	// 1. Moving Legs
 	if (legLImg?.complete && legLImg.naturalWidth) {
 		g.save();
-		g.translate(-14, 18 - walkBob);
+		g.translate(-6, 8 - walkBob);
 		g.rotate(legSwingL);
-		g.drawImage(legLImg, -14, 0, 28, 48);
+		g.drawImage(legLImg, -6, 0, 12, 25);
 		g.restore();
 	}
 	if (legRImg?.complete && legRImg.naturalWidth) {
 		g.save();
-		g.translate(14, 18 - walkBob);
+		g.translate(6, 8 - walkBob);
 		g.rotate(legSwingR);
-		g.drawImage(legRImg, -14, 0, 28, 48);
+		g.drawImage(legRImg, -6, 0, 12, 25);
 		g.restore();
 	}
 
-	// 2. Fixed Body (Cape + Torso + Skirt + Head)
+	// 2. Fixed Body (Head + Crown + Cape + Torso + Skirt)
 	if (bodyImg?.complete && bodyImg.naturalWidth) {
-		g.drawImage(bodyImg, -46, -60 + breathe - walkBob, 92, 102);
+		g.drawImage(bodyImg, -18, -27 + breathe - walkBob, 36, 54);
 	}
 
-	// 3. Arms & Spear
+	// 3. Moving Arms & Spear with Dynamic Thrust
 	const progress = attack > 0 ? Math.min(1, attack) : 0;
-	const thrust = attack > 0 ? Math.sin(progress * Math.PI) * 26 : 0;
+	const thrust = attack > 0 ? Math.sin(progress * Math.PI) * 18 : 0;
 
+	// Left arm guard
 	if (armLImg?.complete && armLImg.naturalWidth) {
 		g.save();
-		g.translate(-26, -10 + breathe);
+		g.translate(-10, -5 + breathe);
 		g.rotate(0.2 - thrust * 0.01);
-		g.drawImage(armLImg, -10, 0, 24, 46);
+		g.drawImage(armLImg, -5, 0, 11, 24);
 		g.restore();
 	}
 
+	// Spear thrust
 	if (spearImg?.complete && spearImg.naturalWidth) {
 		g.save();
-		g.translate(22 + Math.cos(aim) * thrust, -4 + breathe + Math.sin(aim) * thrust);
+		g.translate(8 + Math.cos(aim) * thrust, -2 + breathe + Math.sin(aim) * thrust);
 		g.rotate(aim);
-		g.drawImage(spearImg, -20, -18, 120, 36);
+		g.drawImage(spearImg, -6, -38, 14, 76);
 		g.restore();
 	}
 
+	// Right arm thrust
 	if (armRImg?.complete && armRImg.naturalWidth) {
 		g.save();
-		g.translate(22 + Math.cos(aim) * (thrust * 0.5), -8 + breathe + Math.sin(aim) * (thrust * 0.5));
+		g.translate(8 + Math.cos(aim) * (thrust * 0.5), -4 + breathe + Math.sin(aim) * (thrust * 0.5));
 		g.rotate(aim * 0.4);
-		g.drawImage(armRImg, -10, 0, 24, 46);
+		g.drawImage(armRImg, -5, 0, 11, 24);
 		g.restore();
 	}
 
@@ -121,7 +124,6 @@ export class KyansitthaRig {
 	private spearSprite: Phaser.GameObjects.Image;
 
 	constructor(private scene: Phaser.Scene) {
-		// Verify and ensure textures exist
 		const ensure = (key: string, url: string) => {
 			if (!scene.textures.exists(key)) {
 				scene.textures.addBase64(key, url);
@@ -153,16 +155,17 @@ export class KyansitthaRig {
 		duration = 0.38
 	) {
 		const flip = Math.cos(aim) < 0;
-		const breathe = Math.sin(time * 3) * 1.5;
+		const breathe = Math.sin(time * 3) * 1.2;
 		const walkPhase = time * 12;
-		const walkBob = moving ? Math.abs(Math.sin(walkPhase)) * 2 : 0;
-		const scale = 0.22;
+		const walkBob = moving ? Math.abs(Math.sin(walkPhase)) * 1.5 : 0;
+		// Standardized scale matching 76px hero height
+		const scale = 0.088;
 
 		// 1. Moving Legs - Walk swing cycle
 		const legSwingL = moving ? Math.sin(walkPhase) * 0.35 : 0;
 		const legSwingR = moving ? Math.sin(walkPhase + Math.PI) * 0.35 : 0;
-		const hipOffsetY = 16 - walkBob;
-		const hipSpread = 12 * (flip ? -1 : 1);
+		const hipOffsetY = 10 - walkBob;
+		const hipSpread = 5.5 * (flip ? -1 : 1);
 
 		this.legLeftSprite
 			.setPosition(x - hipSpread, y + hipOffsetY)
@@ -182,7 +185,7 @@ export class KyansitthaRig {
 
 		// 2. Fixed Body (Head + Crown + Cape + Torso + Skirt)
 		this.bodySprite
-			.setPosition(x, y - 6 + breathe - walkBob)
+			.setPosition(x, y - 5 + breathe - walkBob)
 			.setScale(scale, scale)
 			.setFlipX(flip)
 			.setDepth(3.15)
@@ -194,22 +197,22 @@ export class KyansitthaRig {
 		if (attack > 0) {
 			if (progress < 0.22) {
 				// Windup chamber
-				spearThrust = -12 * (progress / 0.22);
+				spearThrust = -5 * (progress / 0.22);
 			} else if (progress < 0.62) {
 				// Explosive thrust!
 				const t = (progress - 0.22) / 0.4;
-				spearThrust = -12 + 56 * Math.sin(t * Math.PI * 0.5);
+				spearThrust = -5 + 24 * Math.sin(t * Math.PI * 0.5);
 			} else {
 				// Recovery
 				const t = (progress - 0.62) / 0.38;
-				spearThrust = 44 * (1 - t);
+				spearThrust = 19 * (1 - t);
 			}
 		}
 
 		// Left Arm (off-hand guard)
-		const armLSpread = (flip ? 22 : -22);
+		const armLSpread = (flip ? 9 : -9);
 		this.armLeftSprite
-			.setPosition(x + armLSpread, y - 10 + breathe - walkBob)
+			.setPosition(x + armLSpread, y - 6 + breathe - walkBob)
 			.setScale(scale, scale)
 			.setRotation(flip ? -0.2 : 0.2)
 			.setFlipX(flip)
@@ -219,8 +222,8 @@ export class KyansitthaRig {
 		// Spear thrust vector
 		const thrustX = Math.cos(aim) * spearThrust;
 		const thrustY = Math.sin(aim) * spearThrust;
-		const spearGripX = x + (flip ? -14 : 14) + thrustX;
-		const spearGripY = y - 4 + breathe - walkBob + thrustY;
+		const spearGripX = x + (flip ? -6 : 6) + thrustX;
+		const spearGripY = y - 2 + breathe - walkBob + thrustY;
 
 		// Spear (aimed towards cursor)
 		this.spearSprite
@@ -233,7 +236,7 @@ export class KyansitthaRig {
 
 		// Right Arm (main hand following the spear)
 		this.armRightSprite
-			.setPosition(x + (flip ? -18 : 18) + thrustX * 0.45, y - 10 + breathe - walkBob + thrustY * 0.45)
+			.setPosition(x + (flip ? -7 : 7) + thrustX * 0.45, y - 6 + breathe - walkBob + thrustY * 0.45)
 			.setScale(scale, scale)
 			.setRotation(aim * 0.4)
 			.setFlipX(flip)
