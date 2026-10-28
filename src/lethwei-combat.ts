@@ -27,6 +27,10 @@ export class LethweiCombat {
  cooldowns: [number, number] = [0, 0];
  blitzTime = 0;
  private blitzAim = 0;
+ private blitzDuration = .54 / 1.3;
+ private blitzAfterimages: LethweiCloneRig[] = [];
+ private blitzBeat = 0;
+ private blitzPops: {x:number;y:number;angle:number;beat:number;life:number}[] = [];
  ironChinTime = 0;
  ring: Ring = { active: false, x: 0, y: 0, radius: 175, duration: 0, maxDuration: 6 };
  readonly clones: Clone[] = [];
@@ -70,9 +74,10 @@ export class LethweiCombat {
   this.cooldowns[slot] = LETHWEI_SKILLS[id].cooldown * (s.options.build === 'mobility' ? 0.9 : 1);
 
   if (id === 'blitz') {
-   this.blitzTime = 0.32 * (1 + s.u('ironshins') * 0.1);
+   this.blitzDuration = (.54 / 1.3) * (1 + s.u('ironshins') * 0.1);
+   this.blitzTime = this.blitzDuration;this.blitzBeat=0;this.blitzPops=[];
    this.blitzAim = angle;
-   s.protect(0.35);
+   s.protect(this.blitzDuration + .03);
    s.audio.play('moon-dash');
    s.notifyCombat('NINE-LIMB BLITZ');
   } else if (id === 'ironchin') {
@@ -140,25 +145,29 @@ export class LethweiCombat {
   // Handle Blitz Dash
   if (this.blitzTime > 0) {
    this.blitzTrails.push({ x: s.x, y: s.y, angle: this.blitzAim, alpha: 0.85 });
-   const travel = Math.min(dt, this.blitzTime) * 820;
-   const px = Math.cos(this.blitzAim) * travel;
-   const py = Math.sin(this.blitzAim) * travel;
-   const next = s.moveOnGround(s.x, s.y, px, py, 18);
-   s.x = next.x;
-   s.y = next.y;
-
-   for (const e of s.enemies) {
-    if (e.active && Math.hypot(e.x - s.x, e.y - s.y) <= 52 + e.r) {
-     const dmg = (WEAPONS[s.weapon]?.damage || 25) * 1.8 * (1 + s.u('nineweapons') * 0.3);
-     s.hit(e, dmg, 65);
-     e.stagger = Math.max(e.stagger || 0, 0.7 + s.u('headbutt') * 0.25);
-     if (s.evolved('headbutt')) e.flash = 0.4;
-     s.burst(e.x, e.y, s.evolved('nineweapons') ? 0xff9800 : 0xff5252, s.evolved('nineweapons') ? 12 : 6);
+   const travel = Math.min(dt, this.blitzTime) * (145 / (.54 / 1.3));
+   const next = s.moveOnGround(s.x, s.y, Math.cos(this.blitzAim)*travel, Math.sin(this.blitzAim)*travel, 18);
+   s.x = next.x;s.y = next.y;
+   this.blitzTime = Math.max(0, this.blitzTime - dt);
+   const progress=1-this.blitzTime/this.blitzDuration;
+   // Three deliberate contacts: punch, elbow, then a stronger finishing contact.
+   while(this.blitzBeat<3&&progress>=[.12,.46,.82][this.blitzBeat]){
+    const beat=this.blitzBeat++;
+    const x=s.x+Math.cos(this.blitzAim)*24,y=s.y+Math.sin(this.blitzAim)*24;
+    this.blitzPops.push({x,y,angle:this.blitzAim,beat,life:beat===2?.5:.28});
+    s.swing=.18;s.attackSequence++;
+    for(const e of s.enemies){
+     if(!e.active||Math.hypot(e.x-x,e.y-y)>(beat===2?65:48)+e.r)continue;
+     const dmg=(WEAPONS[s.weapon]?.damage||25)*(beat===2?.8:.5)*(1+s.u('nineweapons')*.3);
+     s.hit(e,dmg,beat===2?65:24,false,false,'Nine-Limb Blitz');
+     e.stagger=Math.max(e.stagger||0,beat===2?.7+s.u('headbutt')*.25:.18);
+     if(s.evolved('headbutt'))e.flash=.4;
+     s.burst(e.x,e.y,beat===2?0xffcc61:0xfff1d1,beat===2?8:4);
     }
    }
-
-   this.blitzTime = Math.max(0, this.blitzTime - dt);
   }
+  for(const pop of this.blitzPops)pop.life-=dt;
+  this.blitzPops=this.blitzPops.filter(pop=>pop.life>0);
 
   // Fade Blitz dash ghost trails
   for (const t of this.blitzTrails) {
@@ -259,6 +268,8 @@ export class LethweiCombat {
   this.blitzTime = 0;
   this.ironChinTime = 0;
   this.blitzTrails.length = 0;
+  for(const rig of this.blitzAfterimages)rig.setVisible(false);
+  this.blitzPops.length = 0;this.blitzBeat=0;
   for (const rig of this.cloneRigs) {
    rig.setVisible(false);
   }
@@ -270,6 +281,8 @@ export class LethweiCombat {
    rig.destroy();
   }
   this.cloneRigs.length = 0;
+  for(const rig of this.blitzAfterimages)rig.destroy();
+  this.blitzAfterimages.length=0;
  }
 
  render(time: number) {
@@ -278,23 +291,43 @@ export class LethweiCombat {
   g.clear();
   f.clear();
 
-  // Blitz Dash Ghost Trails & Wind Streaks
-  for (const t of this.blitzTrails) {
-   g.lineStyle(6, 0xff9800, t.alpha * 0.7);
-   const backX = t.x - Math.cos(t.angle) * 36;
-   const backY = t.y - Math.sin(t.angle) * 36;
-   g.lineBetween(backX, backY, t.x, t.y);
-   g.lineStyle(2.5, 0xffd700, t.alpha * 0.9);
-   g.lineBetween(backX, backY, t.x, t.y);
+  // Two ivory silhouettes follow recent positions; no opaque cloud hides enemies.
+  const trails=this.blitzTrails;
+  for(let i=0;i<2;i++){
+   if(!this.blitzAfterimages[i]&&trails.length)this.blitzAfterimages[i]=new LethweiCloneRig(this.s,2.9-i*.02);
+   const rig=this.blitzAfterimages[i];if(!rig)continue;
+   const targetAlpha=.85-(i+1)*.06*3.8;
+   const t=trails.reduce<typeof trails[number]|undefined>((best,t)=>!best||Math.abs(t.alpha-targetAlpha)<Math.abs(best.alpha-targetAlpha)?t:best,undefined);
+   if(t&&t.alpha<.78){rig.render(t.x,t.y,t.angle,time,true,.09,i,.18,Math.min(.25,t.alpha*(i===0?.35:.22)));}else rig.setVisible(false);
   }
-  if (this.blitzTime > 0) {
-   const tipX = this.s.x + Math.cos(this.blitzAim) * 38;
-   const tipY = this.s.y + Math.sin(this.blitzAim) * 38;
-   g.lineStyle(3, 0xffeb3b, 0.9);
-   g.lineBetween(this.s.x, this.s.y, tipX, tipY);
-   g.lineStyle(1.5, 0xffffff, 0.95);
-   g.lineBetween(this.s.x - Math.sin(this.blitzAim) * 16, this.s.y + Math.cos(this.blitzAim) * 16, tipX, tipY);
-   g.lineBetween(this.s.x + Math.sin(this.blitzAim) * 16, this.s.y - Math.cos(this.blitzAim) * 16, tipX, tipY);
+  for(const [i,t] of trails.entries()){
+   if(i%3!==0)continue;
+   const fade=Math.max(0,t.alpha/.85),side=i%2?1:-1;
+   const x=t.x-Math.sin(t.angle)*side*12,y=t.y+Math.cos(t.angle)*side*12;
+   g.lineStyle(1.5,0xfff1d5,fade*.65);g.beginPath();g.arc(x,y,14,t.angle+Math.PI-.5,t.angle+Math.PI+.5);g.strokePath();
+  }
+  for(const pop of this.blitzPops){
+   const alpha=Math.min(1,pop.life*7),x=pop.x,y=pop.y;
+   for(let i=0;i<5;i++){
+    const a=i*Math.PI*2/5+pop.angle,r=18+(1-alpha)*15;
+    const sx=x+Math.cos(a)*r,sy=y+Math.sin(a)*r;
+    g.lineStyle(2,0xffe4a0,alpha);g.lineBetween(sx-3,sy,sx+3,sy);g.lineBetween(sx,sy-3,sx,sy+3);
+   }
+   if(pop.beat<2){
+    g.lineStyle(pop.beat===0?4:3,0xfff2d7,alpha);g.beginPath();g.arc(x,y,13+(1-alpha)*8,pop.angle-1.1,pop.angle+1.1);g.strokePath();
+    // Rounded contact puff rather than a sharp weapon slash.
+    g.fillStyle(0xfff7e6,alpha*.75);g.fillCircle(x,y,6);g.fillCircle(x-5,y+2,4);g.fillCircle(x+5,y+2,4);
+   }else{
+    // Compact gold-and-ivory starburst marks the final contact.
+    g.fillStyle(0xffd16d,alpha*.32);g.fillCircle(x,y,18+(1-alpha)*10);
+    g.lineStyle(3,0xffd16d,alpha);
+    for(let i=0;i<8;i++){
+     const a=i*Math.PI/4+pop.angle,r=12+(1-alpha)*14;
+     g.lineBetween(x+Math.cos(a)*r,y+Math.sin(a)*r,x+Math.cos(a)*(r+7),y+Math.sin(a)*(r+7));
+    }
+    g.fillStyle(0xfff7e6,alpha);g.fillCircle(x,y,6);
+
+   }
   }
 
   // Iron Chin: Inwa Talisman Protection Mandala

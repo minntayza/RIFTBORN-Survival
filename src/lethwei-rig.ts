@@ -132,7 +132,8 @@ export class LethweiCloneRig {
   moving: boolean,
   attack: number,
   sequence: number,
-  duration = 0.2
+  duration = 0.2,
+  afterimageAlpha?: number
  ) {
   const flip = Math.cos(aim) < 0;
   const scale = 0.54;
@@ -158,8 +159,8 @@ export class LethweiCloneRig {
      .setDisplaySize(p.w * scale, p.h * scale)
      .setRotation(p.r * (flip ? -1 : 1))
      .setFlipX(flip)
-     .setAlpha(0.85 + breath)
-     .setTint(0xffd54f);
+     .setAlpha(afterimageAlpha ?? (0.85 + breath));
+    if(afterimageAlpha!==undefined)img.setTintFill(0xfff1d5);else img.setTint(0xffd54f);
    }
   });
  }
