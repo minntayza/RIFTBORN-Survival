@@ -1,3 +1,4 @@
+import {championBeltSvg} from './champion-belt';
 /** Dedicated illustrated card artwork for Myanmar heroes: Pyusawhti, Lethwei Master, Kyansittha */
 export const MYANMAR_CARD_IDS = new Set([
  'arrowstorm',
@@ -206,20 +207,7 @@ export function myanmarCardArt(id: string): string {
    </svg>`;
 
   case 'goldenbelt':
-   return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" class="upgrade-reference-art" aria-hidden="true">
-    <defs>
-      <linearGradient id="g-goldenbelt" x1="0%" y1="0%" x2="100%" y2="100%">
-        <stop offset="0%" stop-color="#4a3608"/>
-        <stop offset="100%" stop-color="#1f1602"/>
-      </linearGradient>
-    </defs>
-    <rect width="100" height="100" rx="12" fill="url(#g-goldenbelt)"/>
-    <!-- Championship Gold Belt Plate -->
-    <path d="M15 50 L35 34 L65 34 L85 50 L65 66 L35 66 Z" fill="#e5a924" stroke="#ffebb3" stroke-width="2"/>
-    <circle cx="50" cy="50" r="14" fill="#bf820f" stroke="#ffe082" stroke-width="2"/>
-    <!-- Roaring Lion / Sun Motif -->
-    <polygon points="50,40 53,47 60,50 53,53 50,60 47,53 40,50 47,47" fill="#ffffff"/>
-   </svg>`;
+   return championBeltSvg('upgrade-reference-art');
 
   case 'arindamapower':
    return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" class="upgrade-reference-art" aria-hidden="true">

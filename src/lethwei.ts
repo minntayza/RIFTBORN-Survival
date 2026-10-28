@@ -1,8 +1,9 @@
+import {championBeltSvg} from './champion-belt';
 import {skillIcon} from './skill-icons';
 
 export const LETHWEI_SKILLS = {
  blitz: { name: 'Nine-Limb Blitz', cooldown: 8, icon: '⚔', description: 'Dash forward with a flying knee, elbow strike, and headbutt, knocking back and stunning foes.' },
- ironchin: { name: 'Iron Chin', cooldown: 11, icon: '🛡', description: 'Harden your stance: gain 50% damage reduction for 3.5s and reflect 70% melee damage taken back as a shockwave.' },
+ ironchin: { name: 'Iron Chin', cooldown: 11, icon: '✦', description: 'Harden your stance: gain 50% damage reduction for 3.5s and reflect 70% melee damage taken back as a shockwave.' },
  lethweiring: { name: 'Lethwei Ring', cooldown: 20, icon: '⬡', description: 'Establish a sacred square Lethwei ring for 6s (20s cooldown). Gain 20% damage reduction inside. A spirit clone aids you, and elastic ring ropes bounce foes back inside.' }
 } as const;
 
@@ -30,9 +31,7 @@ export function lethweiSkillIcon(id: LethweiSkill) {
  if (id === 'blitz') {
   return `<svg viewBox="0 0 32 32" class="skill-svg-icon" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 18 L16 8 L26 14 L18 26 Z" stroke-linecap="round" stroke-linejoin="round"/><path d="M12 22 L20 14" stroke="#ff8a80"/><circle cx="24" cy="8" r="3" fill="#ff5252"/></svg>`;
  }
- if (id === 'ironchin') {
-  return `<svg viewBox="0 0 32 32" class="skill-svg-icon" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 4 L28 9 V18 Q28 26 16 30 Q4 26 4 18 V9 Z" stroke-linecap="round" stroke-linejoin="round" fill="#30151a"/><path d="M11 16 L15 20 L22 13" stroke="#ff5252" stroke-width="2.5"/></svg>`;
- }
+ if (id === 'ironchin') return championBeltSvg();
  // Boxing Ring Icon
  return `<svg viewBox="0 0 32 32" class="skill-svg-icon" fill="none" stroke="currentColor" stroke-width="2"><rect x="5" y="5" width="22" height="22" rx="3" stroke="#ffd700" stroke-width="2.5"/><rect x="8" y="8" width="16" height="16" rx="2" stroke="#ff8f00" stroke-dasharray="2 2"/><circle cx="5" cy="5" r="2" fill="#d32f2f"/><circle cx="27" cy="5" r="2" fill="#1976d2"/><circle cx="5" cy="27" r="2" fill="#fff"/><circle cx="27" cy="27" r="2" fill="#fff"/></svg>`;
 }

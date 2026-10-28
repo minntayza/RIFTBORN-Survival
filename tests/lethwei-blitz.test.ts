@@ -14,3 +14,12 @@ test('Blitz has three deliberate contacts independent of frame rate and can be c
   combat.clear();assert.equal(combat.blitzTime,0);
  }
 });
+test('Iron Chin keeps mitigation and reflection, and expires cleanly',()=>{
+ const hits:number[]=[];const graphics={setDepth(){return this;}};
+ const scene={save:{lethweiSkills:['ironchin','blitz']},hero:'lethwei',paused:false,ended:false,countdown:0,options:{},angle:0,x:0,y:0,hp:100,maxHp:100,
+  add:{graphics:()=>graphics},u:()=>0,protect:()=>{},audio:{play:()=>{}},notifyCombat:()=>{},burst:()=>{},
+  enemies:[{active:true,x:40,y:0,r:10},{active:true,x:300,y:0,r:10}],hit:(_:unknown,d:number)=>hits.push(d)} as unknown as ArenaScene;
+ const combat=new LethweiCombat(scene);assert.ok(combat.activate(0));assert.equal(combat.damageReductionMultiplier,.5);
+ combat.onDamageTaken(20);assert.deepEqual(hits,[14]);combat.update(3.5);assert.equal(combat.damageReductionMultiplier,1);
+ combat.onDamageTaken(20);assert.equal(hits.length,1);combat.clear();assert.equal(combat.ironChinTime,0);
+});

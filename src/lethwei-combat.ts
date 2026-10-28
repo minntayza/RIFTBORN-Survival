@@ -1,7 +1,7 @@
 import type {ArenaScene, Enemy} from './combat';
 import {LETHWEI_SKILLS,validLethweiLoadout,type LethweiSkill} from './lethwei';
 import {WEAPONS} from './config';
-import {LethweiCloneRig} from './lethwei-rig';
+import {LethweiCloneRig,fighterPose} from './lethwei-rig';
 
 type Clone = {
  x: number;
@@ -32,6 +32,9 @@ export class LethweiCombat {
  private blitzBeat = 0;
  private blitzPops: {x:number;y:number;angle:number;beat:number;life:number}[] = [];
  ironChinTime = 0;
+ private chinFlash=0;
+ private chinFade=0;
+ private chinPulses:{x:number;y:number;tx:number;ty:number;life:number}[]=[];
  ring: Ring = { active: false, x: 0, y: 0, radius: 175, duration: 0, maxDuration: 6 };
  readonly clones: Clone[] = [];
  private cloneRigs: LethweiCloneRig[] = [];
@@ -39,11 +42,13 @@ export class LethweiCombat {
  private ropeCooldown: Map<Enemy, number> = new Map();
  private ground;
  private effects;
+ private ringBack;
 
  constructor(private s: ArenaScene) {
   this.equipped = validLethweiLoadout(s.save.lethweiSkills);
   this.ground = s.add.graphics().setDepth(1.1);
   this.effects = s.add.graphics().setDepth(4.6);
+  this.ringBack=s.add.graphics().setDepth(2.7);
  }
 
  get damageReductionMultiplier(): number {
@@ -81,7 +86,7 @@ export class LethweiCombat {
    s.audio.play('moon-dash');
    s.notifyCombat('NINE-LIMB BLITZ');
   } else if (id === 'ironchin') {
-   this.ironChinTime = 3.5;
+   this.ironChinTime = 3.5;this.chinFlash=.3;this.chinFade=0;this.chinPulses=[];
    s.audio.play('lotus-guard');
    s.notifyCombat('IRON CHIN');
   } else if (id === 'lethweiring') {
@@ -121,9 +126,11 @@ export class LethweiCombat {
    for (const e of s.enemies) {
     if (e.active && Math.hypot(e.x - s.x, e.y - s.y) <= 120 + e.r) {
      s.hit(e, reflect, 35, false, false, 'Iron Chin Reflect');
+     this.chinPulses.push({x:s.x,y:s.y-8,tx:e.x,ty:e.y,life:.3});
     }
    }
-   s.burst(s.x, s.y, 0xff5252, 10);
+   this.chinFlash=.24;
+   s.burst(s.x,s.y-8,0xffdf94,7);
   }
  }
 
@@ -138,8 +145,12 @@ export class LethweiCombat {
   for (let i = 0; i < 2; i++) {
    this.cooldowns[i as 0 | 1] = Math.max(0, this.cooldowns[i as 0 | 1] - dt);
   }
+  this.chinFlash=Math.max(0,this.chinFlash-dt);this.chinFade=Math.max(0,this.chinFade-dt);
+  for(const p of this.chinPulses)p.life-=dt;
+  this.chinPulses=this.chinPulses.filter(p=>p.life>0);
   if (this.ironChinTime > 0) {
    this.ironChinTime = Math.max(0, this.ironChinTime - dt);
+   if(this.ironChinTime===0)this.chinFade=.4;
   }
 
   // Handle Blitz Dash
@@ -266,7 +277,7 @@ export class LethweiCombat {
   this.clones.length = 0;
   this.ropeCooldown.clear();
   this.blitzTime = 0;
-  this.ironChinTime = 0;
+  this.ironChinTime = 0;this.chinFlash=0;this.chinFade=0;this.chinPulses=[];
   this.blitzTrails.length = 0;
   for(const rig of this.blitzAfterimages)rig.setVisible(false);
   this.blitzPops.length = 0;this.blitzBeat=0;
@@ -290,6 +301,7 @@ export class LethweiCombat {
   const f = this.ground;
   g.clear();
   f.clear();
+  this.ringBack.clear();
 
   // Two ivory silhouettes follow recent positions; no opaque cloud hides enemies.
   const trails=this.blitzTrails;
@@ -330,278 +342,99 @@ export class LethweiCombat {
    }
   }
 
-  // Iron Chin: Inwa Talisman Protection Mandala
-  if (this.ironChinTime > 0) {
-   const sx = this.s.x, sy = this.s.y;
-   f.fillStyle(0xd32f2f, 0.22);
-   f.fillCircle(sx, sy, 36);
-
-   const wardR = 34 + Math.sin(time * 6) * 2;
-   g.lineStyle(2.5, 0xffc107, 0.85);
-   g.strokeCircle(sx, sy, wardR);
-   g.lineStyle(1.5, 0xd32f2f, 0.9);
-   g.strokeCircle(sx, sy, wardR - 6);
-
-   // 6 Sacred talisman runes orbiting around fighter
-   for (let i = 0; i < 6; i++) {
-    const a = time * 2.5 + (i * Math.PI) / 3;
-    const px = sx + Math.cos(a) * wardR;
-    const py = sy + Math.sin(a) * wardR;
-    g.fillStyle(0xffd700, 0.95);
-    g.fillCircle(px, py, 3.5);
-    g.lineStyle(1, 0xff5252, 0.8);
-    g.strokeCircle(px, py, 5.5);
+  // Champion guard: a polished title belt, glowing wraps and a readable reflected pulse.
+  if(this.ironChinTime>0||(this.s.u('goldenbelt')>0&&this.s.hp<this.s.maxHp*.5)){
+   const sx=this.s.x,sy=this.s.y,age=3.5-this.ironChinTime;
+   const alpha=this.ironChinTime>0?Math.min(1,this.ironChinTime/.5):1,flash=this.chinFlash/.3;
+   f.fillStyle(0xffce72,alpha*.09);f.fillEllipse(sx,sy+30,42,12);
+   // A brief upward sweep announces activation, then leaves the face unobscured.
+   if(age<.3){const y=sy+25-age/.3*70;g.lineStyle(3,0xffefbf,(1-age/.3)*.8);g.lineBetween(sx-17,y,sx+17,y);}
+   // A real championship belt sits at the waist: leather strap, side plates and a grand center medallion.
+   const by=sy+9;
+   g.fillStyle(0x171d26,alpha*.95);g.fillRoundedRect(sx-22,by-5,44,11,4);
+   g.lineStyle(1,0xb98032,alpha);g.strokeRoundedRect(sx-22,by-5,44,11,4);
+   for(const dx of [-15,15]){
+    g.fillStyle(0xe1ad49,alpha);g.fillRoundedRect(sx+dx-4,by-4,8,9,2);
+    g.fillStyle(0xa83c45,alpha);g.fillCircle(sx+dx,by+.5,2);
+    g.lineStyle(1,0xffedb2,alpha);g.lineBetween(sx+dx-2,by-3,sx+dx+2,by-3);
    }
-
-   // 3 Floating Hexagonal Golden Deflection Shields
-   for (let i = 0; i < 3; i++) {
-    const a = -time * 2 + (i * Math.PI * 2) / 3;
-    const hx = sx + Math.cos(a) * (wardR + 10);
-    const hy = sy + Math.sin(a) * (wardR + 10);
-    g.lineStyle(2, 0xffeb3b, 0.85);
-    g.fillStyle(0x7f0000, 0.45);
-    g.beginPath();
-    for (let k = 0; k < 6; k++) {
-     const ha = a + (k * Math.PI) / 3;
-     const xk = hx + Math.cos(ha) * 7;
-     const yk = hy + Math.sin(ha) * 7;
-     if (k === 0) g.moveTo(xk, yk);
-     else g.lineTo(xk, yk);
-    }
-    g.closePath();
-    g.fillPath();
-    g.strokePath();
+   g.fillStyle(0xffcf69,alpha);g.fillEllipse(sx,by,20,18);
+   g.lineStyle(1.5,0xfff0be,alpha);g.strokeEllipse(sx,by,20,18);
+   g.fillStyle(0x963442,alpha);g.fillCircle(sx,by-1,6);
+   g.fillStyle(0xffe6a0,alpha);g.fillTriangle(sx-4,by-3,sx,by-6,sx+4,by-3);g.fillRoundedRect(sx-4,by-3,8,5,1);
+   // A restrained moving glint gives the metal a polished finish.
+   const glint=Math.sin(time*3)*8;
+   g.lineStyle(1,0xfff8da,alpha*.8);g.lineBetween(sx+glint-2,by-6,sx+glint+2,by+5);
+   if(flash>0){
+    for(let i=0;i<8;i++){const a=i*Math.PI/4,r=17+(1-flash)*8;g.lineStyle(1.5,0xffe09b,flash);g.lineBetween(sx+Math.cos(a)*r,by+Math.sin(a)*r*.65,sx+Math.cos(a)*(r+4),by+Math.sin(a)*(r+4)*.65);}
+   }
+   const flip=Math.cos(this.s.angle)<0,aim=Math.atan2(Math.sin(this.s.angle),Math.abs(Math.cos(this.s.angle)));
+   for(const p of fighterPose(time,false,this.s.swing,this.s.attackSequence,undefined,.18,aim).filter(p=>p.part.includes('Forearm'))){
+    const length=(.82-p.oy)*p.h;
+    const x=sx+(p.x-Math.sin(p.r)*length)*.58*(flip?-1:1),y=sy+(p.y+Math.cos(p.r)*length-4)*.58;
+    g.fillStyle(0xffe6a1,alpha*(.16+flash*.22));g.fillCircle(x,y,6);
+    g.lineStyle(1,0xfff3ce,alpha*.65);g.beginPath();g.arc(x,y,5,-2.5,-.5);g.strokePath();
    }
   }
+  for(const p of this.chinPulses){
+   const t=1-p.life/.3,x=p.x+(p.tx-p.x)*t,y=p.y+(p.ty-p.y)*t;
+   g.lineStyle(2,0xffda84,p.life/.3*.8);g.lineBetween(p.x+(p.tx-p.x)*Math.max(0,t-.22),p.y+(p.ty-p.y)*Math.max(0,t-.22),x,y);
+   g.fillStyle(0xfff4d5,p.life/.3);g.fillCircle(x,y,3);
+  }
+  if(this.chinFade>0){
+   const t=1-this.chinFade/.4;
+   for(let i=0;i<12;i++){const a=i*Math.PI/6;g.fillStyle(0xffd985,(1-t)*.7);g.fillCircle(this.s.x+Math.cos(a)*(20+t*16),this.s.y-8+Math.sin(a)*25-t*8,1.5);}
+  }
 
-  // Real Square Boxing Ring (မြန်မာ့လက်ဝှေ့ လေးထောင့် ကြိုးဝိုင်း)
+  // Physical ring: translucent canvas, elevated red ropes and polished padded posts.
   if (this.ring.active) {
-   const rx = this.ring.x, ry = this.ring.y;
-   const W = this.ring.radius;
-   const alpha = Math.min(1, this.ring.duration);
-   const apron = 24;
-
-   const x0 = rx - W, y0 = ry - W; // Top-Left (Red Corner)
-   const x1 = rx + W, y1 = ry - W; // Top-Right (Blue Corner)
-   const x2 = rx + W, y2 = ry + W; // Bottom-Right (Neutral Corner)
-   const x3 = rx - W, y3 = ry + W; // Bottom-Left (Neutral Corner)
-
-   // 1. Elevated Wooden Platform Base & Apron (ကြိုးဝိုင်း စင်အောက်ခံ နှင့် အပြင်ဘောင်)
-   // Platform drop shadow
-   f.fillStyle(0x0a0304, alpha * 0.5);
-   f.fillRect(rx - W - apron + 4, ry - W - apron + 6, (W + apron) * 2, (W + apron) * 2 + 6);
-
-   // Platform apron surface (Dark stained teak wood / heavy canvas border)
-   f.fillStyle(0x19080a, alpha * 0.7);
-   f.fillRect(rx - W - apron, ry - W - apron, (W + apron) * 2, (W + apron) * 2);
-
-   // Platform outer bevel trim
-   g.lineStyle(3, 0x5d1d24, alpha * 0.85);
-   g.strokeRect(rx - W - apron, ry - W - apron, (W + apron) * 2, (W + apron) * 2);
-
-   // 2. Main Square Fighting Canvas (ကြိုးဝိုင်း ကြမ်းပြင် မတ်)
-   f.fillStyle(0x280e12, alpha * 0.6);
-   f.fillRect(x0, y0, W * 2, W * 2);
-
-   // Corner Triangular Floor Pads (ထောင့်အခင်းများ)
-   // Red Corner Triangle (Top-Left)
-   f.fillStyle(0xd32f2f, alpha * 0.45);
-   f.beginPath();
-   f.moveTo(x0, y0);
-   f.lineTo(x0 + 64, y0);
-   f.lineTo(x0, y0 + 64);
-   f.closePath();
-   f.fillPath();
-
-   // Blue Corner Triangle (Top-Right)
-   f.fillStyle(0x1565c0, alpha * 0.45);
-   f.beginPath();
-   f.moveTo(x1, y1);
-   f.lineTo(x1 - 64, y1);
-   f.lineTo(x1, y1 + 64);
-   f.closePath();
-   f.fillPath();
-
-   // Neutral White Corner Triangles (Bottom-Left & Bottom-Right)
-   f.fillStyle(0xfff8e1, alpha * 0.28);
-   f.beginPath();
-   f.moveTo(x2, y2);
-   f.lineTo(x2 - 48, y2);
-   f.lineTo(x2, y2 - 48);
-   f.closePath();
-   f.fillPath();
-
-   f.beginPath();
-   f.moveTo(x3, y3);
-   f.lineTo(x3 + 48, y3);
-   f.lineTo(x3, y3 - 48);
-   f.closePath();
-   f.fillPath();
-
-   // Canvas Boundary Lines (Painted 10px inside ropes)
-   g.lineStyle(2, 0xffd54f, alpha * 0.65);
-   g.strokeRect(x0 + 10, y0 + 10, (W - 10) * 2, (W - 10) * 2);
-
-   // Center Ring Fight Circle & Lethwei Emblem (အလယ်ဗဟို အဝိုင်းနှင့် အမှတ်တံဆိပ်)
-   g.lineStyle(2.5, 0xffc107, alpha * 0.65);
-   g.strokeCircle(rx, ry, 54);
-   g.lineStyle(1.5, 0xd32f2f, alpha * 0.5);
-   g.strokeCircle(rx, ry, 48);
-
-   // Crossed sacred cords emblem at center
-   g.lineStyle(2, 0xffd700, alpha * 0.75);
-   g.lineBetween(rx - 32, ry - 32, rx + 32, ry + 32);
-   g.lineBetween(rx + 32, ry - 32, rx - 32, ry + 32);
-   g.strokeRect(rx - 16, ry - 16, 32, 32);
-
-   // Spiritual Protection Shimmer inside square canvas
-   f.fillStyle(0xffd700, alpha * (0.04 + Math.sin(time * 3) * 0.02));
-   f.fillRect(x0 + 10, y0 + 10, (W - 10) * 2, (W - 10) * 2);
-
-   // 3. Four Straight Ropes on all 4 Sides (၄ ဘက် ကြိုးတန်း ၃ ထပ်စီ)
-   const ropeTiers = [
-    { offset: 0, color: 0xffd700, width: 3.5, core: true },
-    { offset: 4, color: 0xff9800, width: 2.5, core: false },
-    { offset: 8, color: 0xd32f2f, width: 2, core: false }
-   ];
-
-   for (const tier of ropeTiers) {
-    const o = tier.offset;
-    g.lineStyle(tier.width, tier.color, alpha * 0.95);
-    // Top side: (x0, y0 + o) to (x1, y1 + o)
-    g.lineBetween(x0, y0 + o, x1, y1 + o);
-    // Right side: (x1 - o, y1) to (x1 - o, y2)
-    g.lineBetween(x1 - o, y1, x1 - o, y2);
-    // Bottom side: (x3, y2 - o) to (x2, y2 - o)
-    g.lineBetween(x3, y2 - o, x2, y2 - o);
-    // Left side: (x0 + o, y0) to (x0 + o, y3)
-    g.lineBetween(x0 + o, y0, x0 + o, y3);
-
-    if (tier.core) {
-     g.lineStyle(1.5, 0xffffff, alpha * 0.95);
-     g.lineBetween(x0, y0 + o, x1, y1 + o);
-     g.lineBetween(x1 - o, y1, x1 - o, y2);
-     g.lineBetween(x3, y2 - o, x2, y2 - o);
-     g.lineBetween(x0 + o, y0, x0 + o, y3);
+   const rx=this.ring.x,ry=this.ring.y,W=this.ring.radius;
+   const age=this.ring.maxDuration-this.ring.duration;
+   const alpha=Math.min(1,age/.2,this.ring.duration/.6);
+   const x0=rx-W,x1=rx+W,y0=ry-W,y1=ry+W;
+   const back=this.ringBack;
+   f.fillStyle(0x07131c,alpha*.35);f.fillRoundedRect(x0-20,y0-13,W*2+40,W*2+40,10);
+   f.fillStyle(0x253641,alpha*.78);f.fillRoundedRect(x0-16,y0-16,W*2+32,W*2+32,8);
+   // Front apron gives the platform a little depth without changing the collision boundary.
+   f.fillStyle(0x14232d,alpha*.8);f.fillRoundedRect(x0-16,y1+3,W*2+32,14,5);
+   f.fillStyle(0xe9bf79,alpha*.27);f.fillRect(x0,y0,W*2,W*2);
+   f.lineStyle(2,0xffdfa0,alpha*.55);f.strokeRect(x0+9,y0+9,W*2-18,W*2-18);
+   f.lineStyle(2,0xffe8b5,alpha*.3);f.strokeCircle(rx,ry,42);
+   f.lineStyle(1,0xffe8b5,alpha*.2);f.strokeCircle(rx,ry,49);
+   for(const [cx,cy,dx,dy,color] of [[x0,y0,1,1,0xf05b61],[x1,y0,-1,1,0x659adb],[x0,y1,1,-1,0xf3e4cb],[x1,y1,-1,-1,0xf3e4cb]]){
+    f.fillStyle(color,alpha*.32);f.fillTriangle(cx,cy,cx+dx*43,cy,cx,cy+dy*43);
+   }
+   const corners=[[x0,y0],[x1,y0],[x1,y1],[x0,y1]];
+   for(let side=0;side<4;side++){
+    const [ax,ay]=corners[side],[bx,by]=corners[(side+1)%4];
+    const near=side===2?Math.abs(this.s.y-y1)<38&&this.s.x>x0-15&&this.s.x<x1+15:side===1?Math.abs(this.s.x-x1)<25:side===3?Math.abs(this.s.x-x0)<25:false;
+    const rope=side===2?g:back,opacity=alpha*(near?.28:.94);
+    for(const height of [8,18,28]){
+     const lean=side===1?height*.24:side===3?-height*.24:0;
+     rope.lineStyle(5,0x651c2a,opacity);rope.lineBetween(ax+lean,ay-height,bx+lean,by-height);
+     rope.lineStyle(3,0xeb4b56,opacity);rope.lineBetween(ax+lean,ay-height-1,bx+lean,by-height-1);
+     rope.lineStyle(1,0xffb3a3,opacity*.75);rope.lineBetween(ax+lean,ay-height-2,bx+lean,by-height-2);
+    }
+    for(const fraction of [.33,.67]){
+     const x=ax+(bx-ax)*fraction,y=ay+(by-ay)*fraction;
+     rope.lineStyle(3,0xffe3c3,opacity*.8);rope.lineBetween(x,y-30,x,y-6);
     }
    }
-
-   // 4. Vertical Canvas Spacer Straps (ကြိုးထိန်း ကြိုးပြားများ)
-   const strapOffsets = [0.33, 0.67];
-   for (const frac of strapOffsets) {
-    // Top side straps
-    const topX = x0 + W * 2 * frac;
-    g.lineStyle(5, 0x1a0608, alpha);
-    g.lineBetween(topX, y0 - 1, topX, y0 + 10);
-    g.lineStyle(2.5, 0xffca28, alpha);
-    g.lineBetween(topX, y0 - 1, topX, y0 + 10);
-    g.fillStyle(0xffffff, alpha);
-    g.fillCircle(topX, y0, 1.8);
-    g.fillCircle(topX, y0 + 4, 1.8);
-    g.fillCircle(topX, y0 + 8, 1.8);
-
-    // Bottom side straps
-    const botX = x3 + W * 2 * frac;
-    g.lineStyle(5, 0x1a0608, alpha);
-    g.lineBetween(botX, y2 + 1, botX, y2 - 10);
-    g.lineStyle(2.5, 0xffca28, alpha);
-    g.lineBetween(botX, y2 + 1, botX, y2 - 10);
-    g.fillCircle(botX, y2, 1.8);
-    g.fillCircle(botX, y2 - 4, 1.8);
-    g.fillCircle(botX, y2 - 8, 1.8);
-
-    // Left side straps
-    const leftY = y0 + W * 2 * frac;
-    g.lineStyle(5, 0x1a0608, alpha);
-    g.lineBetween(x0 - 1, leftY, x0 + 10, leftY);
-    g.lineStyle(2.5, 0xffca28, alpha);
-    g.lineBetween(x0 - 1, leftY, x0 + 10, leftY);
-    g.fillCircle(x0, leftY, 1.8);
-    g.fillCircle(x0 + 4, leftY, 1.8);
-    g.fillCircle(x0 + 8, leftY, 1.8);
-
-    // Right side straps
-    const rightY = y1 + W * 2 * frac;
-    g.lineStyle(5, 0x1a0608, alpha);
-    g.lineBetween(x1 + 1, rightY, x1 - 10, rightY);
-    g.lineStyle(2.5, 0xffca28, alpha);
-    g.lineBetween(x1 + 1, rightY, x1 - 10, rightY);
-    g.fillCircle(x1, rightY, 1.8);
-    g.fillCircle(x1 - 4, rightY, 1.8);
-    g.fillCircle(x1 - 8, rightY, 1.8);
-   }
-
-   // 5. Four Corner Posts & Padded Turnbuckle Cushions (ထောင့်တိုင်များနှင့် ထောင့်အကာအုံးများ)
-   const corners = [
-    { x: x0, y: y0, dx: -1, dy: -1, padColor: 0xd32f2f, name: 'Red Corner' },
-    { x: x1, y: y1, dx: 1, dy: -1, padColor: 0x1565c0, name: 'Blue Corner' },
-    { x: x2, y: y2, dx: 1, dy: 1, padColor: 0xf5f5f5, name: 'Neutral White' },
-    { x: x3, y: y3, dx: -1, dy: 1, padColor: 0xf5f5f5, name: 'Neutral White' }
-   ];
-
-   for (const c of corners) {
-    const postX = c.x + c.dx * 13;
-    const postY = c.y + c.dy * 13;
-
-    // Steel post base cylinder
-    g.fillStyle(0x1a1a1a, alpha);
-    g.fillCircle(postX, postY, 11);
-    g.lineStyle(2, 0x424242, alpha);
-    g.strokeCircle(postX, postY, 11);
-
-    // Steel Turnbuckle hook cables connecting post to corner pad
-    g.lineStyle(2.5, 0x9e9e9e, alpha * 0.9);
-    g.lineBetween(postX, postY, c.x, c.y);
-    g.lineStyle(1.5, 0xffffff, alpha * 0.9);
-    g.lineBetween(postX, postY, c.x, c.y);
-
-    // Heavy Padded Corner Turnbuckle Cushion (ထောင့်အကာအုံး)
-    g.fillStyle(c.padColor, alpha);
-    g.fillCircle(c.x, c.y, 11);
-
-    g.lineStyle(2, c.padColor === 0xf5f5f5 ? 0x880e4f : 0xffffff, alpha * 0.95);
-    g.strokeCircle(c.x, c.y, 11);
-
-    // Cushion horizontal laces (အကာအုံး အချည်ကြိုး ၃ တန်း)
-    g.lineStyle(1.5, 0xffffff, alpha * 0.9);
-    g.lineBetween(c.x - 6, c.y - 4, c.x + 6, c.y - 4);
-    g.lineBetween(c.x - 7, c.y, c.x + 7, c.y);
-    g.lineBetween(c.x - 6, c.y + 4, c.x + 6, c.y + 4);
-
-    // Polished Post Cap on top of steel post
-    g.fillStyle(0xffeb3b, alpha);
-    g.fillCircle(postX, postY, 4.5);
-    g.lineStyle(1.5, 0xffffff, alpha * 0.85);
-    g.lineBetween(postX - 7, postY, postX + 7, postY);
-    g.lineBetween(postX, postY - 7, postX, postY + 7);
-   }
-
-   // 6. Corner Ring Steps (ကြိုးဝိုင်း လှေကားငယ်များ)
-   // Red Corner Steps (Top-Left)
-   f.fillStyle(0x3e1014, alpha * 0.8);
-   f.fillRect(x0 - apron - 14, y0, 12, 34);
-   g.lineStyle(1.5, 0xffd54f, alpha * 0.7);
-   g.strokeRect(x0 - apron - 14, y0, 12, 34);
-   g.lineBetween(x0 - apron - 14, y0 + 11, x0 - apron - 2, y0 + 11);
-   g.lineBetween(x0 - apron - 14, y0 + 22, x0 - apron - 2, y0 + 22);
-
-   // Blue Corner Steps (Top-Right)
-   f.fillStyle(0x0d2b45, alpha * 0.8);
-   f.fillRect(x1 + apron + 2, y1, 12, 34);
-   g.lineStyle(1.5, 0x64b5f6, alpha * 0.7);
-   g.strokeRect(x1 + apron + 2, y1, 12, 34);
-   g.lineBetween(x1 + apron + 2, y1 + 11, x1 + apron + 14, y1 + 11);
-   g.lineBetween(x1 + apron + 2, y1 + 22, x1 + apron + 14, y1 + 22);
-
-   // 7. Ambient Spiritual Embers Floating Inside Arena
-   for (let i = 0; i < 8; i++) {
-    const ea = (i * Math.PI * 2) / 8 + time * 0.3;
-    const er = (W * 0.25) + ((i * 37) % (W * 0.55));
-    const ex = rx + Math.cos(ea) * er;
-    const ey = ry + Math.sin(ea) * er - ((time * 30 + i * 20) % 50);
-    g.fillStyle(0xffd54f, alpha * 0.7);
-    g.fillCircle(ex, ey, 2 + (i % 2));
-   }
+   corners.forEach(([x,y],i)=>{
+    const post=i<2?back:g,color=i===0?0xe94c59:i===1?0x558aca:0xeee1c9;
+    const fade=alpha*(Math.hypot(this.s.x-x,this.s.y-y)<35?.35:1);
+    post.fillStyle(0x111d27,fade);post.fillEllipse(x,y+3,24,10);
+    post.fillStyle(0x46596a,fade);post.fillRoundedRect(x-7,y-39,14,43,5);
+    post.fillStyle(0xa9bbc5,fade);post.fillRoundedRect(x-5,y-38,4,39,2);
+    post.fillStyle(0xd4e0e2,fade);post.fillEllipse(x,y-38,13,6);
+    for(const h of [9,19,29]){
+     post.fillStyle(0x752f39,fade);post.fillRoundedRect(x-11,y-h-5,22,10,4);
+     post.fillStyle(color,fade);post.fillRoundedRect(x-10,y-h-5,20,8,3);
+     post.lineStyle(1,0xfff3d6,fade*.7);post.lineBetween(x-5,y-h-3,x+4,y-h-3);
+    }
+    const light=this.ring.duration<2?.45+.35*Math.sin(time*8):.8;
+    post.fillStyle(0xffd779,fade*light);post.fillCircle(x,y-39,3);
+   });
 
    // 8. Clones: Real Animated Character Rigs & Spiritual Aura
    for (let i = 0; i < this.clones.length; i++) {
