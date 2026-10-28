@@ -60,17 +60,18 @@ export async function startHomeScene(canvas:HTMLCanvasElement,hero:HeroId,weapon
   canvas.width = portrait ? 420 : 600;
   canvas.height = 420;
   const g = canvas.getContext('2d')!;
-  const targetH = portrait ? 260 : 280;
+  const scale = portrait ? 2.5 : 2.7;
+  const groundY = canvas.height / 2 + 67 * scale;
+  const targetH = portrait ? 290 : 315;
   const targetW = image.width * (targetH / image.height);
   const cx = canvas.width / 2;
-  const groundY = canvas.height / 2 + (portrait ? 120 : 130);
   g.fillStyle = '#07151866';
   g.beginPath();
-  g.ellipse(cx, groundY, portrait ? 55 : 68, 11, 0, 0, Math.PI * 2);
+  g.ellipse(cx, groundY, portrait ? 45 : 65, 10, 0, 0, Math.PI * 2);
   g.fill();
   g.imageSmoothingEnabled = true;
   g.imageSmoothingQuality = 'high';
-  g.drawImage(image, cx - targetW / 2, groundY - targetH + 10, targetW, targetH);
+  g.drawImage(image, cx - targetW / 2, groundY - targetH + 8, targetW, targetH);
   canvas.dataset.ready = 'true';
   return;
  }
@@ -80,17 +81,18 @@ export async function startHomeScene(canvas:HTMLCanvasElement,hero:HeroId,weapon
   canvas.width = portrait ? 420 : 600;
   canvas.height = 420;
   const g = canvas.getContext('2d')!;
-  const targetH = portrait ? 260 : 280;
+  const scale = portrait ? 2.5 : 2.7;
+  const groundY = canvas.height / 2 + 67 * scale;
+  const targetH = portrait ? 290 : 315;
   const targetW = image.width * (targetH / image.height);
   const cx = canvas.width / 2;
-  const groundY = canvas.height / 2 + (portrait ? 120 : 130);
   g.fillStyle = '#07151866';
   g.beginPath();
-  g.ellipse(cx, groundY, portrait ? 55 : 68, 11, 0, 0, Math.PI * 2);
+  g.ellipse(cx, groundY, portrait ? 45 : 65, 10, 0, 0, Math.PI * 2);
   g.fill();
   g.imageSmoothingEnabled = true;
   g.imageSmoothingQuality = 'high';
-  g.drawImage(image, cx - targetW / 2, groundY - targetH + 10, targetW, targetH);
+  g.drawImage(image, cx - targetW / 2, groundY - targetH + 8, targetW, targetH);
   canvas.dataset.ready = 'true';
   return;
  }

@@ -4,12 +4,10 @@ export const PYUSAWHTI_RIG_ASSETS = {
 	body: { key: 'pyusawhti-body-v2', url: '/assets/characters/pyusawhti-body-v2.png' },
 	legLeft: { key: 'pyusawhti-leg-left-v2', url: '/assets/characters/pyusawhti-leg-left-v2.png' },
 	legRight: { key: 'pyusawhti-leg-right-v2', url: '/assets/characters/pyusawhti-leg-right-v2.png' },
-	armLeft: { key: 'pyusawhti-arm-left-v2', url: '/assets/characters/pyusawhti-arm-left-v2.png' },
-	armRight: { key: 'pyusawhti-arm-right-v2', url: '/assets/characters/pyusawhti-arm-right-v2.png' },
-	bow: { key: 'pyusawhti-bow-v2', url: '/assets/characters/pyusawhti-bow-v2.png' }
+	portrait: { key: 'pyusawhti-portrait-v2', url: '/assets/characters/pyusawhti-portrait-v2.png' }
 } as const;
 
-export type PyusawhtiPart = 'legs' | 'body' | 'bow' | 'bowIdle' | 'bowDraw' | 'bowRelease';
+export type PyusawhtiPart = 'legs' | 'body';
 
 const cachedImages = new Map<string, HTMLImageElement>();
 function getImage(url: string): HTMLImageElement | undefined {
@@ -38,7 +36,7 @@ export function drawPyusawhti(
 		g.scale(-1, 1);
 	}
 
-	const breathe = Math.sin(time * 3) * 1.2;
+	const breathe = Math.sin(time * 3) * 1.0;
 	const walkPhase = time * 12;
 	const walkBob = moving ? Math.abs(Math.sin(walkPhase)) * 1.5 : 0;
 	const legSwingL = moving ? Math.sin(walkPhase) * 0.35 : 0;
@@ -47,59 +45,33 @@ export function drawPyusawhti(
 	const bodyImg = getImage(PYUSAWHTI_RIG_ASSETS.body.url);
 	const legLImg = getImage(PYUSAWHTI_RIG_ASSETS.legLeft.url);
 	const legRImg = getImage(PYUSAWHTI_RIG_ASSETS.legRight.url);
-	const armLImg = getImage(PYUSAWHTI_RIG_ASSETS.armLeft.url);
-	const armRImg = getImage(PYUSAWHTI_RIG_ASSETS.armRight.url);
-	const bowImg = getImage(PYUSAWHTI_RIG_ASSETS.bow.url);
 
-	// 1. Legs
+	// 1. Moving Legs
 	if (legLImg?.complete && legLImg.naturalWidth) {
 		g.save();
 		g.translate(-6, 8 - walkBob);
 		g.rotate(legSwingL);
-		g.drawImage(legLImg, -6, 0, 13, 25);
+		g.drawImage(legLImg, -7, 0, 15, 27);
 		g.restore();
 	}
 	if (legRImg?.complete && legRImg.naturalWidth) {
 		g.save();
 		g.translate(6, 8 - walkBob);
 		g.rotate(legSwingR);
-		g.drawImage(legRImg, -6, 0, 13, 25);
+		g.drawImage(legRImg, -7, 0, 15, 27);
 		g.restore();
 	}
 
-	// 2. Fixed Body (Head + Crown + Quiver + Torso + Skirt)
-	if (bodyImg?.complete && bodyImg.naturalWidth) {
-		g.drawImage(bodyImg, -16, -26 + breathe - walkBob, 32, 50);
-	}
-
-	// 3. Arms & Bow
+	// 2. Upper Body with Arms & Bow (Dynamic recoil on shot)
 	const progress = attack > 0 ? Math.min(1, attack) : 0;
-	const drawDist = attack > 0 ? (progress < 0.68 ? -6 * (progress / 0.68) : 4 * Math.sin((progress - 0.68) / 0.32 * Math.PI)) : 0;
+	const drawDist = attack > 0 ? (progress < 0.68 ? -5 * (progress / 0.68) : 3 * Math.sin((progress - 0.68) / 0.32 * Math.PI)) : 0;
+	const drawX = Math.cos(aim) * drawDist;
+	const drawY = Math.sin(aim) * drawDist;
 
-	// Bow
-	if (bowImg?.complete && bowImg.naturalWidth) {
+	if (bodyImg?.complete && bodyImg.naturalWidth) {
 		g.save();
-		g.translate(10 + Math.cos(aim) * 6, -2 + breathe + Math.sin(aim) * 6);
-		g.rotate(aim);
-		g.drawImage(bowImg, -8, -26, 16, 52);
-		g.restore();
-	}
-
-	// Left arm (holding bow)
-	if (armLImg?.complete && armLImg.naturalWidth) {
-		g.save();
-		g.translate(-8, -4 + breathe);
-		g.rotate(aim * 0.45);
-		g.drawImage(armLImg, -5, 0, 12, 23);
-		g.restore();
-	}
-
-	// Right arm (draw string)
-	if (armRImg?.complete && armRImg.naturalWidth) {
-		g.save();
-		g.translate(8 + Math.cos(aim) * drawDist, -4 + breathe + Math.sin(aim) * drawDist);
-		g.rotate(aim * 0.25);
-		g.drawImage(armRImg, -5, 0, 12, 23);
+		g.translate(drawX, -6 + breathe - walkBob + drawY);
+		g.drawImage(bodyImg, -28, -26, 56, 52);
 		g.restore();
 	}
 
@@ -119,9 +91,7 @@ export class PyusawhtiRig {
 	private bodySprite: Phaser.GameObjects.Image;
 	private legLeftSprite: Phaser.GameObjects.Image;
 	private legRightSprite: Phaser.GameObjects.Image;
-	private armLeftSprite: Phaser.GameObjects.Image;
-	private armRightSprite: Phaser.GameObjects.Image;
-	private bowSprite: Phaser.GameObjects.Image;
+	private arrowFx: Phaser.GameObjects.Graphics;
 
 	constructor(private scene: Phaser.Scene) {
 		const ensure = (key: string, url: string) => {
@@ -132,16 +102,11 @@ export class PyusawhtiRig {
 		ensure(PYUSAWHTI_RIG_ASSETS.body.key, PYUSAWHTI_RIG_ASSETS.body.url);
 		ensure(PYUSAWHTI_RIG_ASSETS.legLeft.key, PYUSAWHTI_RIG_ASSETS.legLeft.url);
 		ensure(PYUSAWHTI_RIG_ASSETS.legRight.key, PYUSAWHTI_RIG_ASSETS.legRight.url);
-		ensure(PYUSAWHTI_RIG_ASSETS.armLeft.key, PYUSAWHTI_RIG_ASSETS.armLeft.url);
-		ensure(PYUSAWHTI_RIG_ASSETS.armRight.key, PYUSAWHTI_RIG_ASSETS.armRight.url);
-		ensure(PYUSAWHTI_RIG_ASSETS.bow.key, PYUSAWHTI_RIG_ASSETS.bow.url);
 
-		this.legLeftSprite = scene.add.image(0, 0, PYUSAWHTI_RIG_ASSETS.legLeft.key).setOrigin(0.5, 0.1);
-		this.legRightSprite = scene.add.image(0, 0, PYUSAWHTI_RIG_ASSETS.legRight.key).setOrigin(0.5, 0.1);
-		this.bodySprite = scene.add.image(0, 0, PYUSAWHTI_RIG_ASSETS.body.key).setOrigin(0.5, 0.5);
-		this.armLeftSprite = scene.add.image(0, 0, PYUSAWHTI_RIG_ASSETS.armLeft.key).setOrigin(0.5, 0.15);
-		this.bowSprite = scene.add.image(0, 0, PYUSAWHTI_RIG_ASSETS.bow.key).setOrigin(0.2, 0.5);
-		this.armRightSprite = scene.add.image(0, 0, PYUSAWHTI_RIG_ASSETS.armRight.key).setOrigin(0.5, 0.15);
+		this.legLeftSprite = scene.add.image(0, 0, PYUSAWHTI_RIG_ASSETS.legLeft.key).setOrigin(0.5, 0.12);
+		this.legRightSprite = scene.add.image(0, 0, PYUSAWHTI_RIG_ASSETS.legRight.key).setOrigin(0.5, 0.12);
+		this.bodySprite = scene.add.image(0, 0, PYUSAWHTI_RIG_ASSETS.body.key).setOrigin(0.5, 0.46);
+		this.arrowFx = scene.add.graphics().setDepth(3.3);
 	}
 
 	render(
@@ -155,17 +120,17 @@ export class PyusawhtiRig {
 		duration = 0.28
 	) {
 		const flip = Math.cos(aim) < 0;
-		const breathe = Math.sin(time * 3) * 1.2;
+		const breathe = Math.sin(time * 3) * 0.9;
 		const walkPhase = time * 12;
 		const walkBob = moving ? Math.abs(Math.sin(walkPhase)) * 1.5 : 0;
-		// Standardized scale matching 75px hero height
-		const scale = 0.092;
+		// Standardized scale matching 78px hero height
+		const scale = 0.068;
 
 		// 1. Moving Legs - Walk swing cycle
 		const legSwingL = moving ? Math.sin(walkPhase) * 0.35 : 0;
 		const legSwingR = moving ? Math.sin(walkPhase + Math.PI) * 0.35 : 0;
 		const hipOffsetY = 10 - walkBob;
-		const hipSpread = 5 * (flip ? -1 : 1);
+		const hipSpread = 4.5 * (flip ? -1 : 1);
 
 		this.legLeftSprite
 			.setPosition(x - hipSpread, y + hipOffsetY)
@@ -183,77 +148,78 @@ export class PyusawhtiRig {
 			.setDepth(3.11)
 			.setVisible(true);
 
-		// 2. Fixed Body (Head + Crown + Quiver + Torso + Skirt)
-		this.bodySprite
-			.setPosition(x, y - 5 + breathe - walkBob)
-			.setScale(scale, scale)
-			.setFlipX(flip)
-			.setDepth(3.15)
-			.setVisible(true);
-
-		// 3. Moving Arms & Bow with Dynamic Draw / Release
+		// 2. Dynamic Bow Draw & Shot Recoil
 		const progress = duration > 0 ? Math.max(0, Math.min(1, 1 - (attack / duration))) : 0;
 		let drawDist = 0;
 		if (attack > 0) {
-			if (progress < 0.68) {
-				// String draw
-				drawDist = -6 * (progress / 0.68);
+			if (progress < 0.65) {
+				// Bow draw back
+				drawDist = -5 * (progress / 0.65);
 			} else {
-				// Arrow release
-				const t = (progress - 0.68) / 0.32;
-				drawDist = 3.5 * Math.sin(t * Math.PI);
+				// Arrow release kick
+				const t = (progress - 0.65) / 0.35;
+				drawDist = 3 * Math.sin(t * Math.PI);
 			}
 		}
 
-		// Bow extended towards target
-		const bowX = x + (flip ? -7 : 7) + Math.cos(aim) * 6;
-		const bowY = y - 2 + breathe - walkBob + Math.sin(aim) * 6;
+		const drawX = Math.cos(aim) * drawDist;
+		const drawY = Math.sin(aim) * drawDist;
 
-		this.bowSprite
-			.setPosition(bowX, bowY)
-			.setScale(scale * 1.05, scale * 1.05)
-			.setRotation(aim)
-			.setFlipY(flip)
-			.setDepth(3.22)
-			.setVisible(true);
-
-		// Left Arm (holding bow)
-		this.armLeftSprite
-			.setPosition(x + (flip ? -6 : 6), y - 5 + breathe - walkBob)
+		// 3. Crisp Upper Body with Circlet, Quiver, Sash, Torso & Sacred Bow
+		this.bodySprite
+			.setPosition(x + drawX, y - 6 + breathe - walkBob + drawY)
 			.setScale(scale, scale)
-			.setRotation(aim * 0.45)
 			.setFlipX(flip)
 			.setDepth(3.2)
 			.setVisible(true);
 
-		// Right Arm (drawing string)
-		const drawX = Math.cos(aim) * drawDist;
-		const drawY = Math.sin(aim) * drawDist;
+		// 4. Solar Arrow VFX on Attack
+		this.arrowFx.clear();
+		if (attack > 0) {
+			const bowTipX = x + drawX + Math.cos(aim) * 20;
+			const bowTipY = y + drawY + Math.sin(aim) * 20;
 
-		this.armRightSprite
-			.setPosition(x + (flip ? 7 : -7) + drawX, y - 5 + breathe - walkBob + drawY)
-			.setScale(scale, scale)
-			.setRotation(aim * 0.25)
-			.setFlipX(flip)
-			.setDepth(3.24)
-			.setVisible(true);
+			if (progress < 0.65) {
+				// Gathering golden solar energy
+				const charge = progress / 0.65;
+				this.arrowFx.fillStyle(0xffd54f, charge * 0.9);
+				this.arrowFx.fillCircle(bowTipX, bowTipY, 2.5 * charge);
+				this.arrowFx.lineStyle(1.5, 0xffeb3b, charge * 0.7);
+				this.arrowFx.strokeCircle(bowTipX, bowTipY, 4.5 * charge);
+			} else {
+				// Loose blazing arrow beam
+				const intensity = Math.sin((progress - 0.65) / 0.35 * Math.PI);
+				this.arrowFx.lineStyle(2.5, 0xffd54f, intensity * 0.95);
+				this.arrowFx.lineBetween(
+					bowTipX,
+					bowTipY,
+					bowTipX + Math.cos(aim) * 28,
+					bowTipY + Math.sin(aim) * 28
+				);
+				this.arrowFx.lineStyle(1.2, 0xffffff, intensity);
+				this.arrowFx.lineBetween(
+					bowTipX + Math.cos(aim) * 8,
+					bowTipY + Math.sin(aim) * 8,
+					bowTipX + Math.cos(aim) * 30,
+					bowTipY + Math.sin(aim) * 30
+				);
+				this.arrowFx.fillStyle(0xfff59d, intensity);
+				this.arrowFx.fillCircle(bowTipX + Math.cos(aim) * 28, bowTipY + Math.sin(aim) * 28, 2.8);
+			}
+		}
 	}
 
 	clear() {
 		this.bodySprite.setVisible(false);
 		this.legLeftSprite.setVisible(false);
 		this.legRightSprite.setVisible(false);
-		this.armLeftSprite.setVisible(false);
-		this.armRightSprite.setVisible(false);
-		this.bowSprite.setVisible(false);
+		this.arrowFx.clear();
 	}
 
 	campLayer(offset: number) {
 		this.legLeftSprite.setDepth(3.1 + offset);
 		this.legRightSprite.setDepth(3.11 + offset);
-		this.bodySprite.setDepth(3.15 + offset);
-		this.armLeftSprite.setDepth(3.2 + offset);
-		this.bowSprite.setDepth(3.22 + offset);
-		this.armRightSprite.setDepth(3.24 + offset);
+		this.bodySprite.setDepth(3.2 + offset);
+		this.arrowFx.setDepth(3.3 + offset);
 	}
 }
