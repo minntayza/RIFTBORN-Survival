@@ -20,7 +20,8 @@ scene.onArenaReady=()=>{
  scene.cameras.main.setZoom(2);scene.paused=true;scene.render();
  const e=scene.spawn('basic');if(e){e.x=scene.x+90;e.y=scene.y;e.hp=e.max=1e6;e.speed=0;e.damage=0;}
 };
-document.querySelector<HTMLButtonElement>('#pause')!.onclick=e=>{scene.paused=!scene.paused;(e.target as HTMLButtonElement).textContent=scene.paused?'Resume':'Pause';};
-document.querySelector('#punch')!.addEventListener('click',()=>{scene.paused=true;scene.attack=0;scene.angle=0;scene.basicAttack();step(5);scene.render();});
+document.querySelector<HTMLButtonElement>('#pause')!.onclick=e=>{scene.paused=!scene.paused;if(!scene.paused)scene.tweens.resumeAll();(e.target as HTMLButtonElement).textContent=scene.paused?'Resume':'Pause';};
+document.querySelector('#punch')!.addEventListener('click',()=>{scene.paused=true;scene.attack=0;scene.angle=0;scene.basicAttack();step(7);scene.tweens.pauseAll();scene.render();});
+document.querySelector('#spirit')!.addEventListener('click',()=>{const e=scene.enemies.find(e=>e.active);if(!e)return;e.x=scene.x+25;e.y=scene.y;scene.identityCharge=100;const procs=scene.identityProcs;scene.paused=true;scene.attack=0;scene.angle=0;scene.basicAttack();step(7);scene.tweens.pauseAll();scene.render();check('Warrior Spirit fires on contact and consumes its charge',scene.identityProcs===procs+1&&scene.identityCharge<100);});
 document.querySelector('#walk')!.addEventListener('click',()=>{scene.touch={enabled:true,x:1,y:0};step(8);scene.touch={enabled:false,x:0,y:0};scene.render();});
 new Phaser.Game({type:Phaser.AUTO,parent:'game',width:1100,height:620,scene:[scene],audio:{noAudio:true},banner:false});

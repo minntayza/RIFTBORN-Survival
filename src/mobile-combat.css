@@ -138,3 +138,12 @@ html,body{width:100%;height:100%;margin:0}
  .combat-hud.is-touch.is-camp .combat-notice{top:calc(var(--hud-top) + 123px)}
  .combat-hud.is-touch.is-camp.has-boss .combat-notice{top:calc(var(--hud-top) + 145px)}
 }
+
+/* Upgrade benefits must remain readable before selection, including narrow screens. */
+.levelup-panel .upgrade-cards .choice-card .card-benefit{display:block!important;overflow:visible!important;max-height:none!important;height:auto!important;-webkit-line-clamp:unset!important;white-space:normal!important;flex-shrink:0}
+@media(max-width:600px){
+ .levelup-panel .cards.upgrade-cards{grid-template-columns:1fr!important;max-height:none!important;overflow:visible!important}
+ .levelup-panel .upgrade-cards .choice-card{height:auto!important;max-height:none!important;min-height:0!important;overflow:visible!important}
+ .levelup-panel{max-height:90dvh;overflow-y:auto!important}
+ .levelup-panel .upgrade-cards .choice-card .upgrade-demo{width:64px!important;height:64px!important}
+}

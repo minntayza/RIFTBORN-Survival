@@ -62,6 +62,8 @@ export const WEAPON_EFFECTS:Record<WeaponId,Geometry>={
  const thickness=articulated==='samurai'?size/reach:size;
  const local={x:(tipPoint.x-gripPoint.x)*size/128,y:(tipPoint.y-gripPoint.y)*thickness/128*samuraiFacing};
  const tip={x:grip.x+Math.cos(rotation)*local.x-Math.sin(rotation)*local.y,y:grip.y+Math.sin(rotation)*local.x+Math.cos(rotation)*local.y};
+ // Halve the complete wrap strike envelope, including its grip offset.
+ if(isLethweiWeapon(id)){grip={x:x+(grip.x-x)*.5,y:y+(grip.y-y)*.5};tip.x=x+(tip.x-x)*.5;tip.y=y+(tip.y-y)*.5;}
  const hook=articulated&&id==='kama'?{x:grip.x+Math.cos(rotation)*65*size/128,y:grip.y+Math.sin(rotation)*65*size/128}:undefined;
  return {grip,tip,rotation,size,thickness,hook,flipY:(articulated==='samurai'||articulated==='tank'&&shield)&&facing<0,originX:(64+gripPoint.x)/128,originY:(64+gripPoint.y)/128};
 }
@@ -72,7 +74,7 @@ export function meleeContact(id:WeaponId,x:number,y:number,aim:number,enemy:Poin
  const pose=weaponPose(id,x,y,aim,i/16*.55,true,sequence,offhand,false,reach,arcScale,articulated),tip=pose.tip;
  if(articulated&&id==='kama'){if(pose.hook&&(segmentDistance(enemy,pose.grip,pose.hook)<=radius+11||segmentDistance(enemy,pose.hook,tip)<=radius+11))return true;}
  else if(id==='hammer'||id==='kama'){if(Math.hypot(enemy.x-tip.x,enemy.y-tip.y)<=radius+(id==='hammer'?14:11))return true;}
- else if(isLethweiWeapon(id)){if(Math.hypot(enemy.x-tip.x,enemy.y-tip.y)<=radius+18||segmentDistance(enemy,pose.grip,tip)<=radius+14)return true;}
+ else if(isLethweiWeapon(id)){if(Math.hypot(enemy.x-tip.x,enemy.y-tip.y)<=radius+9||segmentDistance(enemy,pose.grip,tip)<=radius+7)return true;}
  else if(id==='shield'||id==='spiked'){const dx=-Math.sin(pose.rotation)*20,dy=Math.cos(pose.rotation)*20;if(segmentDistance(enemy,{x:tip.x-dx,y:tip.y-dy},{x:tip.x+dx,y:tip.y+dy})<=radius+5)return true;}
  else{const start=id==='naginata'?.7:.2;const a={x:pose.grip.x+(tip.x-pose.grip.x)*start,y:pose.grip.y+(tip.y-pose.grip.y)*start};if(segmentDistance(enemy,a,tip)<=radius+4)return true;}
  }return false;

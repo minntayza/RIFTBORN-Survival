@@ -27,12 +27,12 @@ export class FighterMotion{
   const distance=Math.hypot(x-old.x,y-old.y),moving=distance>.03&&distance<80;
   const target=moving?Math.min(1,distance/dt/130):0;
   this.stride+=(target-this.stride)*(1-Math.exp(-dt*16));
-  if(moving)this.phase+=distance/34*Math.PI*2;
+  if(moving)this.phase+=distance/60*Math.PI*2;
   return {gait:this.phase,stride:this.stride};
  }
 }
 export function fighterPose(time=0,moving=false,attack=0,sequence=0,motion?:{gait:number;stride:number},duration=.2,aim=0):Pose[]{
- const gait=motion?.gait??time*9,stride=motion?.stride??(moving?1:0),bounce=(1-Math.cos(gait*2))*stride*.8+Math.sin(time*3)*.25*(1-stride);
+ const gait=motion?.gait??time*5,stride=motion?.stride??(moving?1:0),bounce=(1-Math.cos(gait*2))*stride*.4+Math.sin(time*3)*.25*(1-stride);
  const progress=Math.max(0,Math.min(1,1-attack/duration)),punch=attack>0?Math.sin(progress*Math.PI):0;
  const out:Pose[]=[];
  const piece=(part:FighterPart,p:Point,w:number,h:number,ox=.5,oy=.12,r=0)=>out.push({part,...p,w,h,ox,oy,r});
@@ -44,8 +44,8 @@ export function fighterPose(time=0,moving=false,attack=0,sequence=0,motion?:{gai
  };
  // Each leg is a continuous drawing: only the hip pivot rotates.
  for(const [side,index] of [['left',0],['right',1]] as const){
-  const phase=gait+index*Math.PI,swing=Math.sin(phase)*stride;
-  piece(`${side}Leg`,{x:index?11:-11,y:14-bounce},index?38:39,65,index?.36:.62,.08,swing*.11);
+  const phase=gait+index*Math.PI,swing=Math.sin(phase)*stride,lift=Math.max(0,Math.sin(phase))*stride*1.1;
+  piece(`${side}Leg`,{x:index?11:-11,y:14-bounce-lift},index?38:39,65,index?.36:.62,.08,swing*.065);
  }
  const arm=(side:'left'|'right',near:boolean)=>{
   const active=(sequence%2===0)===near,extension=active?punch:0;
@@ -59,7 +59,7 @@ export function fighterPose(time=0,moving=false,attack=0,sequence=0,motion?:{gai
 
  };
  arm('right',false);
- piece('body',{x:punch*1.4,y:-60-bounce},64,90,.5,0,punch*.025);
+ piece('body',{x:punch*1.4+Math.sin(gait)*stride*.4,y:-60-bounce},64,90,.5,0,punch*.025+Math.sin(gait)*stride*.004);
  arm('left',true);
  return out;
 }

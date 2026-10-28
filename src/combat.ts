@@ -795,11 +795,25 @@ export class ArenaScene extends Phaser.Scene {
         }else if(id==='shield'||id==='spiked'){
             g.lineStyle(4,color,.8);g.beginPath();g.arc(tip.x,tip.y,id==='spiked'?25:20,aim-1.1,aim+1.1);g.strokePath();if(id==='spiked')this.burst(tip.x,tip.y,color,5);
         }else if(id==='nodachi'){g.lineStyle(3,color,.8);g.lineBetween(tip.x-12,tip.y-10,tip.x+12,tip.y+10);this.burst(tip.x,tip.y,color,3);
-        }else if(this.hero==='lethwei'||['hempwraps','ironwraps','tigerwraps'].includes(id)){g.lineStyle(3,color,.85);g.strokeCircle(tip.x,tip.y,16);this.burst(tip.x,tip.y,color,4);}
+        }else if(this.hero==='lethwei'||['hempwraps','ironwraps','tigerwraps'].includes(id)){
+            // Trace the same swept fist positions used by meleeContact, including reach upgrades.
+            const reach=strike.range/WEAPONS[id].range,arcScale=strike.arc/WEAPONS[id].arc;
+            const waveColor=id==='ironwraps'?0xb9e7ff:id==='tigerwraps'?0xffbc67:0xffdfae;
+            const samples=Array.from({length:17},(_,i)=>weaponPose(id,this.x,this.y,aim,i/16*.55,true,sequence,false,false,reach,arcScale,this.hero==='lethwei'?false:this.hero==='ninja'));
+            for(const p of samples){
+                g.lineStyle(14,waveColor,strike.echo?.025:.045);g.lineBetween(p.grip.x,p.grip.y,p.tip.x,p.tip.y);
+                g.fillStyle(waveColor,strike.echo?.025:.045);g.fillCircle(p.tip.x,p.tip.y,9);
+            }
+            // Bright leading edge makes the reach visible without obscuring enemies.
+            g.lineStyle(3,waveColor,strike.echo?.4:.85);g.beginPath();
+            samples.forEach((p,i)=>{const a=Math.atan2(p.tip.y-this.y,p.tip.x-this.x),x=p.tip.x+Math.cos(a)*9,y=p.tip.y+Math.sin(a)*9;if(i===0)g.moveTo(x,y);else g.lineTo(x,y);});g.strokePath();
+            const middle=samples[8];g.lineStyle(2,0xfff6e8,.7);g.lineBetween(this.x+Math.cos(aim)*20,this.y+Math.sin(aim)*20,middle.tip.x,middle.tip.y);
+            if(connected)this.burst(tip.x,tip.y,waveColor,4);
+        }
         else if(strike.echo){g.lineStyle(2,color,.6);g.beginPath();g.arc(pose.grip.x,pose.grip.y,Math.hypot(tip.x-pose.grip.x,tip.y-pose.grip.y),aim-.7,aim+.7);g.strokePath();}
         this.tweens.add({targets:g,alpha:0,duration:id==='hammer'?350:140,onComplete:()=>g.destroy()});
         if(!strike.echo&&this.hero==='samurai'&&identityReady){this.identityCharge=0;this.identityProcs++;this.windSlash(WEAPONS[id].damage*.7,tip,aim);}
-        if(!strike.echo&&this.hero==='lethwei'&&identityReady){this.identityCharge=0;this.identityProcs++;for(const e of this.enemies)if(e.active&&Math.hypot(e.x-tip.x,e.y-tip.y)<130+e.r)this.hit(e,WEAPONS[id].damage*1.2,45,false,false,'Warrior Spirit');this.impactRing(tip.x,tip.y,130,0xff5722);this.audio.play('tank-slam');}
+        if(!strike.echo&&connected&&this.hero==='lethwei'&&identityReady){this.notifyCombat('WARRIOR SPIRIT · EMPOWERED HIT!');const spiritLabel=this.add.text(tip.x,tip.y-30,'WARRIOR SPIRIT!',{fontSize:'14px',fontStyle:'bold',color:'#ffe6a0',stroke:'#442008',strokeThickness:4}).setOrigin(.5).setDepth(12);this.tweens.add({targets:spiritLabel,y:tip.y-65,alpha:0,duration:850,onComplete:()=>spiritLabel.destroy()});this.identityCharge=0;this.identityProcs++;for(const e of this.enemies)if(e.active&&Math.hypot(e.x-tip.x,e.y-tip.y)<130+e.r)this.hit(e,WEAPONS[id].damage*1.2,45,false,false,'Warrior Spirit');this.impactRing(tip.x,tip.y,130,0xff5722);this.audio.play('tank-slam');}
         if(!strike.echo){if(this.hero==='samurai'&&this.u('dragon-slash')&&sequence%3===0){const level=this.u('dragon-slash'),reach=235+level*20+(this.evolved('dragon-slash')?70:0);this.dash=Math.max(this.dash,.16);this.invuln=Math.max(this.invuln,.16);this.dashX=Math.cos(aim);this.dashY=Math.sin(aim);for(const e of this.enemies){const dx=e.x-this.x,dy=e.y-this.y,d=Math.hypot(dx,dy),a=Math.atan2(dy,dx);if(e.active&&d<reach+e.r&&Math.abs(Phaser.Math.Angle.Wrap(a-aim))<.62){this.hit(e,WEAPONS[id].damage*(.6+level*.25),WEAPONS[id].knock);e.burn=Math.max(e.burn,1.4+level*.45+(this.evolved('dragon-slash')?1.2:0));if(this.evolved('dragon-slash'))this.hit(e,WEAPONS[id].damage*.4,0);}}this.visuals.samuraiSkills.dragon(this.x,this.y,aim,reach,level+(this.evolved('dragon-slash')?1:0),this.elapsed);this.audio.play('dragon-slash');}if(sequence%3===0&&(this.evolved('wide')||this.evolved('spikes'))){this.slash(strike.damage*.4,strike.range,Math.PI*2,aim,this.hero!=='tank');if(this.hero==='tank')this.visuals.tankSkills.slam(this.x,this.y,strike.range,this.u('spikes'),this.elapsed,'crown');else this.impactRing(this.x,this.y,strike.range,0xb8abd1);}if(this.evolution.reach>=2)this.windSlash(WEAPONS[id].damage*(.5+this.evolution.reach*.2),tip,aim);if(this.u('wind')){this.windSlash(WEAPONS[id].damage*.6,tip,aim);if(this.evolved('wind')){this.windSlash(WEAPONS[id].damage*.6,tip,aim+.2);}}if(this.evolution.power>=2){for(const e of this.enemies)if(e.active&&Math.hypot(e.x-tip.x,e.y-tip.y)<105+e.r)this.hit(e,WEAPONS[id].damage*.25*this.evolution.power,12);this.impactRing(tip.x,tip.y,105);}}
         if(this.hero==='tank'&&this.blockCharge>=100){this.blockCharge=0;this.slash(WEAPONS[id].damage*2,170,Math.PI*2,aim,false);this.visuals.tankSkills.slam(this.x,this.y,170,1,this.elapsed,'charge');}
     }

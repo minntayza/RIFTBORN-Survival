@@ -24,3 +24,11 @@ test('shorter Samurai blades keep grips and width while reducing contact reach',
   for(const aim of [0,Math.PI]){const p=weaponPose(id,0,0,aim,.55,true,0,false,false,1,1,'samurai');assert.equal(meleeContact(id,0,0,aim,p.tip,2,0,1,1,'samurai'),true);const distant={x:p.grip.x+(p.tip.x-p.grip.x)*1.6,y:p.grip.y+(p.tip.y-p.grip.y)*1.6};assert.equal(meleeContact(id,0,0,aim,distant,1,0,1,1,'samurai'),false);}
  }
 });
+
+test('Lethwei short reach keeps close contact and rejects distant punches',()=>{
+ for(const id of ['hempwraps','ironwraps','tigerwraps'] as const){
+  assert.ok(WEAPONS[id].range<=60);
+  assert.ok(meleeContact(id,0,0,0,{x:25,y:5},0));
+  assert.equal(meleeContact(id,0,0,0,{x:70,y:5},0),false);
+ }
+});
