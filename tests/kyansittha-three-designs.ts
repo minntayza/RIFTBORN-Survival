@@ -1,5 +1,5 @@
 export {};
-const image=new Image(),canvases=[...document.querySelectorAll<HTMLCanvasElement>('canvas')],background=document.querySelector<HTMLSelectElement>('#background')!;
+const image=new Image(),canvases=Array.from(document.querySelectorAll<HTMLCanvasElement>('canvas')),background=document.querySelector<HTMLSelectElement>('#background')!;
 const regions:{x:number;y:number;w:number;h:number}[]=[];
 function draw(){canvases.forEach((canvas,i)=>{const g=canvas.getContext('2d')!,r=regions[i];if(!r)return;g.clearRect(0,0,560,760);if(background.value==='light'){g.fillStyle='#ecdfc6';g.fillRect(0,0,560,760);}g.imageSmoothingEnabled=true;g.imageSmoothingQuality='high';const scale=Math.min(500/r.w,680/r.h);g.save();g.translate((560-r.w*scale)/2,(760-r.h*scale)/2);g.scale(scale,scale);g.translate(-r.x,-r.y);
 // Clip atlas gutters so neighboring spear/cape tips never appear in another canvas.

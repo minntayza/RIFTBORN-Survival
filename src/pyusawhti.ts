@@ -1,9 +1,9 @@
 import {skillIcon} from './skill-icons';
 
 export const PYUSAWHTI_SKILLS = {
- banepierce: { name: 'Five-Bane Pierce', cooldown: 14, icon: '☼', description: 'Unleash a massive 96px-wide solar laser beam arrow that incinerates all enemies in its path with devastating damage.' },
+ banepierce: { name: 'Crownpiercer', cooldown: 14, icon: '☼', description: 'Loose a silver-and-teal crown arrow through a 96px-wide corridor, piercing enemies with devastating damage.' },
  multishot: { name: 'Gale Volley', cooldown: 9, icon: '➳', description: 'Loose 7 piercing arrows in a wide spread, decimating incoming crowds.' },
- windfocus: { name: 'Wind Focus', cooldown: 12, icon: '彡', description: 'Enter extreme focus for 5s: gain +80% attack speed, +25% move speed, and infinite arrow pierce.' }
+ windfocus: { name: 'Moonwind Focus', cooldown: 12, icon: '彡', description: 'Gather moonwind for 5s: gain +80% attack speed, +25% move speed, and 12 base arrow pierce.' }
 } as const;
 
 export type PyusawhtiSkill = keyof typeof PYUSAWHTI_SKILLS;
@@ -30,13 +30,9 @@ export function replacePyusawhtiSkill(pair: PyusawhtiLoadout, slot: number, skil
 }
 
 export function pyusawhtiSkillIcon(id: PyusawhtiSkill) {
- if (id === 'multishot') {
-  return `<svg viewBox="0 0 32 32" class="skill-svg-icon" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 28 L28 4 M16 4 L28 4 L28 16 M8 20 L24 8 M12 24 L24 12" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
- }
- if (id === 'windfocus') {
-  return `<svg viewBox="0 0 32 32" class="skill-svg-icon" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 12 Q14 6 22 10 Q28 14 26 18 Q23 22 18 20 M6 18 Q16 14 24 16 Q30 20 27 24 M2 24 Q10 22 18 24" stroke-linecap="round"/><circle cx="24" cy="8" r="2" fill="currentColor"/></svg>`;
- }
- return `<svg viewBox="0 0 32 32" class="skill-svg-icon" fill="none" stroke="currentColor" stroke-width="2"><circle cx="16" cy="16" r="6" fill="#ffd700" stroke="#b8860b"/><path d="M16 2 L16 8 M16 24 L16 30 M2 16 L8 16 M24 16 L30 16 M6 6 L10 10 M22 22 L26 26 M6 26 L10 22 M22 10 L26 6" stroke="#ffd700" stroke-linecap="round"/></svg>`;
+ const tiles:Record<PyusawhtiSkill,[number,number]>={banepierce:[0,0],windfocus:[100,0],multishot:[0,100]};
+ const [x,y]=tiles[id];
+ return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="${x+4} ${y+4} 92 92" class="skill-svg-icon" data-skill-icon="${id}" aria-hidden="true" style="border-radius:50%;overflow:hidden"><image href="/assets/ui/archer-ability-emblems-v1.png" width="200" height="200"/></svg>`;
 }
 
 export function pyusawhtiPortrait(cls='art-image'){return `<svg class="${cls}" viewBox="0 0 128 160" role="img" aria-label="Archer King full-body portrait"><image href="/assets/characters/archer-king-portrait-v1.png" x="8" y="0" width="112" height="160" preserveAspectRatio="xMidYMid meet"/></svg>`;}

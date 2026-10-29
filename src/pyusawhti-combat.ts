@@ -42,6 +42,8 @@ export class PyusawhtiCombat {
 	cooldowns: [number, number] = [0, 0];
 	windFocusTime = 0;
 	readonly arrows: Arrow[] = [];
+ private glints:{x:number;y:number;age:number;crown:boolean}[]=[];
+ private releases:{x:number;y:number;angle:number;age:number}[]=[];
  private pendingShots:{remaining:number;aim:number;arrows:Arrow[]}[]=[];
 	readonly bursts: SunBurst[] = [];
 	readonly laserBeams: SolarLaserBeam[] = [];
@@ -97,7 +99,7 @@ export class PyusawhtiCombat {
 		} else if (id === 'windfocus') {
 			this.windFocusTime = 5 + s.u('windfocuscard') * 1.2;
 			s.audio.play('overdrive');
-			s.notifyCombat('WIND FOCUS');
+			s.notifyCombat('MOONWIND FOCUS');
 		} else if (id === 'banepierce') {
 			// Five-Bane Pierce: Devastating 96px-wide (3 enemies wide) Solar Laser Beam Arrow
 			const baseDmg = (WEAPONS[s.weapon]?.damage || 28) * 5.4 * (1 + s.u('beasthunter') * 0.35);
@@ -150,7 +152,7 @@ export class PyusawhtiCombat {
 
 			s.cameras.main.shake(200, 0.007);
 			s.audio.play('tank-slam');
-			s.notifyCombat('FIVE-BANE PIERCE · SOLAR RAY');
+			s.notifyCombat('CROWNPIERCER');
 		}
 		return true;
 	}
@@ -201,6 +203,7 @@ export class PyusawhtiCombat {
   for(let i=this.pendingShots.length-1;i>=0;i--){const shot=this.pendingShots[i];shot.remaining-=dt;if(shot.remaining>1e-8)continue;
    const origin=pyusawhtiArrowOrigin(this.s.x,this.s.y,shot.aim);
    for(const arrow of shot.arrows){arrow.x=origin.x;arrow.y=origin.y;this.arrows.push(arrow);}
+   this.releases.push({...origin,angle:shot.aim,age:0});
    this.s.audio.play('reload-swish');this.pendingShots.splice(i,1);
   }
  }
@@ -230,6 +233,7 @@ export class PyusawhtiCombat {
 		if (s.paused) return;
 
   this.releasePendingShots(dt);
+  for(const list of [this.glints,this.releases]){for(let i=list.length-1;i>=0;i--){list[i].age+=dt;if(list[i].age>.32)list.splice(i,1);}}
 
 		for (let i = 0; i < 2; i++) {
 			this.cooldowns[i as 0 | 1] = Math.max(0, this.cooldowns[i as 0 | 1] - dt);
@@ -266,6 +270,7 @@ export class PyusawhtiCombat {
 					const perp = Math.abs(dx * nx + dy * ny);
 					if (perp <= halfWidth + e.r) {
 						b.hitEnemies.add(e);
+      this.glints.push({x:e.x,y:e.y,age:0,crown:true});
 						const isBoss = ['elite', 'boss', 'shooterBoss', 'commander'].includes(e.type);
 						const dmg = b.damage * (isBoss ? (1 + s.u('beasthunter') * 0.3) : 1);
 						s.hit(e, dmg, 85);
@@ -299,6 +304,7 @@ export class PyusawhtiCombat {
 				const hitRadius = e.r + (a.giant ? 24 : 8);
 				if (Math.hypot(e.x - a.x, e.y - a.y) <= hitRadius) {
 					a.hitEnemies.add(e);
+     this.glints.push({x:e.x,y:e.y,age:0,crown:!!a.giant});
 					const isBoss = ['elite', 'boss', 'shooterBoss', 'commander'].includes(e.type);
 					s.hit(e, a.damage * (isBoss ? (1 + s.u('beasthunter') * 0.3) : 1), a.giant ? 65 : 18);
 					if (isBoss && e.hp <= 0 && s.evolved('beasthunter')) {
@@ -306,7 +312,7 @@ export class PyusawhtiCombat {
 						s.heal(25);
 						s.notifyCombat('LEGEND OF BAGAN · INVULNERABLE');
 					}
-					s.burst(a.x, a.y, a.giant ? 0xffd700 : 0xf4cb55, a.giant ? 10 : 4);
+					s.burst(a.x, a.y, a.giant ? 0xf4d589 : 0xb5fff2, a.giant ? 6 : 2);
 					a.pierce--;
 					if (a.giant) {
 						e.stagger = Math.max(e.stagger, 0.5);
@@ -325,284 +331,133 @@ export class PyusawhtiCombat {
 	}
 
 	clear() {
-  this.pendingShots.length=0;
+  this.pendingShots.length=0;this.glints.length=0;this.releases.length=0;
 		this.arrows.length = 0;
 		this.bursts.length = 0;
 		this.laserBeams.length = 0;
 		this.windFocusTime = 0;
 	}
 
-	render(time: number) {
-		const g = this.effects;
-		const f = this.ground;
-		g.clear();
-		f.clear();
-
-		// 1. Wind Focus: Swirling Royal Gale Vortex & Sniper Aim Reticle
-		if (this.windFocusTime > 0) {
-			const pulse = 24 + Math.sin(time * 8) * 3;
-
-			// Swirling ground thermal aura & dust particles
-			f.fillStyle(0xffd54f, 0.12 + Math.sin(time * 6) * 0.04);
-			f.fillCircle(this.s.x, this.s.y, pulse * 1.5);
-
-			// Outer supersonic gale ring
-			g.lineStyle(2.5, 0xfff099, 0.75);
-			g.strokeCircle(this.s.x, this.s.y, pulse);
-
-			// Inner swirling wind spirals
-			for (let i = 0; i < 4; i++) {
-				const startA = time * 7 + (i * Math.PI) / 2;
-				g.lineStyle(2, 0xffe082, 0.85);
-				g.beginPath();
-				g.arc(this.s.x, this.s.y, pulse - 5, startA, startA + 1.1);
-				g.strokePath();
-			}
-
-			// Swirling sacred golden embers / Bodhi leaves
-			for (let i = 0; i < 6; i++) {
-				const leafA = time * 4.2 + (i * Math.PI) / 3;
-				const dist = pulse * (0.6 + 0.4 * Math.sin(time * 3 + i));
-				const lx = this.s.x + Math.cos(leafA) * dist;
-				const ly = this.s.y + Math.sin(leafA) * dist;
-				g.fillStyle(0xffd700, 0.9);
-				g.fillCircle(lx, ly, 2.2);
-				g.lineStyle(1.2, 0xffa000, 0.8);
-				g.lineBetween(lx, ly, lx - Math.sin(leafA) * 6, ly + Math.cos(leafA) * 6);
-			}
-		}
-
-		// 2. Five-Bane Pierce: 96px Wide Colossal Solar Laser Beam
-		for (const b of this.laserBeams) {
-			const progress = 1 - b.duration / b.maxDuration;
-			const fade = Math.max(0, 1 - progress);
-			const lx = Math.cos(b.angle);
-			const ly = Math.sin(b.angle);
-			const perpA = b.angle + Math.PI / 2;
-			const endX = b.x + lx * b.length;
-			const endY = b.y + ly * b.length;
-
-			// Scorched Earth Trench under 96px wide laser beam
-			f.lineStyle(b.width * 0.95, 0x2e1100, fade * 0.5);
-			f.lineBetween(b.x, b.y, endX, endY);
-			f.lineStyle(b.width * 0.55, 0xff6f00, fade * 0.38);
-			f.lineBetween(b.x, b.y, endX, endY);
-
-			// Multi-Tier Volumetric Solar Laser Ray
-			// Tier 1: Outer burning solar plasma halo (full 96px width)
-			g.lineStyle(b.width, 0xff6d00, fade * 0.35);
-			g.lineBetween(b.x, b.y, endX, endY);
-
-			// Tier 2: Solar amber plasma stream
-			g.lineStyle(b.width * 0.65, 0xffa000, fade * 0.7);
-			g.lineBetween(b.x, b.y, endX, endY);
-
-			// Tier 3: Concentrated radiant golden core
-			g.lineStyle(b.width * 0.38, 0xffeb3b, fade * 0.92);
-			g.lineBetween(b.x, b.y, endX, endY);
-
-			// Tier 4: Hyper-dense white-hot laser spine
-			g.lineStyle(16, 0xffffff, fade);
-			g.lineBetween(b.x, b.y, endX, endY);
-
-			// Pulsating Solar Shock Diamonds along laser corridor
-			const step = 65;
-			const steps = Math.floor(b.length / step);
-			for (let i = 1; i <= steps; i++) {
-				const px = b.x + lx * (i * step);
-				const py = b.y + ly * (i * step);
-				const diamondW = (b.width * 0.45) * (0.8 + 0.2 * Math.sin(time * 16 + i));
-
-				// Diamond shock front
-				g.lineStyle(2, 0xffffff, fade * 0.9);
-				g.lineBetween(px - Math.cos(perpA) * diamondW, py - Math.sin(perpA) * diamondW, px + lx * 15, py + ly * 15);
-				g.lineBetween(px + Math.cos(perpA) * diamondW, py + Math.sin(perpA) * diamondW, px + lx * 15, py + ly * 15);
-				g.lineBetween(px - Math.cos(perpA) * diamondW, py - Math.sin(perpA) * diamondW, px - lx * 15, py - ly * 15);
-				g.lineBetween(px + Math.cos(perpA) * diamondW, py + Math.sin(perpA) * diamondW, px - lx * 15, py - ly * 15);
-
-				// Perpendicular solar flare sparks
-				if (i % 2 === 0) {
-					const flareLen = diamondW + 12;
-					g.lineStyle(1.5, 0xffd700, fade * 0.75);
-					g.lineBetween(px, py, px + Math.cos(perpA) * flareLen, py + Math.sin(perpA) * flareLen);
-					g.lineBetween(px, py, px - Math.cos(perpA) * flareLen, py - Math.sin(perpA) * flareLen);
-				}
-			}
-
-			// Blinding launch muzzle flash at bow
-			g.fillStyle(0xffffff, fade);
-			g.fillCircle(b.x, b.y, 22);
-			g.lineStyle(4, 0xffd700, fade);
-			g.strokeCircle(b.x, b.y, 32);
-		}
-
-		// 3. Solar Burst Nova Explosions
-		for (const b of this.bursts) {
-			const progress = b.age / b.maxAge;
-			const fade = 1 - progress;
-			const r = b.radius * Math.min(1, 0.25 + progress * 1.7);
-
-			// Scorched crater ground with radiating glowing fracture fissures
-			f.fillStyle(0x3e1800, fade * 0.4);
-			f.fillCircle(b.x, b.y, r);
-			f.fillStyle(0xff6f00, fade * 0.32);
-			f.fillCircle(b.x, b.y, r * 0.75);
-
-			// Molten ground fissure lines radiating outward
-			f.lineStyle(2, 0xffab00, fade * 0.6);
-			for (let i = 0; i < 6; i++) {
-				const fissureA = (i * Math.PI) / 3 + 0.15;
-				const fDist = r * 0.85;
-				const midDist = fDist * 0.5;
-				const jX = b.x + Math.cos(fissureA) * midDist + Math.sin(i * 3) * 6;
-				const jY = b.y + Math.sin(fissureA) * midDist + Math.cos(i * 3) * 6;
-				f.lineBetween(b.x, b.y, jX, jY);
-				f.lineBetween(jX, jY, b.x + Math.cos(fissureA) * fDist, b.y + Math.sin(fissureA) * fDist);
-			}
-
-			// Radiant Solar Starburst Rays (12 Cardinal & Diagonal Rays)
-			g.lineStyle(2.5, 0xffeb3b, fade * 0.95);
-			for (let i = 0; i < 12; i++) {
-				const a = (i * Math.PI) / 6 + progress * 0.5;
-				const innerDist = r * 0.3;
-				const outerDist = r * (1.1 + (i % 2 === 0 ? 0.25 : 0));
-				g.lineBetween(
-					b.x + Math.cos(a) * innerDist,
-					b.y + Math.sin(a) * innerDist,
-					b.x + Math.cos(a) * outerDist,
-					b.y + Math.sin(a) * outerDist
-				);
-			}
-
-			// Triple-tiered expanding shockwave rings
-			g.lineStyle(3.5, 0xffb300, fade * 0.9);
-			g.strokeCircle(b.x, b.y, r);
-			g.lineStyle(2, 0xffe082, fade * 0.95);
-			g.strokeCircle(b.x, b.y, r * 0.82);
-			g.lineStyle(1.5, 0xffffff, fade);
-			g.strokeCircle(b.x, b.y, r * 0.65);
-
-			// Blinding white-hot core
-			g.fillStyle(0xffffff, fade * 0.95);
-			g.fillCircle(b.x, b.y, r * 0.3);
-		}
-
-		// 4. Realistic Myanmar War Arrows & Colossal Ballista Bolts
-		for (const a of this.arrows) {
-			const len = a.giant ? 52 : 26;
-			const headX = a.x;
-			const headY = a.y;
-			const tailX = a.x - Math.cos(a.angle) * len;
-			const tailY = a.y - Math.sin(a.angle) * len;
-
-			if (a.giant) {
-				// Giant Vanguard Bolt: twin rotating dragon fire aura
-				const coilR = 14;
-				for (let s = -1; s <= 1; s += 2) {
-					const coilA = time * 20 * s;
-					const perpA = a.angle + Math.PI / 2;
-					const cx = headX - Math.cos(a.angle) * 18 + Math.cos(perpA) * Math.sin(coilA) * coilR;
-					const cy = headY - Math.sin(a.angle) * 18 + Math.sin(perpA) * Math.sin(coilA) * coilR;
-					g.fillStyle(0xffd700, 0.9);
-					g.fillCircle(cx, cy, 4.5);
-					g.lineStyle(2.5, 0xff6f00, 0.8);
-					g.lineBetween(cx, cy, tailX, tailY);
-				}
-
-				// Giant arrow sonic boom compression cones
-				for (let c = 1; c <= 3; c++) {
-					const coneDist = c * 16;
-					const cx = headX - Math.cos(a.angle) * coneDist;
-					const cy = headY - Math.sin(a.angle) * coneDist;
-					const coneW = 12 + c * 6;
-					const perpA = a.angle + Math.PI / 2;
-					g.lineStyle(2, 0xffecb3, 0.75 - c * 0.18);
-					g.lineBetween(
-						cx - Math.cos(perpA) * coneW,
-						cy - Math.sin(perpA) * coneW,
-						cx + Math.cos(a.angle) * 9,
-						cy + Math.sin(a.angle) * 9
-					);
-					g.lineBetween(
-						cx + Math.cos(perpA) * coneW,
-						cy + Math.sin(perpA) * coneW,
-						cx + Math.cos(a.angle) * 9,
-						cy + Math.sin(a.angle) * 9
-					);
-				}
-			} else {
-				// A restrained silver trail keeps ordinary shots readable.
-				const wakeLen = 18;
-				const wakeTailX = tailX - Math.cos(a.angle) * wakeLen;
-				const wakeTailY = tailY - Math.sin(a.angle) * wakeLen;
-
-				// Translucent vapor cavitation trail
-				g.lineStyle(2, 0xbcdde8, 0.3);
-				g.lineBetween(wakeTailX, wakeTailY, headX, headY);
-				g.lineStyle(1, 0xf4fbff, 0.7);
-				g.lineBetween(wakeTailX + Math.cos(a.angle) * 10, wakeTailY + Math.sin(a.angle) * 10, headX, headY);
-
-				// Mach Shock Diamonds along flight path if Wind Focus is active
-				if (this.windFocusTime > 0) {
-					for (let d = 1; d <= 2; d++) {
-						const dx = tailX - Math.cos(a.angle) * (d * 12);
-						const dy = tailY - Math.sin(a.angle) * (d * 12);
-						const perpA = a.angle + Math.PI / 2;
-						g.lineStyle(1.5, 0xffeb3b, 0.85);
-						g.lineBetween(dx - Math.cos(perpA) * 3, dy - Math.sin(perpA) * 3, dx + Math.cos(a.angle) * 4, dy + Math.sin(a.angle) * 4);
-						g.lineBetween(dx + Math.cos(perpA) * 3, dy + Math.sin(perpA) * 3, dx + Math.cos(a.angle) * 4, dy + Math.sin(a.angle) * 4);
-						g.lineBetween(dx - Math.cos(perpA) * 3, dy - Math.sin(perpA) * 3, dx - Math.cos(a.angle) * 4, dy - Math.sin(a.angle) * 4);
-						g.lineBetween(dx + Math.cos(perpA) * 3, dy + Math.sin(perpA) * 3, dx - Math.cos(a.angle) * 4, dy - Math.sin(a.angle) * 4);
-					}
-				}
-			}
-
-			// Main Arrow Shaft: Cedar/Bamboo core with polished golden spine
-			g.lineStyle(a.giant ? 6 : 3, a.giant ? 0xff8f00 : 0x8d5b2d, 0.95);
-			g.lineBetween(tailX, tailY, headX, headY);
-			g.lineStyle(a.giant ? 3 : 1.5, 0xffffff, 0.95);
-			g.lineBetween(tailX, tailY, headX, headY);
-
-			// Triple-Layer Fletching Fins at tail (angled scarlet & gold peacock feathers)
-			const perpA = a.angle + Math.PI / 2;
-			const finW = a.giant ? 10 : 5;
-			const fletchOffset = a.giant ? 6 : 3;
-
-			// Scarlet feathers angled backwards
-			g.lineStyle(a.giant ? 3.5 : 2, 0xd32f2f, 0.95);
-			g.lineBetween(
-				tailX - Math.cos(perpA) * finW - Math.cos(a.angle) * fletchOffset,
-				tailY - Math.sin(perpA) * finW - Math.sin(a.angle) * fletchOffset,
-				tailX,
-				tailY
-			);
-			g.lineBetween(
-				tailX + Math.cos(perpA) * finW - Math.cos(a.angle) * fletchOffset,
-				tailY + Math.sin(perpA) * finW - Math.sin(a.angle) * fletchOffset,
-				tailX,
-				tailY
-			);
-
-			// Gold feather highlights
-			g.lineStyle(1.5, 0xffd700, 0.9);
-			g.lineBetween(
-				tailX - Math.cos(perpA) * (finW * 0.6),
-				tailY - Math.sin(perpA) * (finW * 0.6),
-				tailX,
-				tailY
-			);
-			g.lineBetween(
-				tailX + Math.cos(perpA) * (finW * 0.6),
-				tailY + Math.sin(perpA) * (finW * 0.6),
-				tailX,
-				tailY
-			);
-
-			// Bodkin Arrowhead with specular gleam
-			g.fillStyle(0xffffff, 1);
-			g.fillCircle(headX, headY, a.giant ? 7 : 3.8);
-			g.lineStyle(2, a.giant ? 0xff6f00 : 0xffd700, 0.95);
-			g.strokeCircle(headX, headY, a.giant ? 9 : 4.8);
-		}
-	}
+ render(time:number){
+  const g=this.effects,f=this.ground;g.clear();f.clear();
+  const teal=0x6ce8cf,silver=0xe9fbff,gold=0xf4d589;
+  // All arrow shapes are built in flight coordinates, including diagonal shots.
+  const line=(x:number,y:number,a:number,u:number,v:number,U:number,V:number,w:number,c:number,alpha=1)=>{
+   const dx=Math.cos(a),dy=Math.sin(a);g.lineStyle(w,c,alpha);g.lineBetween(x+dx*u-dy*v,y+dy*u+dx*v,x+dx*U-dy*V,y+dy*U+dx*V);
+  };
+  const star=(x:number,y:number,r:number,alpha:number,c=silver)=>{
+   g.fillStyle(c,alpha);g.fillTriangle(x,y-r,x-r*.28,y,x+r*.28,y);g.fillTriangle(x,y+r,x-r*.28,y,x+r*.28,y);
+   g.fillTriangle(x-r*.65,y,x,y-r*.2,x,y+r*.2);g.fillTriangle(x+r*.65,y,x,y-r*.2,x,y+r*.2);
+  };
+  if(this.windFocusTime>0){
+   const x=this.s.x,y=this.s.y;
+   f.fillStyle(teal,.07);f.fillEllipse(x,y+15,65,24);
+   // Two silk-like wind ribbons stay below the face and lead to the bow.
+   for(let band=0;band<2;band++){
+    for(let i=0;i<24;i++){
+     const a=time*2.5+band*Math.PI+i*.065,b=a+.075;
+     f.lineStyle(1.3+i/18,band? silver:teal,.12+i/45);
+     f.lineBetween(x+Math.cos(a)*31,y+14+Math.sin(a)*11,x+Math.cos(b)*31,y+14+Math.sin(b)*11);
+    }
+   }
+   const bow=pyusawhtiArrowOrigin(x,y,this.s.angle);
+   for(let i=0;i<2;i++){
+    const a=time*2+i*Math.PI,px=x+Math.cos(a)*24,py=y+Math.sin(a)*9;
+    g.lineStyle(1,teal,.35);g.lineBetween(px,py,bow.x,bow.y);star(px,py,2.5,.7,teal);
+   }
+   star(bow.x,bow.y,4+Math.sin(time*5),.9);
+  }
+  for(const b of this.laserBeams){
+   const t=1-b.duration/b.maxDuration,fade=Math.pow(1-t,1.5);
+   // Translucent full-width corridor preserves the existing damage footprint.
+   line(b.x,b.y,b.angle,0,0,b.length,0,b.width,teal,fade*.12);
+   line(b.x,b.y,b.angle,0,0,b.length,0,18,teal,fade*.3);
+   line(b.x,b.y,b.angle,0,0,b.length,0,5,silver,fade*.95);
+   for(const side of [-1,1]){
+    line(b.x,b.y,b.angle,0,side*b.width/2,b.length,side*b.width/2,1.2,teal,fade*.55);
+    // Feathered chevrons sweep down the corridor without hiding enemies.
+    for(let i=0;i<7;i++){
+     const d=((i/7+t*.7)%1)*b.length;
+     line(b.x,b.y,b.angle,d-22,side*23,d,0,1.5,silver,fade*.6);
+    }
+   }
+   star(b.x,b.y,18*fade,fade,gold);
+  }
+  for(const b of this.bursts){
+   const t=b.age/b.maxAge,fade=1-t,r=b.radius*Math.min(1,.25+t*1.7);
+   f.fillStyle(teal,fade*.045);f.fillCircle(b.x,b.y,r);
+   g.lineStyle(2,teal,fade*.6);g.strokeCircle(b.x,b.y,r);
+   g.lineStyle(1,silver,fade*.5);g.strokeCircle(b.x,b.y,r*.85);
+   for(let i=0;i<8;i++){const a=i*Math.PI/4;star(b.x+Math.cos(a)*r,b.y+Math.sin(a)*r,4*fade,fade,i%2?gold:silver);}
+  }
+  for(const a of this.arrows){
+   if(a.giant){
+    // The icon's crowned silver arrow, drawn in flight coordinates so its
+    // leading point remains exactly at the projectile collision position.
+    const dx=Math.cos(a.angle),dy=Math.sin(a.angle);
+    const point=(u:number,v:number)=>({x:a.x+dx*u-dy*v,y:a.y+dy*u+dx*v});
+    const poly=(coords:number[][],color:number,outline=true)=>{
+     const pts=coords.map(([u,v])=>point(u,v));g.fillStyle(color,1);g.beginPath();
+     g.moveTo(pts[0].x,pts[0].y);for(const p of pts.slice(1))g.lineTo(p.x,p.y);g.closePath();g.fillPath();
+     if(outline){g.lineStyle(1.6,0x142b32,1);g.strokePath();}
+    };
+    // Curved wind streamers echo the crescent trails around the icon.
+    for(const side of [-1,1])for(let i=0;i<20;i++){
+     const t=i/20,T=(i+1)/20;
+     const v=(q:number)=>side*(4+Math.sin(q*Math.PI)*17)+Math.sin(time*10+q*5)*2;
+     line(a.x,a.y,a.angle,-22-t*83,v(t),-22-T*83,v(T),3*(1-t)+.5,teal,(1-t)*.7);
+    }
+    line(a.x,a.y,a.angle,-75,0,-19,0,7,0x142b32);
+    line(a.x,a.y,a.angle,-75,0,-19,0,4,0x9cbbc5);
+    line(a.x,a.y,a.angle,-73,-1,-20,-1,1,silver);
+    for(const side of [-1,1]){
+     poly([[-72,0],[-78,side*10],[-60,side*12],[-48,0]],0x2dbda9);
+     poly([[-73,side*3],[-65,side*8],[-53,side*2]],0x9affed,false);
+     for(let i=0;i<3;i++)line(a.x,a.y,a.angle,-72+i*5,side*2,-69+i*5,side*8,1,0x197b79,.9);
+    }
+    // Broad faceted blade, with a bright central ridge and shaded lower face.
+    poly([[0,0],[-25,-13],[-22,0],[-25,13]],0xc2d3df);
+    poly([[0,0],[-25,-13],[-22,0]],0xf4fbff,false);
+    poly([[0,0],[-22,0],[-25,13]],0x7993a8,false);
+    line(a.x,a.y,a.angle,-22,0,-2,0,1.3,0xffffff);
+    // Crown collar and three forward-facing gold points, not a chevron.
+    poly([[-34,-9],[-22,-13],[-25,-6],[-18,0],[-25,6],[-22,13],[-34,9]],0xe2aa3d);
+    poly([[-33,-7],[-26,-9],[-28,-4],[-22,0],[-28,4],[-26,9],[-33,7]],0xffe69a,false);
+    line(a.x,a.y,a.angle,-34,-9,-34,9,2,gold);
+    for(const [u,v] of [[-22,-13],[-18,0],[-22,13]]){const p=point(u,v);g.fillStyle(gold);g.fillCircle(p.x,p.y,2);g.fillStyle(silver);g.fillCircle(p.x-.4,p.y-.5,.7);}
+    continue;
+   }
+   const big=!!a.giant,len=big?60:22,w=big?9:3;
+   line(a.x,a.y,a.angle,-len-24,0,0,0,big?14:3,teal,big?.28:.15);
+   line(a.x,a.y,a.angle,-len-15,0,0,0,big?3:1,silver,.8);
+   if(big||this.windFocusTime>0){
+    for(const side of [-1,1]){
+     for(let i=0;i<9;i++){
+      const u=-len-i*5,v=side*(big?7:3)+Math.sin(time*12+i*.4)*(big?4:1.5);
+      line(a.x,a.y,a.angle,u,v,u-5,side*(big?7:3)+Math.sin(time*12+(i+1)*.4)*(big?4:1.5),big?2:1,teal,(1-i/10)*.7);
+     }
+    }
+   }
+   line(a.x,a.y,a.angle,-len,0,-5,0,big?4:1.5,silver);
+   for(const side of [-1,1]){
+    line(a.x,a.y,a.angle,-len-4,side*w,-len+6,0,big?3:1.5,teal);
+    line(a.x,a.y,a.angle,-12,side*w,0,0,big?3:1.5,silver);
+    if(big)line(a.x,a.y,a.angle,-19,side*14,-6,0,2,gold);
+   }
+   if(big)star(a.x,a.y,7,.95);
+  }
+  for(const r of this.releases){
+   const t=r.age/.32,fade=1-t;
+   for(const side of [-1,1])line(r.x,r.y,r.angle,3+t*15,0,-3+t*8,side*(4+t*7),1.3,teal,fade);
+   star(r.x,r.y,5*fade,fade);
+  }
+  for(const h of this.glints){
+   const t=h.age/.32,fade=1-t,y=h.y-t*12;
+   if(h.crown){
+    const x=h.x,r=7+t*3;
+    g.lineStyle(1.6,gold,fade);g.beginPath();g.moveTo(x-r,y+3);g.lineTo(x-r,y-4);g.lineTo(x-r*.4,y-1);g.lineTo(x,y-7);g.lineTo(x+r*.4,y-1);g.lineTo(x+r,y-4);g.lineTo(x+r,y+3);g.closePath();g.strokePath();
+    star(x+r+4,y-5,3*fade,fade);
+   }else star(h.x,y,7*(1+t),fade);
+  }
+ }
 }
