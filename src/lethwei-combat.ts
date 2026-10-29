@@ -1,3 +1,4 @@
+import {LethweiTechniques} from './lethwei-techniques';
 import type {ArenaScene, Enemy} from './combat';
 import {LETHWEI_SKILLS,validLethweiLoadout,type LethweiSkill} from './lethwei';
 import {WEAPONS} from './config';
@@ -23,6 +24,7 @@ type Ring = {
 };
 
 export class LethweiCombat {
+ readonly techniques:LethweiTechniques;
  readonly equipped: [LethweiSkill, LethweiSkill];
  cooldowns: [number, number] = [0, 0];
  blitzTime = 0;
@@ -45,6 +47,7 @@ export class LethweiCombat {
  private ringBack;
 
  constructor(private s: ArenaScene) {
+  this.techniques=new LethweiTechniques(s);
   this.equipped = validLethweiLoadout(s.save.lethweiSkills);
   this.ground = s.add.graphics().setDepth(1.1);
   this.effects = s.add.graphics().setDepth(4.6);
@@ -79,7 +82,7 @@ export class LethweiCombat {
   this.cooldowns[slot] = LETHWEI_SKILLS[id].cooldown * (s.options.build === 'mobility' ? 0.9 : 1);
 
   if (id === 'blitz') {
-   this.blitzDuration = (.54 / 1.3) * (1 + s.u('ironshins') * 0.1);
+   this.blitzDuration = .54 / 1.3;
    this.blitzTime = this.blitzDuration;this.blitzBeat=0;this.blitzPops=[];
    this.blitzAim = angle;
    s.protect(this.blitzDuration + .03);
@@ -153,6 +156,8 @@ export class LethweiCombat {
    if(this.ironChinTime===0)this.chinFade=.4;
   }
 
+  this.techniques.update(dt,this.ring);
+
   // Handle Blitz Dash
   if (this.blitzTime > 0) {
    this.blitzTrails.push({ x: s.x, y: s.y, angle: this.blitzAim, alpha: 0.85 });
@@ -169,10 +174,9 @@ export class LethweiCombat {
     s.swing=.18;s.attackSequence++;
     for(const e of s.enemies){
      if(!e.active||Math.hypot(e.x-x,e.y-y)>(beat===2?65:48)+e.r)continue;
-     const dmg=(WEAPONS[s.weapon]?.damage||25)*(beat===2?.8:.5)*(1+s.u('nineweapons')*.3);
+     const dmg=(WEAPONS[s.weapon]?.damage||25)*(beat===2?.8:.5);
      s.hit(e,dmg,beat===2?65:24,false,false,'Nine-Limb Blitz');
-     e.stagger=Math.max(e.stagger||0,beat===2?.7+s.u('headbutt')*.25:.18);
-     if(s.evolved('headbutt'))e.flash=.4;
+     e.stagger=Math.max(e.stagger||0,beat===2?.7:.18);
      s.burst(e.x,e.y,beat===2?0xffcc61:0xfff1d1,beat===2?8:4);
     }
    }
@@ -273,6 +277,7 @@ export class LethweiCombat {
  }
 
  clear() {
+  this.techniques.clear();
   this.ring.active = false;
   this.clones.length = 0;
   this.ropeCooldown.clear();
@@ -302,6 +307,7 @@ export class LethweiCombat {
   g.clear();
   f.clear();
   this.ringBack.clear();
+  this.techniques.render(g);
 
   // Two ivory silhouettes follow recent positions; no opaque cloud hides enemies.
   const trails=this.blitzTrails;

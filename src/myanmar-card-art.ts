@@ -1,4 +1,3 @@
-import {championBeltSvg} from './champion-belt';
 /** Dedicated illustrated card artwork for Myanmar heroes: Pyusawhti, Lethwei Master, Kyansittha */
 export const MYANMAR_CARD_IDS = new Set([
  'arrowstorm',
@@ -20,6 +19,11 @@ export const MYANMAR_CARD_IDS = new Set([
 
 export function myanmarCardArt(id: string): string {
  if (!MYANMAR_CARD_IDS.has(id)) return '';
+ const lethweiTiles:Record<string,[number,number]>={nineweapons:[0,0],ironshins:[1,0],headbutt:[2,0],ringmaster:[0,1],goldenbelt:[1,1]};
+ if(lethweiTiles[id]){
+  const [column,row]=lethweiTiles[id],x=column*100+.4,y=row*100+.4;
+  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="${x} ${y} 99.2 99.2" class="upgrade-reference-art" style="overflow:hidden" aria-hidden="true"><defs><clipPath id="lethwei-card-${id}"><rect x="${x}" y="${y}" width="99.2" height="99.2"/></clipPath></defs><image clip-path="url(#lethwei-card-${id})" href="/assets/card-concepts/lethwei-upgrades-v2.png" width="300" height="200" preserveAspectRatio="none"/></svg>`;
+ }
  switch (id) {
   case 'arrowstorm':
    return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" class="upgrade-reference-art" aria-hidden="true">
@@ -122,92 +126,6 @@ export function myanmarCardArt(id: string): string {
     <line x1="12" y1="50" x2="88" y2="50" stroke="#ffdd72" stroke-width="2"/>
     <line x1="50" y1="12" x2="50" y2="88" stroke="#ffdd72" stroke-width="2"/>
    </svg>`;
-
-  case 'nineweapons':
-   return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" class="upgrade-reference-art" aria-hidden="true">
-    <defs>
-      <linearGradient id="g-nineweapons" x1="0%" y1="0%" x2="100%" y2="100%">
-        <stop offset="0%" stop-color="#4a1515"/>
-        <stop offset="100%" stop-color="#1f0808"/>
-      </linearGradient>
-    </defs>
-    <rect width="100" height="100" rx="12" fill="url(#g-nineweapons)"/>
-    <!-- Lethwei Fist with Wrapped Hemp Ropes -->
-    <ellipse cx="50" cy="52" rx="22" ry="26" fill="#9e3223" stroke="#f47560" stroke-width="2.5"/>
-    <g stroke="#ffd9a6" stroke-width="2" stroke-linecap="round" opacity="0.85">
-      <line x1="32" y1="42" x2="68" y2="42"/>
-      <line x1="30" y1="50" x2="70" y2="50"/>
-      <line x1="32" y1="58" x2="68" y2="58"/>
-      <line x1="35" y1="66" x2="65" y2="66"/>
-    </g>
-    <!-- 9 points starburst -->
-    <circle cx="50" cy="24" r="5" fill="#ffcc00"/>
-    <circle cx="74" cy="38" r="4" fill="#ff7733"/>
-    <circle cx="26" cy="38" r="4" fill="#ff7733"/>
-   </svg>`;
-
-  case 'ironshins':
-   return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" class="upgrade-reference-art" aria-hidden="true">
-    <defs>
-      <linearGradient id="g-ironshins" x1="0%" y1="0%" x2="100%" y2="100%">
-        <stop offset="0%" stop-color="#3d1b10"/>
-        <stop offset="100%" stop-color="#140804"/>
-      </linearGradient>
-    </defs>
-    <rect width="100" height="100" rx="12" fill="url(#g-ironshins)"/>
-    <!-- Sweeping Kick Arc with Iron Sheen -->
-    <path d="M20 75 Q45 25 80 35" fill="none" stroke="#ff7043" stroke-width="6" stroke-linecap="round"/>
-    <path d="M25 78 Q48 32 78 40" fill="none" stroke="#fff176" stroke-width="2.5" stroke-linecap="round"/>
-    <!-- Impact shock burst -->
-    <circle cx="80" cy="35" r="9" fill="#ffab40"/>
-    <polygon points="80,22 83,32 94,35 83,38 80,48 77,38 66,35 77,32" fill="#ffffff"/>
-   </svg>`;
-
-  case 'headbutt':
-   return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" class="upgrade-reference-art" aria-hidden="true">
-    <defs>
-      <radialGradient id="g-headbutt" cx="50%" cy="50%" r="50%">
-        <stop offset="0%" stop-color="#ff5252"/>
-        <stop offset="70%" stop-color="#801010"/>
-        <stop offset="100%" stop-color="#240505"/>
-      </radialGradient>
-    </defs>
-    <rect width="100" height="100" rx="12" fill="#240505"/>
-    <circle cx="50" cy="50" r="28" fill="url(#g-headbutt)"/>
-    <!-- Shattering Shockwaves -->
-    <g stroke="#ffffff" stroke-width="2.5" stroke-linecap="round">
-      <line x1="50" y1="14" x2="50" y2="28"/>
-      <line x1="50" y1="72" x2="50" y2="86"/>
-      <line x1="14" y1="50" x2="28" y2="50"/>
-      <line x1="72" y1="50" x2="86" y2="50"/>
-      <line x1="26" y1="26" x2="36" y2="36"/>
-      <line x1="64" y1="64" x2="74" y2="74"/>
-    </g>
-    <circle cx="50" cy="50" r="12" fill="#ffebee"/>
-   </svg>`;
-
-  case 'ringmaster':
-   return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" class="upgrade-reference-art" aria-hidden="true">
-    <defs>
-      <linearGradient id="g-ringmaster" x1="0%" y1="0%" x2="100%" y2="100%">
-        <stop offset="0%" stop-color="#26173d"/>
-        <stop offset="100%" stop-color="#0f071a"/>
-      </linearGradient>
-    </defs>
-    <rect width="100" height="100" rx="12" fill="url(#g-ringmaster)"/>
-    <!-- Boxing Ring Perspective Ropes & Corner Posts -->
-    <rect x="22" y="22" width="56" height="56" rx="4" fill="none" stroke="#d32f2f" stroke-width="3"/>
-    <rect x="26" y="26" width="48" height="48" rx="4" fill="none" stroke="#ffa000" stroke-width="2"/>
-    <rect x="30" y="30" width="40" height="40" rx="4" fill="none" stroke="#ffd700" stroke-width="1.5"/>
-    <!-- 4 Corner Posts -->
-    <circle cx="22" cy="22" r="5" fill="#d32f2f"/>
-    <circle cx="78" cy="22" r="5" fill="#1976d2"/>
-    <circle cx="22" cy="78" r="5" fill="#ffffff"/>
-    <circle cx="78" cy="78" r="5" fill="#d32f2f"/>
-   </svg>`;
-
-  case 'goldenbelt':
-   return championBeltSvg('upgrade-reference-art');
 
   case 'arindamapower':
    return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" class="upgrade-reference-art" aria-hidden="true">

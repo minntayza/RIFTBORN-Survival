@@ -1,5 +1,3 @@
-import {championBeltSvg} from './champion-belt';
-import {skillIcon} from './skill-icons';
 
 export const LETHWEI_SKILLS = {
  blitz: { name: 'Nine-Limb Blitz', cooldown: 8, icon: '⚔', description: 'Dash forward with a flying knee, elbow strike, and headbutt, knocking back and stunning foes.' },
@@ -28,12 +26,9 @@ export function replaceLethweiSkill(pair: LethweiLoadout, slot: number, skill: L
 }
 
 export function lethweiSkillIcon(id: LethweiSkill) {
- if (id === 'blitz') {
-  return `<svg viewBox="0 0 32 32" class="skill-svg-icon" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 18 L16 8 L26 14 L18 26 Z" stroke-linecap="round" stroke-linejoin="round"/><path d="M12 22 L20 14" stroke="#ff8a80"/><circle cx="24" cy="8" r="3" fill="#ff5252"/></svg>`;
- }
- if (id === 'ironchin') return championBeltSvg();
- // Boxing Ring Icon
- return `<svg viewBox="0 0 32 32" class="skill-svg-icon" fill="none" stroke="currentColor" stroke-width="2"><rect x="5" y="5" width="22" height="22" rx="3" stroke="#ffd700" stroke-width="2.5"/><rect x="8" y="8" width="16" height="16" rx="2" stroke="#ff8f00" stroke-dasharray="2 2"/><circle cx="5" cy="5" r="2" fill="#d32f2f"/><circle cx="27" cy="5" r="2" fill="#1976d2"/><circle cx="5" cy="27" r="2" fill="#fff"/><circle cx="27" cy="27" r="2" fill="#fff"/></svg>`;
+ const tiles:Record<LethweiSkill,[number,number]>={blitz:[0,0],ironchin:[100,0],lethweiring:[0,100]};
+ const [x,y]=tiles[id],key=`lethwei-emblem-${id}`;
+ return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="${x+4} ${y+4} 92 92" class="skill-svg-icon" data-skill-icon="${id}" aria-hidden="true" style="border-radius:50%;overflow:hidden"><defs><clipPath id="${key}"><circle cx="${x+50}" cy="${y+50}" r="46"/></clipPath></defs><image clip-path="url(#${key})" href="/assets/ui/lethwei-ability-emblems-v1.png" width="200" height="200"/></svg>`;
 }
 
 export function lethweiPortrait(cls = 'art-image') {

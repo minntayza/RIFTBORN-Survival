@@ -1,3 +1,4 @@
+import type {LethweiAction} from './lethwei-techniques';
 import {removeDuplicateThighs} from './lethwei-joins';
 import type Phaser from 'phaser';
 export const LETHWEI_NEAR_FOREARM={key:'lethwei-near-forearm-v5',url:'/assets/characters/lethwei-near-forearm-v5.png'};
@@ -31,9 +32,10 @@ export class FighterMotion{
   return {gait:this.phase,stride:this.stride};
  }
 }
-export function fighterPose(time=0,moving=false,attack=0,sequence=0,motion?:{gait:number;stride:number},duration=.2,aim=0):Pose[]{
+export function fighterPose(time=0,moving=false,attack=0,sequence=0,motion?:{gait:number;stride:number},duration=.2,aim=0,action?:LethweiAction):Pose[]{
  const gait=motion?.gait??time*5,stride=motion?.stride??(moving?1:0),bounce=(1-Math.cos(gait*2))*stride*.4+Math.sin(time*3)*.25*(1-stride);
  const progress=Math.max(0,Math.min(1,1-attack/duration)),punch=attack>0?Math.sin(progress*Math.PI):0;
+ const actionPulse=action?Math.sin((1-action.time/action.duration)*Math.PI):0;
  const out:Pose[]=[];
  const piece=(part:FighterPart,p:Point,w:number,h:number,ox=.5,oy=.12,r=0)=>out.push({part,...p,w,h,ox,oy,r});
  const segment=(part:FighterPart,a:Point,b:Point,width:number)=>{
@@ -45,7 +47,7 @@ export function fighterPose(time=0,moving=false,attack=0,sequence=0,motion?:{gai
  // Each leg is a continuous drawing: only the hip pivot rotates.
  for(const [side,index] of [['left',0],['right',1]] as const){
   const phase=gait+index*Math.PI,swing=Math.sin(phase)*stride,lift=Math.max(0,Math.sin(phase))*stride*1.1;
-  piece(`${side}Leg`,{x:index?11:-11,y:14-bounce-lift},index?38:39,65,index?.36:.62,.08,swing*.065);
+  piece(`${side}Leg`,{x:index?11:-11,y:14-bounce-lift},index?38:39,65,index?.36:.62,.08,action?.kind==='kick'&&index===0?-1.15*actionPulse:swing*.065);
  }
  const arm=(side:'left'|'right',near:boolean)=>{
   const active=(sequence%2===0)===near,extension=active?punch:0;
@@ -54,13 +56,15 @@ export function fighterPose(time=0,moving=false,attack=0,sequence=0,motion?:{gai
   // Reach along the aim line from the shoulder, rather than lifting an offset guard target.
   const target={x:shoulder.x+Math.cos(aim)*44,y:shoulder.y+Math.sin(aim)*44};
   const hand={x:guard.x+(target.x-guard.x)*extension,y:guard.y+(target.y-guard.y)*extension+Math.sin(gait+(near?0:Math.PI))*stride*1.2*(1-extension)};
-  const elbow=extension>1-1e-8?{x:(shoulder.x+hand.x)/2,y:(shoulder.y+hand.y)/2}:fighterJoint(shoulder,hand,22,22,1);
+  if(action?.kind==='elbow'&&near){hand.x=shoulder.x+8;hand.y=shoulder.y-12;}
+  const elbow=extension>1-1e-8?{x:(shoulder.x+hand.x)/2,y:(shoulder.y+hand.y)/2}:fighterJoint(shoulder,hand,22,22,action?.kind==='elbow'&&near?-1:1);
   segment(`${side}UpperArm`,shoulder,elbow,18);segment(`${side}Forearm`,elbow,hand,near?15:16.5);
 
  };
  arm('right',false);
  piece('body',{x:punch*1.4+Math.sin(gait)*stride*.4,y:-60-bounce},64,90,.5,0,punch*.025+Math.sin(gait)*stride*.004);
  arm('left',true);
+ if(action){for(const p of out){if(p.part==='body')p.r=0;if(action.kind==='headbutt'){p.x+=Math.cos(aim)*actionPulse*6;p.y+=Math.sin(aim)*actionPulse*6;}}}
  return out;
 }
 const cache=new WeakMap<HTMLImageElement,Map<FighterPart,HTMLCanvasElement>>();
@@ -91,7 +95,7 @@ export class LethweiRig{
  private parts=new Map<FighterPart,Phaser.GameObjects.Image>();
  private motion=new FighterMotion();
  constructor(scene:Phaser.Scene){const source=scene.textures.get(LETHWEI_ART.key).getSourceImage() as HTMLImageElement,legs=scene.textures.get(LETHWEI_LEGS.key).getSourceImage() as HTMLImageElement,forearms=scene.textures.get(LETHWEI_FOREARMS.key).getSourceImage() as HTMLImageElement,nearForearm=scene.textures.get(LETHWEI_NEAR_FOREARM.key).getSourceImage() as HTMLImageElement;for(const part of FIGHTER_PARTS){const key=LETHWEI_ART.key+'-'+part;if(!scene.textures.exists(key))scene.textures.addCanvas(key,fighterPart(source,part,legs,forearms,nearForearm));this.parts.set(part,scene.add.image(0,0,key));}}
- render(x:number,y:number,aim:number,time:number,moving:boolean,attack:number,sequence:number,duration=.2){const flip=Math.cos(aim)<0,scale=.58,motion=this.motion.sample(x,y,time);fighterPose(time,moving,attack,sequence,motion,duration,Math.atan2(Math.sin(aim),Math.abs(Math.cos(aim)))).forEach((p,i)=>{this.parts.get(p.part)!.setOrigin(flip?1-p.ox:p.ox,p.oy).setPosition(x+p.x*scale*(flip?-1:1),y+(p.y-4)*scale).setDisplaySize(p.w*scale,p.h*scale).setRotation(p.r*(flip?-1:1)).setFlipX(flip).setDepth(3+i*.012);});}
+ render(x:number,y:number,aim:number,time:number,moving:boolean,attack:number,sequence:number,duration=.2,action?:LethweiAction){if(action)aim=action.aim;const flip=Math.cos(aim)<0,scale=.58,motion=this.motion.sample(x,y,time);fighterPose(time,moving,attack,sequence,motion,duration,Math.atan2(Math.sin(aim),Math.abs(Math.cos(aim))),action).forEach((p,i)=>{this.parts.get(p.part)!.setOrigin(flip?1-p.ox:p.ox,p.oy).setPosition(x+p.x*scale*(flip?-1:1),y+(p.y-4)*scale).setDisplaySize(p.w*scale,p.h*scale).setRotation(p.r*(flip?-1:1)).setFlipX(flip).setDepth(3+i*.012);});}
  campLayer(offset:number){fighterPose().forEach((p,i)=>this.parts.get(p.part)!.setDepth(3+i*.012+offset));}
  defeat(){for(const s of this.parts.values())s.setAlpha(.4);}
 }

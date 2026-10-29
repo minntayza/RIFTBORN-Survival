@@ -39,9 +39,7 @@ export function pyusawhtiSkillIcon(id: PyusawhtiSkill) {
  return `<svg viewBox="0 0 32 32" class="skill-svg-icon" fill="none" stroke="currentColor" stroke-width="2"><circle cx="16" cy="16" r="6" fill="#ffd700" stroke="#b8860b"/><path d="M16 2 L16 8 M16 24 L16 30 M2 16 L8 16 M24 16 L30 16 M6 6 L10 10 M22 22 L26 26 M6 26 L10 22 M22 10 L26 6" stroke="#ffd700" stroke-linecap="round"/></svg>`;
 }
 
-export function pyusawhtiPortrait(cls = 'art-image') {
- return `<svg class="${cls}" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" role="img" aria-label="Prince Pyusawhti of Bagan"><image href="/assets/characters/pyusawhti-portrait-v2.png" x="6" y="0" width="116" height="128" preserveAspectRatio="xMidYMid meet"/></svg>`;
-}
+export function pyusawhtiPortrait(cls='art-image'){return `<svg class="${cls}" viewBox="0 0 128 160" role="img" aria-label="Archer King full-body portrait"><image href="/assets/characters/archer-king-portrait-v1.png" x="8" y="0" width="112" height="160" preserveAspectRatio="xMidYMid meet"/></svg>`;}
 
 export function aungZeyaBowPortrait(cls = 'weapon-reference-art') {
  return `<svg class="${cls}" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" role="img" aria-label="Aung Zeya Bow illustration">

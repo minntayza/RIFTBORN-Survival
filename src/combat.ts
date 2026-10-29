@@ -580,11 +580,12 @@ export class ArenaScene extends Phaser.Scene {
         if (!e.active)
             return;
         const crit = this.random() < .05 + (this.earlyPower&&this.hero==='ninja'?.05:0) + this.u('crit') * .07, raw = damageValue(base, HEROES[this.hero].damage * (1 + (this.camp?.damageBonus||0) + this.u('damage') * .12 + this.meta('damage') * .05 + this.honour * .05 + (this.options.build==='assault'?.1:0) + (this.boostDamage>0?.4:0) + (this.earlyPower&&this.hero==='samurai'?.12:0)), crit, bullet && e.type === 'armoured');
-        const d=Math.max(1,Math.round((crit&&this.evolved('crit')?raw*1.2:raw)*robotProtection(e,this.enemies)));
+        const d=Math.max(1,Math.round((crit&&this.evolved('crit')?raw*1.2:raw)*robotProtection(e,this.enemies)*(this.lethwei?.techniques.damageMultiplier(e)||1)));
         const contactX=e.x,contactY=e.y;
         e.hp -= d;
         const actual=Math.min(d,Math.max(0,e.hp+d));
         this.stats.dealt += actual;
+        this.lethwei?.techniques.onDamageDealt(actual,sourceOverride);
         const source=sourceOverride||(elemental?WEAPONS[this.weapon].name:'Evolution & follow-ups');this.damageSources[source]=(this.damageSources[source]||0)+actual;
         if(elemental&&this.hero==='samurai'&&this.identitySequence!==this.attackSequence){this.identitySequence=this.attackSequence;this.identityCharge=Math.min(100,this.identityCharge+20);}
         if(this.hero==='lethwei'&&this.identitySequence!==this.attackSequence){this.identitySequence=this.attackSequence;this.identityCharge=Math.min(100,this.identityCharge+20);}
@@ -781,7 +782,9 @@ export class ArenaScene extends Phaser.Scene {
         else if(this.u('wide'))this.audio.play('crescent-cut');
         const identityReady=this.identityCharge>=100;let connected=false;
         const pose=weaponPose(strike.weapon,this.x,this.y,aim,.55,true,sequence,false,false,strike.range/WEAPONS[strike.weapon].range,strike.arc/WEAPONS[strike.weapon].arc,this.hero==='tank'?'tank':this.hero==='samurai'?'samurai':this.hero==='ninja');
-        for(const e of this.enemies)if(e.active&&meleeContact(strike.weapon,this.x,this.y,aim,e,e.r,sequence,strike.range/WEAPONS[strike.weapon].range,strike.arc/WEAPONS[strike.weapon].arc,this.hero==='samurai'?'samurai':this.hero==='tank'?'tank':this.hero==='ninja')){connected=true;this.hit(e,strike.damage,WEAPONS[strike.weapon].knock);}
+        const reboundMultiplier=strike.echo?1:(this.lethwei?.techniques.reboundMultiplier||1);
+        for(const e of this.enemies)if(e.active&&meleeContact(strike.weapon,this.x,this.y,aim,e,e.r,sequence,strike.range/WEAPONS[strike.weapon].range,strike.arc/WEAPONS[strike.weapon].arc,this.hero==='samurai'?'samurai':this.hero==='tank'?'tank':this.hero==='ninja')){connected=true;this.hit(e,strike.damage*reboundMultiplier,WEAPONS[strike.weapon].knock);}
+        if(!strike.echo&&connected){this.lethwei?.techniques.consumeRebound(false);this.lethwei?.techniques.onBasicContact(sequence,aim);}
         if(!strike.echo&&connected&&identityReady&&this.hero==='ninja'){this.identityCharge=0;this.identityProcs++;this.pendingStrikes.push({...strike,damage:strike.damage*.45,delay:.15,echo:true});}
         if(strike.echo){const ghost=this.add.image(pose.grip.x,pose.grip.y,this.hero==='tank'?`tank-${strike.weapon}`:`weapon-${strike.weapon}`).setOrigin(pose.originX,pose.originY).setDisplaySize(pose.size,pose.thickness).setRotation(pose.rotation).setFlipY(pose.flipY).setTint(0xb6a1d7).setAlpha(.45).setDepth(4);this.tweens.add({targets:ghost,alpha:0,duration:220,onComplete:()=>ghost.destroy()});}
         const g=this.add.graphics().setDepth(4),tip=pose.tip,id=strike.weapon,color=WEAPON_EFFECTS[id].color;
@@ -885,6 +888,7 @@ export class ArenaScene extends Phaser.Scene {
         value=this.heroAbilities?.incomingDamage(value)??value;
         if(this.lethwei){
             value*=this.lethwei.damageReductionMultiplier;
+            if(this.lethwei.techniques.beforeDamage(value))return;
             this.lethwei.onDamageTaken(value);
             this.identityCharge=Math.min(100,this.identityCharge+20);
         }
@@ -1098,7 +1102,7 @@ export class ArenaScene extends Phaser.Scene {
                 this.slash(110, 190, Math.PI * 2);
         }
         if(this.zawgyi&&(this.zawgyi.actionLocked)||this.heroAbilities?.samuraiActive?.dashing){dx=0;dy=0;}
-        const speed = this.dash > 0 ? 650 : HEROES[this.hero].speed * (1 + this.u('speed') * .08 + this.meta('speed') * .05 + (this.momentum > 0 ? .1 : 0) + (this.boostSpeed>0?.25:0)+(this.speedBurst>0?.3:0)+(this.options.build==='mobility'?.08:0)) * (blocking&&!this.heroAbilities?.marchTime ? .55 : 1)*(this.zawgyi?.speedMultiplier||1)*(this.heroAbilities?.speedMultiplier||1)*(this.pyusawhti?.speedMultiplier||1);
+        const speed = this.dash > 0 ? 650 : HEROES[this.hero].speed * (1 + this.u('speed') * .08 + this.meta('speed') * .05 + (this.momentum > 0 ? .1 : 0) + (this.boostSpeed>0?.25:0)+(this.speedBurst>0?.3:0)+(this.options.build==='mobility'?.08:0)) * (blocking&&!this.heroAbilities?.marchTime ? .55 : 1)*(this.zawgyi?.speedMultiplier||1)*(this.heroAbilities?.speedMultiplier||1)*(this.pyusawhti?.speedMultiplier||1)*(this.lethwei?.techniques.speedMultiplier||1);
         {const p=this.moveOnGround(this.x,this.y,dx*speed*dt,dy*speed*dt,17);this.x=p.x;this.y=p.y;}
         const targetInReach=this.enemies.some(e=>e.active&&Math.hypot(e.x-this.x,e.y-this.y)<(isGun(this.weapon)?520:WEAPONS[this.weapon].range*(1+this.u('range')*.25)+e.r+25));
         if (this.attack <= 0&&targetInReach)this.basicAttack();

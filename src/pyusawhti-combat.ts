@@ -1,3 +1,4 @@
+import {pyusawhtiArrowOrigin} from './pyusawhti-rig';
 import type {ArenaScene, Enemy} from './combat';
 import {PYUSAWHTI_SKILLS,validPyusawhtiLoadout,type PyusawhtiSkill} from './pyusawhti';
 import {WEAPONS} from './config';
@@ -69,6 +70,7 @@ export class PyusawhtiCombat {
 		const angle = dx || dy ? Math.atan2(dy, dx) : s.angle;
 		this.cooldowns[slot] = PYUSAWHTI_SKILLS[id].cooldown * (s.options.build === 'mobility' ? 0.9 : 1);
 
+		if(id!=='windfocus'){s.angle=angle;s.attackSequence++;s.swing=.28;}
 		if (id === 'multishot') {
 			const baseDmg = (WEAPONS[s.weapon]?.damage || 28) * 1.1;
 			const flankBonus = s.u('arrowstorm') * 2;
@@ -77,8 +79,8 @@ export class PyusawhtiCombat {
 				const a = s.evolved('arrowstorm') ? (i * Math.PI * 2 / 8) : (angle + (i - Math.floor(totalArrows / 2)) * 0.13);
 				const speed = 720 * (1 + s.u('windfocuscard') * 0.25);
 				this.arrows.push({
-					x: s.x + Math.cos(a) * 20,
-					y: s.y + Math.sin(a) * 20,
+					x: pyusawhtiArrowOrigin(s.x,s.y,angle).x,
+					y: pyusawhtiArrowOrigin(s.x,s.y,angle).y,
 					vx: Math.cos(a) * speed,
 					vy: Math.sin(a) * speed,
 					angle: a,
@@ -100,8 +102,8 @@ export class PyusawhtiCombat {
 			const baseDmg = (WEAPONS[s.weapon]?.damage || 28) * 5.4 * (1 + s.u('beasthunter') * 0.35);
 			const beamLen = 920;
 			const beamWidth = 96; // 3 enemies wide (~96px)
-			const startX = s.x + Math.cos(angle) * 22;
-			const startY = s.y + Math.sin(angle) * 22;
+			const startX = pyusawhtiArrowOrigin(s.x,s.y,angle).x;
+			const startY = pyusawhtiArrowOrigin(s.x,s.y,angle).y;
 
 			this.laserBeams.push({
 				x: startX,
@@ -176,8 +178,8 @@ export class PyusawhtiCombat {
 
 		for (const a of angles) {
 			this.arrows.push({
-				x: s.x + Math.cos(a) * 22,
-				y: s.y + Math.sin(a) * 22,
+				x: pyusawhtiArrowOrigin(s.x,s.y,s.angle).x,
+				y: pyusawhtiArrowOrigin(s.x,s.y,s.angle).y,
 				vx: Math.cos(a) * speed,
 				vy: Math.sin(a) * speed,
 				angle: a,

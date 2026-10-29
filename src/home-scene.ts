@@ -55,25 +55,12 @@ export async function startHomeScene(canvas:HTMLCanvasElement,hero:HeroId,weapon
  g.save();g.translate(canvas.width/2-64*scale,canvas.height/2-55*scale);g.scale(scale,scale);drawZawgyi(g,image,0,false);g.restore();canvas.dataset.ready='true';return;
  }
  if (hero === 'pyusawhti') {
-  const image = await load('/assets/characters/pyusawhti-portrait-v2.png');
-  if (!canvas.isConnected) return;
-  canvas.width = portrait ? 420 : 600;
-  canvas.height = 420;
-  const g = canvas.getContext('2d')!;
-  const scale = portrait ? 2.5 : 2.7;
-  const groundY = canvas.height / 2 + 67 * scale;
-  const targetH = portrait ? 290 : 315;
-  const targetW = image.width * (targetH / image.height);
-  const cx = canvas.width / 2;
-  g.fillStyle = '#07151866';
-  g.beginPath();
-  g.ellipse(cx, groundY, portrait ? 45 : 65, 10, 0, 0, Math.PI * 2);
-  g.fill();
-  g.imageSmoothingEnabled = true;
-  g.imageSmoothingQuality = 'high';
-  g.drawImage(image, cx - targetW / 2, groundY - targetH + 8, targetW, targetH);
-  canvas.dataset.ready = 'true';
-  return;
+  const image=await load('/assets/characters/archer-king-portrait-v1.png');if(!canvas.isConnected)return;
+  canvas.width=portrait?420:600;canvas.height=420;
+  const g=canvas.getContext('2d')!;
+  const height=365,width=image.width*height/image.height;g.imageSmoothingEnabled=true;g.imageSmoothingQuality='high';
+  g.drawImage(image,(canvas.width-width)/2,25,width,height);
+  canvas.dataset.ready='true';return;
  }
  if (hero === 'kyansittha') {
   const image = await load('/assets/characters/kyansittha-portrait-v2.png');
