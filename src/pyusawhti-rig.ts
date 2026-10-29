@@ -7,41 +7,48 @@ const crops = {
  nearArm:[860,5,450,750],farArm:[940,740,300,405],bowArm:[30,0,880,885],drawArm:[1120,345,630,355]
 } as const;
 type Part=keyof typeof crops;
+export const ARCHER_DRAW_TIME=.075;
+export function archerAttackMotion(age:number){
+ const draw=Math.max(0,Math.min(1,age/ARCHER_DRAW_TIME)),released=age>=ARCHER_DRAW_TIME,t=Math.max(0,age-ARCHER_DRAW_TIME);
+ return {released,pull:released?60+2*Math.exp(-t/.08):54+6*draw,stringPull:released?6+54*Math.exp(-t/.012):54+6*draw,recoil:released?-1.5*Math.exp(-t/.065)*Math.sin(Math.min(1,t/.025)*Math.PI/2):0};
+}
 export type PyusawhtiPart='legs'|'body';
 export type ArcherPiece={part:Part,x:number,y:number,w:number,h:number,angle:number,ox:number,oy:number,mirror?:boolean};
-export function pyusawhtiPose(time=0,moving=false,attack=0,aim=0):ArcherPiece[]{
+export function pyusawhtiPose(time=0,moving=false,attack=0,aim=0,shotAge=ARCHER_DRAW_TIME-.001):ArcherPiece[]{
  const facing=Math.cos(aim)<0?-1:1;
  const a=facing<0?Math.atan2(Math.sin(aim),-Math.cos(aim)):aim;
  const bob=moving?Math.abs(Math.sin(time*5))*0.6:0;
  const pulse=Math.max(0,Math.min(1,attack));
  const pieces:ArcherPiece[]=[];
  const add=(part:Part,x:number,y:number,w:number,h:number,angle=0,ox=.5,oy=0)=>pieces.push({part,x,y:y-bob,w,h,angle,ox,oy});
- add('legLeft',-8,13,20,39,moving?Math.sin(time*5)*.09:0,.5,.08);
- add('legRight',8,13,20,39,moving?-Math.sin(time*5)*.09:0,.5,.08);
+ // Align the illustrated belt/coat opening with the hip midpoint, not the atlas rectangle.
+ add('legLeft',-8,11,20,39,moving?Math.sin(time*5)*.09:0,.5,.08);
+ add('legRight',8,11,20,39,moving?-Math.sin(time*5)*.09:0,.5,.08);
  if(attack>0){
-  const shot=archerShotGeometry(aim);
-  add('body',0,-51,60,76);
+  const shot=archerShotGeometry(aim,shotAge);
+  add('body',-8,-51,60,76);
   add('drawArm',shot.drawRoot.x,shot.drawRoot.y,34,34*355/630,a,.206,.605);
-  add('bowArm',14,-18,47,47*885/880,a,.1,.52);
+  add('bowArm',shot.shoulder.x,shot.shoulder.y,38,47*885/880,a,.1,.52);
   return pieces;
  }
- add('body',0,-51,60,76);
- add('farArm',17,-10,23,37,-.4+pulse*.12,.25,.16);pieces[pieces.length-1].mirror=true;
+ add('body',-8,-51,60,76);
+ add('farArm',9,-10,23,37,-.4+pulse*.12,.25,.16);pieces[pieces.length-1].mirror=true;
  // One continuous arm owns its hand and bow: no elbow/wrist seams can open.
  // The relaxed bow sits beside the body, below the face.
- add('nearArm',-19,-10,40,67,pulse*.35-Math.sin(a)*.12,.22,.34);pieces[pieces.length-1].mirror=true;
+ add('nearArm',-27,-10,34,60,pulse*.35-Math.sin(a)*.12,.22,.34);pieces[pieces.length-1].mirror=true;
  return pieces;
 }
 /** Local right-facing geometry; canvas and Phaser mirror this same pose. */
-export function archerShotGeometry(aim:number){
+export function archerShotGeometry(aim:number,age=ARCHER_DRAW_TIME-.001){
  const flip=Math.cos(aim)<0,a=flip?Math.atan2(Math.sin(aim),-Math.cos(aim)):aim;
  const rotate=(x:number,y:number)=>({x:x*Math.cos(a)-y*Math.sin(a),y:x*Math.sin(a)+y*Math.cos(a)});
- const offset=rotate((.92-.1)*47,0),grip={x:14+offset.x,y:-18+offset.y};
- const back=rotate(-60,0),nock={x:grip.x+back.x,y:grip.y+back.y};
- const hand=rotate(3,-8),drawRoot={x:nock.x-hand.x,y:nock.y-hand.y};
+ const motion=archerAttackMotion(age),kick=rotate(motion.recoil,0),shoulder={x:6+kick.x,y:-18+kick.y};
+ const offset=rotate((.92-.1)*38,0),grip={x:shoulder.x+offset.x,y:shoulder.y+offset.y};
+ const back=rotate(-motion.stringPull,0),nock={x:grip.x+back.x,y:grip.y+back.y};
+ const hand=rotate(3,-8),pull=rotate(-motion.pull,0),drawRoot={x:grip.x+pull.x-hand.x,y:grip.y+pull.y-hand.y};
  const tip=rotate(12,0),arrowTip={x:grip.x+tip.x,y:grip.y+tip.y};
- const top=rotate(32,-24),bottom=rotate(32,23);
- return {flip,grip,nock,drawRoot,arrowTip,top:{x:14+top.x,y:-18+top.y},bottom:{x:14+bottom.x,y:-18+bottom.y}};
+ const top=rotate(32*38/47,-24),bottom=rotate(32*38/47,23);
+ return {flip,shoulder,grip,nock,drawRoot,arrowTip,released:motion.released,top:{x:shoulder.x+top.x,y:shoulder.y+top.y},bottom:{x:shoulder.x+bottom.x,y:shoulder.y+bottom.y}};
 }
 export function pyusawhtiArrowOrigin(x:number,y:number,aim:number){const shot=archerShotGeometry(aim);return {x:x+shot.arrowTip.x*.75*(shot.flip?-1:1),y:y+shot.arrowTip.y*.75};}
 const assetFor=(part:Part)=>part==='bowArm'||part==='drawArm'?PYUSAWHTI_RIG_ASSETS.shooting:PYUSAWHTI_RIG_ASSETS.atlas;
@@ -73,23 +80,26 @@ export class PyusawhtiRig{
  private shotFx:Phaser.GameObjects.Graphics;
  private sequence=-1;
  private shotAim=0;
+ private shotStarted=0;
+ private raisedUntil=-1;
  constructor(private scene:Phaser.Scene){
   this.shotFx=scene.add.graphics().setDepth(3.3);
   for(const [name,c] of Object.entries(crops)){const texture=scene.textures.get(assetFor(name as Part).key);if(!texture.has(name))texture.add(name,0,c[0],c[1],c[2],c[3]);}
  }
  render(x:number,y:number,aim:number,time:number,moving:boolean,attack:number,_sequence:number,duration=.28){
-  if(attack>0){if(this.sequence!==_sequence){this.sequence=_sequence;this.shotAim=aim;}aim=this.shotAim;}
+  if(attack>0){if(this.sequence!==_sequence){this.sequence=_sequence;this.shotAim=aim;this.shotStarted=time;}aim=this.shotAim;this.raisedUntil=time+.22;}
   const flip=Math.cos(aim)<0,scale=.75;
-  const pose=pyusawhtiPose(time,moving,attack>0?Math.min(1,attack/Math.max(duration,.01)):0,aim);
+  const raised=attack>0||time<this.raisedUntil,age=time-this.shotStarted;
+  const pose=pyusawhtiPose(time,moving,raised?1:0,aim,age);
   this.sprites.slice(pose.length).forEach(sprite=>sprite.setVisible(false));
   pose.forEach((p,i)=>{
    const sprite=this.sprites[i]??(this.sprites[i]=this.scene.add.image(0,0,assetFor(p.part).key,p.part));
    sprite.setTexture(assetFor(p.part).key,p.part).setOrigin(flip!==!!p.mirror?1-p.ox:p.ox,p.oy).setDisplaySize(p.w*scale,p.h*scale).setPosition(x+p.x*scale*(flip?-1:1),y+p.y*scale).setRotation(p.angle*(flip?-1:1)).setFlipX(flip!==!!p.mirror).setDepth(3.1+i*.01).setVisible(true);
   });
   this.shotFx.clear();
-  if(attack>0){const shot=archerShotGeometry(aim),world=(p:{x:number;y:number})=>({x:x+p.x*scale*(flip?-1:1),y:y+(p.y-(moving?Math.abs(Math.sin(time*5))*.6:0))*scale});const top=world(shot.top),bottom=world(shot.bottom),nock=world(shot.nock),tip=world(shot.arrowTip);
+  if(raised){const shot=archerShotGeometry(aim,age),world=(p:{x:number;y:number})=>({x:x+p.x*scale*(flip?-1:1),y:y+(p.y-(moving?Math.abs(Math.sin(time*5))*.6:0))*scale});const top=world(shot.top),bottom=world(shot.bottom),nock=world(shot.nock),tip=world(shot.arrowTip);
    this.shotFx.lineStyle(.6,0xc4b69e,1).beginPath().moveTo(top.x,top.y).lineTo(nock.x,nock.y).lineTo(bottom.x,bottom.y).strokePath();
-   this.shotFx.lineStyle(.9,0xe8d2a2,1).lineBetween(nock.x,nock.y,tip.x,tip.y);
+   if(!shot.released)this.shotFx.lineStyle(.9,0xe8d2a2,1).lineBetween(nock.x,nock.y,tip.x,tip.y);
   }
 
  }

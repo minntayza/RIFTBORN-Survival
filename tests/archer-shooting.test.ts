@@ -7,10 +7,17 @@ test('real bow attacks spawn spread arrows together at the visible bow and retai
  for(let angle=-Math.PI;angle<Math.PI;angle+=Math.PI/8){
   const graphics={setDepth(){return this;}};
   const scene={x:300,y:400,angle,paused:false,ended:false,swing:0,attackSequence:0,weapon:'aungzeyabow',save:{pyusawhtiSkills:['banepierce','windfocus']},add:{graphics:()=>graphics},u:(id:string)=>id==='arrowstorm'?1:0,evolved:()=>false,audio:{play:()=>{}}} as unknown as ArenaScene;
-  const combat=new PyusawhtiCombat(scene);combat.bowAttack();
+  const combat=new PyusawhtiCombat(scene);combat.bowAttack();assert.equal(combat.arrows.length,0);combat.releasePendingShots(.05);assert.equal(combat.arrows.length,0);combat.releasePendingShots(.025);
   const origin=pyusawhtiArrowOrigin(scene.x,scene.y,angle);
   assert.equal(combat.arrows.length,3);
   for(const arrow of combat.arrows){assert.equal(arrow.x,origin.x);assert.equal(arrow.y,origin.y);assert.ok(Math.abs(Math.atan2(arrow.vy,arrow.vx)-Math.atan2(Math.sin(arrow.angle),Math.cos(arrow.angle)))<1e-8);}
   assert.ok(scene.swing>0);assert.equal(scene.attackSequence,1);
  }
+});
+
+test('pending releases respect pause and retain the committed aim after moving',()=>{
+ const graphics={setDepth(){return this;}};
+ const scene={x:30,y:40,angle:0,paused:false,ended:false,swing:0,attackSequence:0,weapon:'aungzeyabow',save:{pyusawhtiSkills:['banepierce','windfocus']},add:{graphics:()=>graphics},u:()=>0,evolved:()=>false,audio:{play:()=>{}}} as unknown as ArenaScene;
+ const combat=new PyusawhtiCombat(scene);combat.bowAttack();scene.paused=true;combat.releasePendingShots(1);assert.equal(combat.arrows.length,0);
+ scene.paused=false;scene.x=90;scene.angle=Math.PI;combat.releasePendingShots(.075);assert.equal(combat.arrows.length,1);assert.equal(combat.arrows[0].angle,0);assert.equal(combat.arrows[0].x,pyusawhtiArrowOrigin(90,40,0).x);
 });

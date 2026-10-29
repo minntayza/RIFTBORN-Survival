@@ -13,7 +13,7 @@ export const HERO_DEFINITIONS = {
 export type HeroId = keyof typeof HERO_DEFINITIONS;
 export const HEROES = HERO_DEFINITIONS;
 const WEAPON_DEFINITIONS = {
- aungzeyabow:{name:"Aung Zeya Bow",hero:"pyusawhti",price:0,damage:28,range:680,arc:0,cooldown:.34,knock:16},
+ aungzeyabow:{name:"Duskstring Bow",hero:"pyusawhti",price:0,damage:28,range:680,arc:0,cooldown:.34,knock:16},
  solarcrossbow:{name:"Solar Repeater",hero:"pyusawhti",price:750,damage:16,range:580,arc:0,cooldown:.14,knock:10},
  greatbow:{name:"Phoenix Greatbow",hero:"pyusawhti",price:900,damage:72,range:640,arc:0,cooldown:.88,knock:45},
  hempwraps:{name:"Hemp Wraps",hero:"lethwei",price:0,damage:25,range:54,arc:2.4,cooldown:.22,knock:28},
@@ -37,7 +37,8 @@ const WEAPON_DEFINITIONS = {
  spiked: { name: 'Spiked Shield', hero: 'tank', price: 600, damage: 39, range: 100, arc: 1.9, cooldown: .6, knock: 65 }
 };
 export type WeaponId = keyof typeof WEAPON_DEFINITIONS;
-export const WEAPONS = WEAPON_DEFINITIONS;
+// Retain legacy IDs for saved records, but retired bows are absent from all live catalogs.
+export const WEAPONS = Object.fromEntries(Object.entries(WEAPON_DEFINITIONS).filter(([id])=>id!=='solarcrossbow'&&id!=='greatbow')) as typeof WEAPON_DEFINITIONS;
 export const ENEMIES = { shooterBoss:{name:'Siege Gunner',hp:950,damage:18,speed:48,cost:100,radius:28,color:0xaaa08d,xp:45,gold:220},commander:{name:'Horde Commander',hp:1200,damage:20,speed:40,cost:110,radius:30,color:0x8da2ad,xp:50,gold:250}, cleaver: {name:'Butcher',hp:115,damage:20,speed:60,cost:18,radius:20,color:0xb3a083,xp:10,gold:22}, spear: {name:'Pike Guard',hp:90,damage:17,speed:55,cost:16,radius:18,color:0x8dafa4,xp:9,gold:20}, rifle: {name:'Fallen Rifleman',hp:75,damage:14,speed:48,cost:22,radius:18,color:0x66724b,xp:11,gold:25}, basic: { name: 'Wanderer', hp: 35, damage: 10, speed: 65, cost: 5, radius: 15, color: 0x91b77a, xp: 3, gold: 8 }, runner: { name: 'Zombie Dog', hp: 22, damage: 8, speed: 125, cost: 8, radius: 11, color: 0xc8db78, xp: 4, gold: 10 }, spitter: { name: 'Spitter', hp: 30, damage: 12, speed: 50, cost: 12, radius: 14, color: 0xbe87d5, xp: 5, gold: 12 }, armoured: { name: 'Armoured', hp: 100, damage: 14, speed: 45, cost: 16, radius: 19, color: 0x8b9baf, xp: 7, gold: 15 }, brute: { name: 'Brute', hp: 180, damage: 25, speed: 40, cost: 20, radius: 26, color: 0xd77d48, xp: 10, gold: 22 }, elite: { name: 'Elite', hp: 450, damage: 20, speed: 60, cost: 45, radius: 29, color: 0xefbc64, xp: 20, gold: 65 }, boss: { name: 'Zombie General', hp: 2400, damage: 30, speed: 45, cost: 120, radius: 42, color: 0xe96b78, xp: 60, gold: 220 }, abomination:{name:'Abomination',hp:300,damage:28,speed:34,cost:32,radius:29,color:0xb96a9b,xp:16,gold:30}, bioScreer:{name:'Bio-Screer',hp:65,damage:17,speed:42,cost:26,radius:19,color:0x91dc51,xp:12,gold:24}, shadowLurker:{name:'Shadow Lurker',hp:80,damage:16,speed:110,cost:24,radius:17,color:0x78619d,xp:13,gold:26} };
 export type EnemyId = keyof typeof ENEMIES;
 export const PERMANENT = { health: { name: 'Vitality', cap: 3, value: .05 }, damage: { name: 'Steel discipline', cap: 2, value: .05 }, speed: { name: 'Fleet foot', cap: 2, value: .05 }, magnet: { name: 'Gold reach', cap: 5, value: .05 }, reroll: { name: 'Second chance', cap: 1, value: 1 }, defense: { name: 'Bulwark', cap: 5, value: .05 } };

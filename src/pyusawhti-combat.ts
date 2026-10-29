@@ -1,4 +1,4 @@
-import {pyusawhtiArrowOrigin} from './pyusawhti-rig';
+import {pyusawhtiArrowOrigin,ARCHER_DRAW_TIME} from './pyusawhti-rig';
 import type {ArenaScene, Enemy} from './combat';
 import {PYUSAWHTI_SKILLS,validPyusawhtiLoadout,type PyusawhtiSkill} from './pyusawhti';
 import {WEAPONS} from './config';
@@ -42,6 +42,7 @@ export class PyusawhtiCombat {
 	cooldowns: [number, number] = [0, 0];
 	windFocusTime = 0;
 	readonly arrows: Arrow[] = [];
+ private pendingShots:{remaining:number;aim:number;arrows:Arrow[]}[]=[];
 	readonly bursts: SunBurst[] = [];
 	readonly laserBeams: SolarLaserBeam[] = [];
 	private ground;
@@ -176,8 +177,9 @@ export class PyusawhtiCombat {
 			}
 		}
 
+		const shotArrows:Arrow[]=[];
 		for (const a of angles) {
-			this.arrows.push({
+			shotArrows.push({
 				x: pyusawhtiArrowOrigin(s.x,s.y,s.angle).x,
 				y: pyusawhtiArrowOrigin(s.x,s.y,s.angle).y,
 				vx: Math.cos(a) * speed,
@@ -191,8 +193,17 @@ export class PyusawhtiCombat {
 			});
 		}
 
-		s.audio.play('reload-swish');
+		this.pendingShots.push({remaining:ARCHER_DRAW_TIME,aim:s.angle,arrows:shotArrows});
 	}
+
+ releasePendingShots(dt:number){
+  if(this.s.paused||this.s.ended)return;
+  for(let i=this.pendingShots.length-1;i>=0;i--){const shot=this.pendingShots[i];shot.remaining-=dt;if(shot.remaining>1e-8)continue;
+   const origin=pyusawhtiArrowOrigin(this.s.x,this.s.y,shot.aim);
+   for(const arrow of shot.arrows){arrow.x=origin.x;arrow.y=origin.y;this.arrows.push(arrow);}
+   this.s.audio.play('reload-swish');this.pendingShots.splice(i,1);
+  }
+ }
 
 	private explodeSun(x: number, y: number, radius: number, damage: number) {
 		const s = this.s;
@@ -217,6 +228,8 @@ export class PyusawhtiCombat {
 			return;
 		}
 		if (s.paused) return;
+
+  this.releasePendingShots(dt);
 
 		for (let i = 0; i < 2; i++) {
 			this.cooldowns[i as 0 | 1] = Math.max(0, this.cooldowns[i as 0 | 1] - dt);
@@ -312,6 +325,7 @@ export class PyusawhtiCombat {
 	}
 
 	clear() {
+  this.pendingShots.length=0;
 		this.arrows.length = 0;
 		this.bursts.length = 0;
 		this.laserBeams.length = 0;
@@ -517,15 +531,15 @@ export class PyusawhtiCombat {
 					);
 				}
 			} else {
-				// Normal Arrow: Supersonic Cavitation Wake & Mach Diamonds
-				const wakeLen = 28;
+				// A restrained silver trail keeps ordinary shots readable.
+				const wakeLen = 18;
 				const wakeTailX = tailX - Math.cos(a.angle) * wakeLen;
 				const wakeTailY = tailY - Math.sin(a.angle) * wakeLen;
 
 				// Translucent vapor cavitation trail
-				g.lineStyle(4, 0xffd54f, 0.35);
+				g.lineStyle(2, 0xbcdde8, 0.3);
 				g.lineBetween(wakeTailX, wakeTailY, headX, headY);
-				g.lineStyle(1.8, 0xffffff, 0.7);
+				g.lineStyle(1, 0xf4fbff, 0.7);
 				g.lineBetween(wakeTailX + Math.cos(a.angle) * 10, wakeTailY + Math.sin(a.angle) * 10, headX, headY);
 
 				// Mach Shock Diamonds along flight path if Wind Focus is active

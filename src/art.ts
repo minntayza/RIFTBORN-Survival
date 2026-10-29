@@ -19,7 +19,7 @@ const svg = (body: string, view = '0 0 240 280') => `<svg xmlns="http://www.w3.o
 const path = (d: string, fill: string, stroke = ink, width = 4) => `<path d="${d}" fill="${fill}" stroke="${stroke}" stroke-width="${width}"/>`;
 const circle = (x: number, y: number, r: number, fill: string, stroke = ink) => `<circle cx="${x}" cy="${y}" r="${r}" fill="${fill}" stroke="${stroke}"/>`;
 export const ART_NAMES: Record<WeaponId, string> = {
- aungzeyabow:"Aung Zeya Bow / longbow",
+ aungzeyabow:"Duskstring Bow / longbow",
  solarcrossbow:"Solar Repeater / dual limbs",
  greatbow:"Phoenix Greatbow / heavy fire",
  hempwraps:"Hemp Wraps / raw weave",

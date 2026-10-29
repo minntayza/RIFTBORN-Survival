@@ -63,7 +63,7 @@ export async function startHomeScene(canvas:HTMLCanvasElement,hero:HeroId,weapon
   canvas.dataset.ready='true';return;
  }
  if (hero === 'kyansittha') {
-  const image = await load('/assets/characters/kyansittha-portrait-v2.png');
+  const image = await load('/assets/characters/kyansittha-royal-spark-portrait-v1.png');
   if (!canvas.isConnected) return;
   canvas.width = portrait ? 420 : 600;
   canvas.height = 420;

@@ -38,7 +38,7 @@ export function kyansitthaSkillIcon(id: KyansitthaSkill) {
 }
 
 export function kyansitthaPortrait(cls = 'art-image') {
- return `<svg class="${cls}" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" role="img" aria-label="King Kyansittha of Bagan with divine Arindama spear"><image href="/assets/characters/kyansittha-portrait-v2.png" x="6" y="0" width="116" height="128" preserveAspectRatio="xMidYMid meet"/></svg>`;
+ return `<svg class="${cls}" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" role="img" aria-label="King Kyansittha of Bagan with divine Arindama spear"><image href="/assets/characters/kyansittha-royal-spark-portrait-v1.png" x="6" y="0" width="116" height="128" preserveAspectRatio="xMidYMid meet"/></svg>`;
 }
 
 export function arindamaSpearPortrait(cls = 'weapon-reference-art') {

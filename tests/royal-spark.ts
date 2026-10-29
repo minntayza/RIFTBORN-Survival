@@ -1,0 +1,15 @@
+import Phaser from 'phaser';
+import {ArenaScene} from '../src/combat';
+import {freshSave} from '../src/save';
+import {AudioManager} from '../src/audio';
+const save=freshSave();save.hero='kyansittha';save.weapon='arindamaspear';save.settings.sound=false;save.settings.shake=false;
+const audio=new AudioManager();audio.sound=false;
+const scene=new ArenaScene(save,audio,()=>{},()=>{},()=>{});let walk=false,angle=0;
+const status=document.querySelector('#checks')!;
+scene.onLoadingError=()=>{status.textContent='FAIL: arena preload failed';};
+window.addEventListener('error',e=>{status.textContent='FAIL: '+e.message;});
+scene.onArenaReady=()=>{scene.plan=[];scene.spawnIndex=0;scene.waveTime=-1e6;scene.enemies.forEach(e=>e.active=false);scene.countdown=0;scene.xpNeed=1e9;scene.cameras.main.setZoom(2.8);scene.paused=true;scene.render();status.textContent='PASS: Royal Spark loaded in the real combat renderer';};
+document.querySelector('#attack')!.addEventListener('click',()=>{scene.paused=false;scene.swing=0;scene.angle=angle;scene.attack=0;scene.basicAttack();for(let i=0;i<12;i++)scene.update(0,16);scene.paused=true;scene.render();status.textContent='PASS: Royal Spark spear attack rendered';});
+document.querySelector('#walk')!.addEventListener('click',()=>{walk=!walk;scene.paused=!walk;scene.touch={enabled:walk,x:walk?Math.cos(angle):0,y:walk?Math.sin(angle):0};});
+document.querySelector('#turn')!.addEventListener('click',()=>{angle+=Math.PI/4;scene.angle=angle;scene.render();});
+new Phaser.Game({type:Phaser.AUTO,parent:'game',width:900,height:540,scene:[scene],audio:{noAudio:true},banner:false});

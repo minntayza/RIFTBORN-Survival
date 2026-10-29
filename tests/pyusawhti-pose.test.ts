@@ -1,6 +1,6 @@
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
-import {pyusawhtiPose,pyusawhtiArrowOrigin,archerShotGeometry} from '../src/pyusawhti-rig';
+import {pyusawhtiPose,pyusawhtiArrowOrigin,archerShotGeometry,archerAttackMotion,ARCHER_DRAW_TIME} from '../src/pyusawhti-rig';
 test('hips stay beneath the skirt through the walking cycle',()=>{
  for(let time=0;time<3;time+=.1){const pose=pyusawhtiPose(time,true);const legs=pose.filter(p=>p.part.startsWith('leg'));assert.equal(legs.length,2);for(const leg of legs){assert.ok(leg.y<=13);assert.equal(Math.abs(leg.x),8);assert.ok(Math.abs(leg.angle)<=.14);}}
 });
@@ -27,4 +27,9 @@ test('shooting uses connected full-draw stance while preserving centered hip anc
  assert.deepEqual(shot.slice(0,2),idle.slice(0,2));
  assert.equal(shot.length,5);assert.equal(shot[2].part,'body');assert.equal(shot[2].angle,0);assert.equal(shot[4].part,'bowArm');
  assert.ok(!shot.some(p=>p.part==='nearArm'||p.part==='farArm'));
+});
+
+test('string draws before release then snaps forward with a small recovery',()=>{
+ const start=archerAttackMotion(0),draw=archerAttackMotion(ARCHER_DRAW_TIME-.001),release=archerAttackMotion(ARCHER_DRAW_TIME+.04),rest=archerAttackMotion(1);
+ assert.ok(draw.stringPull>start.stringPull);assert.equal(draw.released,false);assert.equal(release.released,true);assert.ok(release.stringPull<draw.stringPull/3);assert.ok(Math.abs(release.recoil)<=1.5);assert.ok(Math.abs(rest.recoil)<.001);
 });

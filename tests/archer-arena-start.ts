@@ -1,0 +1,11 @@
+import Phaser from 'phaser';
+import {ArenaScene} from '../src/combat';
+import {freshSave} from '../src/save';
+import {AudioManager} from '../src/audio';
+const status=document.querySelector('#checks')!,save=freshSave();save.hero='pyusawhti';save.weapon='aungzeyabow';save.settings.sound=false;
+const audio=new AudioManager();audio.sound=false;
+const scene=new ArenaScene(save,audio,()=>{},()=>{},()=>{});
+window.addEventListener('error',e=>status.textContent='FAIL: '+e.message);
+scene.onLoadingError=()=>{status.textContent='FAIL: arena preload failed';};
+scene.onArenaReady=()=>{scene.plan=[];scene.spawnIndex=0;scene.enemies.forEach(e=>e.active=false);scene.countdown=0;scene.attack=0;scene.angle=0;scene.basicAttack();for(let i=0;i<7;i++)scene.update(0,16);scene.paused=true;scene.render();status.textContent='PASS: real Archer King arena loaded, rendered and released a normal shot';};
+new Phaser.Game({type:Phaser.AUTO,parent:'game',width:900,height:560,scene:[scene],audio:{noAudio:true},banner:false});
