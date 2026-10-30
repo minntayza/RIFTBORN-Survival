@@ -10,3 +10,10 @@ test('daily camera never exposes space beyond courtyard at edges or zoom levels'
 test('preserves requested zoom when it fits inside the artwork',()=>{assert.equal(campCamera(600,400,1,600,380,600,380).zoom,1.05);assert.equal(campCamera(600,400,2,600,380,600,380).zoom,.525);});
 
 test('intermediate view uses proportional camera zoom',()=>{assert.ok(Math.abs(campCamera(600,400,1.5,600,380,600,380).zoom-.7)<1e-9);});
+
+test('all daily view levels remain visibly distinct on large and mobile screens',()=>{
+ for(const [w,h]of [[1710,1073],[932,430],[844,390],[390,844]]){
+ const zoom=[1,1.5,2].map(v=>campCamera(w,h,v,600,520,600,380).zoom);
+ assert.ok(zoom[0]>zoom[1]&&zoom[1]>zoom[2]);
+ }
+});
