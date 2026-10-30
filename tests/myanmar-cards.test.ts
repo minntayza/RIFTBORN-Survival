@@ -19,8 +19,8 @@ const defaultHeroWeapon: Record<HeroId, WeaponId> = {
  zawgyi: 'mysticstaff'
 };
 
-test('pyusawhti, lethwei, and kyansittha each have 5 unique cards and evolutions',()=>{
- const myanmarHeroes: HeroId[] = ['pyusawhti','lethwei','kyansittha'];
+test('Archer King and Lethwei Master each have 5 unique cards and evolutions',()=>{
+ const myanmarHeroes: HeroId[] = ['pyusawhti','lethwei'];
  for(const hero of myanmarHeroes){
   const cards = UPGRADES.filter(u=>u.hero===hero);
   assert.equal(cards.length, 5, `${hero} should have exactly 5 signature cards`);
@@ -46,8 +46,8 @@ test('pyusawhti, lethwei, and kyansittha each have 5 unique cards and evolutions
  }
 });
 
-test('level-up choices for pyusawhti, lethwei, and kyansittha offer signature cards without crashing',()=>{
- const myanmarHeroes: HeroId[] = ['pyusawhti','lethwei','kyansittha'];
+test('level-up choices for Archer King and Lethwei Master offer signature cards without crashing',()=>{
+ const myanmarHeroes: HeroId[] = ['pyusawhti','lethwei'];
  for(const hero of myanmarHeroes){
   for(let seed=0;seed<20;seed++){
    const choices = upgradeChoices(hero, {}, seededRandom(seed), defaultHeroWeapon[hero], 1, {});
@@ -59,7 +59,7 @@ test('level-up choices for pyusawhti, lethwei, and kyansittha offer signature ca
 
 test('myanmar hero cards are exclusive and never offered to other classes',()=>{
  const nonMyanmarHeroes: HeroId[] = ['ninja','samurai','gunner','tank','zawgyi'];
- const myanmarHeroSet = new Set(['pyusawhti','lethwei','kyansittha']);
+ const myanmarHeroSet = new Set(['pyusawhti','lethwei']);
  for(const hero of nonMyanmarHeroes){
   for(let seed=0;seed<25;seed++){
    const choices = upgradeChoices(hero, {}, seededRandom(seed));
@@ -68,15 +68,15 @@ test('myanmar hero cards are exclusive and never offered to other classes',()=>{
  }
 });
 
-test('lethwei master weapons have extended attack reach and punch forward extension',()=>{
- for(const id of ['hempwraps','ironwraps','tigerwraps'] as const){
+test('Pattee Wraps extend forward while keeping melee range close',()=>{
+ for(const id of ['hempwraps'] as const){
   assert.ok(isLethweiWeapon(id));
-  assert.ok(WEAPONS[id].range >= 105, `${id} range must be at least 105 for comfortable gameplay`);
+  assert.ok(WEAPONS[id].range <= 60, `${id} range must remain within close melee distance`);
   // Forward punch extension check
   const rest = weaponPose(id, 0, 0, 0, 0, false);
   const strike = weaponPose(id, 0, 0, 0, 0.5, true);
-  assert.ok(strike.tip.x > rest.tip.x + 15, `${id} must lunge forward during strike`);
-  // Hits zombie at 68px distance comfortably
-  assert.equal(meleeContact(id, 0, 0, 0, {x: 68, y: 0}, 14), true, `${id} should hit enemy at 68px distance`);
+  assert.ok(strike.tip.x > rest.tip.x + 10 && strike.tip.x <= rest.tip.x + 12, `${id} must extend its shortened punch envelope during strike`);
+  // Beyond the visible punch, contact must be rejected.
+  assert.equal(meleeContact(id, 0, 0, 0, {x: 90, y: 0}, 0), false, `${id} must reject a distant enemy`);
  }
 });

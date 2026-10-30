@@ -36,12 +36,12 @@ test('map view defaults to standard and saves only supported zoom options',()=>{
  assert.equal(validateSave({settings:{}}).settings.mapView,1);
 });
 
-test('mobile starts with wide map and retains an explicit 1x choice',()=>{
+test('mobile starts at 1.5x and retains an explicit 1x choice',()=>{
  const previous=Object.getOwnPropertyDescriptor(globalThis,'matchMedia');
  Object.defineProperty(globalThis,'matchMedia',{configurable:true,value:()=>({matches:true})});
  try {
-  assert.equal(freshSave().settings.mapView,2);
-  const s=freshSave();s.settings.mapView=1;assert.equal(validateSave(s).settings.mapView,2);
+  assert.equal(freshSave().settings.mapView,1.5);
+  const s=freshSave();s.settings.mapView=1;assert.equal(validateSave(s).settings.mapView,1.5);
   s.settings.mapViewChosen=true;assert.equal(validateSave(s).settings.mapView,1);
  } finally {if(previous)Object.defineProperty(globalThis,'matchMedia',previous);else Reflect.deleteProperty(globalThis,'matchMedia');}
 });

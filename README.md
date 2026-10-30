@@ -1,22 +1,30 @@
+<p align="center">
+  <img src="docs/brand/github-banner.svg" alt="RIFTBORN — Keep the last light alive. Cute heroes. Relentless hordes. One camp worth defending." width="100%" />
+</p>
+
 <div align="center">
-  <img src="public/icons/riftborn-tab-192-v1.png" alt="RIFTBORN gold R emblem with a teal rift" width="88" />
 
-# RIFTBORN
+**A fantasy survival roguelite you can play straight from your browser.**
 
-### One survivor. An evolving arsenal. A last light worth defending.
+Fight zombies and robots, evolve your build, and protect the last camp with seven distinctive survivors.
 
-A browser action roguelite where cute fantasy heroes face relentless zombies and robots.
-Dodge the horde, shape your build, and awaken the weapon that carries your next stand.
+<a href="https://zombie-last-stand.vercel.app/"><img src="docs/brand/play-button.svg" alt="Play RIFTBORN in your browser" width="250" height="56" /></a>
 
-**[▶ PLAY RIFTBORN](https://zombie-last-stand.vercel.app/) · [Quick start](#run-locally) · [Controls](#controls)**
+**No download · Guest play available · Best on mobile in landscape**
 
-**Play in your browser · Desktop & mobile · No account required to start**
+[See the gameplay](#protect-the-last-light) · [Meet the survivors](#seven-survivors-seven-ways-to-fight) · [Run locally](#run-locally)
 
 </div>
 
-![RIFTBORN home — Zawgyi is today's defender, with Endless and Daily Challenge modes](docs/screenshots/home.png)
+[![RIFTBORN home: choose Endless or take today's defender into the Daily Challenge](docs/screenshots/home.png)](https://zombie-last-stand.vercel.app/)
+
+| CHOOSE YOUR HERO | EVOLVE YOUR BUILD | DEFEND THE CAMP |
+| :---: | :---: | :---: |
+| Seven survivors with distinct fighting styles. | Unique cards, elemental awakenings, and outfits. | Ten waves, a woodland guardian, and a final siege. |
 
 ## Your next stand starts here
+
+**First visit?** Press Play, choose Endless for your own loadout or Daily Challenge for today’s shared defender, then move and let your attacks handle nearby enemies. Collect XP and choose your first upgrade.
 
 **Survive. Adapt. Come back stronger.** Collect XP, choose upgrades, and combine character-specific techniques with shared powers. Turn a simple attack into a crowd-clearing build, then see how long you can keep it alive.
 

@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="360" viewBox="0 0 1280 360" role="img" aria-labelledby="title desc">
+<title id="title">RIFTBORN — Keep the last light alive.</title><desc id="desc">A gold fantasy wordmark over a midnight teal rift, introducing a browser survival game.</desc>
+<defs>
+ <linearGradient id="bg" x2="1" y2="1"><stop stop-color="#071722"/><stop offset="1" stop-color="#153a3b"/></linearGradient>
+ <linearGradient id="gold" x2="0" y2="1"><stop stop-color="#fff0b9"/><stop offset="1" stop-color="#d9ad52"/></linearGradient>
+ <radialGradient id="glow"><stop stop-color="#56dfc5" stop-opacity=".3"/><stop offset="1" stop-color="#56dfc5" stop-opacity="0"/></radialGradient>
+</defs>
+<rect width="1280" height="360" rx="22" fill="url(#bg)"/>
+<ellipse cx="1060" cy="170" rx="310" ry="250" fill="url(#glow)"/>
+<g fill="none" stroke="#78d7c7" stroke-opacity=".13"><circle cx="1050" cy="175" r="116"/><circle cx="1050" cy="175" r="143"/><path d="M875 175h350M1050 0v350M927 52l246 246M927 298l246-246"/></g>
+<path d="m1073 36-52 101 43-9-69 109 40-7-29 87 87-118-43 9 67-106-48 15 27-81Z" fill="#6aecd3" opacity=".18"/>
+<g fill="#ead090"><path d="m933 58 3 8 8 3-8 3-3 8-3-8-8-3 8-3Z"/><path d="m1172 240 2 6 6 2-6 2-2 6-2-6-6-2 6-2Z"/><circle cx="1194" cy="82" r="2"/><circle cx="905" cy="274" r="2"/></g>
+<path d="M58 41h1164" stroke="#d6b96f" stroke-opacity=".36"/>
+<text x="64" y="91" font-family="Arial,sans-serif" font-size="13" font-weight="700" letter-spacing="4" fill="#8cddcd">A LAST STAND WITH A LITTLE MAGIC</text>
+<text x="58" y="188" font-family="Georgia,serif" font-weight="700" font-size="94" letter-spacing="3" fill="url(#gold)">RIFTBORN</text>
+<text x="64" y="239" font-family="Georgia,serif" font-size="32" fill="#fff0c9">Keep the last light alive.</text>
+<text x="64" y="277" font-family="Arial,sans-serif" font-size="17" fill="#b4cccd">Cute heroes. Relentless hordes. One camp worth defending.</text>
+<text x="64" y="326" font-family="Arial,sans-serif" font-size="12" font-weight="700" letter-spacing="2.5" fill="#e6ca85">BROWSER GAME   /   DESKTOP + MOBILE   /   PLAY FREE</text>
+</svg>
