@@ -1,3 +1,4 @@
+import {nextMapView} from './map-view';
 import {fullscreenButton,bindFullscreenControls,enterGameFullscreen} from './fullscreen';
 import './fullscreen.css';
 import {FOX_RONIN_REWARD,claimChallengeReward} from './challenge-rewards';
@@ -531,7 +532,7 @@ window.addEventListener('blur', () => {
         pause();
 });
 window.addEventListener('beforeunload', () => storeSave(save));
-function toggleMapView(fromPause=false){if(!scene||scene.paused&&!fromPause||scene.ended)return;save.settings.mapView=save.settings.mapView===2?1:2;save.settings.mapViewChosen=true;scene.applyMapView();hud.querySelector<HTMLElement>('.combat-hud')?.setAttribute('data-map-view',String(save.settings.mapView));persist();}
+function toggleMapView(fromPause=false){if(!scene||scene.paused&&!fromPause||scene.ended)return;save.settings.mapView=nextMapView(save.settings.mapView);save.settings.mapViewChosen=true;scene.applyMapView();hud.querySelector<HTMLElement>('.combat-hud')?.setAttribute('data-map-view',String(save.settings.mapView));persist();}
 // Respond before the periodic HUD render can replace a pressed button.
 hud.addEventListener('pointerdown',e=>{
     if(e.button!==0)return;

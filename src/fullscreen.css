@@ -2,3 +2,4 @@ html:fullscreen,html.game-fullscreen{width:100%;height:100%;background:#0c111c}
 html:fullscreen body,html.game-fullscreen body{width:100%;height:100%;margin:0;overflow:hidden}
 html:fullscreen #game,html.game-fullscreen #game{position:fixed;inset:0;width:100%;height:100%}
 .fullscreen-toggle{min-height:44px;white-space:normal}
+

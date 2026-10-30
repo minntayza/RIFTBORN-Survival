@@ -15,10 +15,13 @@ export async function toggleGameFullscreen(doc:Document=document){
  if(!exit)return false;
  try{await exit.call(d);return !isGameFullscreen(doc);}catch{return false;}
 }
-export function fullscreenButton(){return canGameFullscreen()?`<button type="button" class="quiet fullscreen-toggle" data-fullscreen aria-pressed="${isGameFullscreen()}" aria-label="${isGameFullscreen()?'Exit fullscreen':'Enter fullscreen'}">${isGameFullscreen()?'↙ Exit fullscreen':'⛶ Fullscreen'}</button>`:'';}
+export function fullscreenButton(){if(isInstalledGame())return '';if(isIOSDevice())return '';return canGameFullscreen()?`<button type="button" class="quiet fullscreen-toggle" data-fullscreen aria-pressed="${isGameFullscreen()}" aria-label="${isGameFullscreen()?'Exit fullscreen':'Enter fullscreen'}">${isGameFullscreen()?'↙ Exit fullscreen':'⛶ Fullscreen'}</button>`:'';}
 export function bindFullscreenControls(onUnavailable:()=>void){
  const sync=()=>{document.documentElement.classList.toggle('game-fullscreen',isGameFullscreen());document.querySelectorAll<HTMLButtonElement>('[data-fullscreen]').forEach(b=>{b.textContent=isGameFullscreen()?'↙ Exit fullscreen':'⛶ Fullscreen';b.setAttribute('aria-pressed',String(isGameFullscreen()));b.setAttribute('aria-label',isGameFullscreen()?'Exit fullscreen':'Enter fullscreen');});};
  const click=(e:MouseEvent)=>{if(!(e.target as Element).closest('[data-fullscreen]'))return;void toggleGameFullscreen().then(ok=>{sync();if(!ok)onUnavailable();});};
  document.addEventListener('click',click);document.addEventListener('fullscreenchange',sync);document.addEventListener('webkitfullscreenchange',sync);sync();
  return()=>{document.removeEventListener('click',click);document.removeEventListener('fullscreenchange',sync);document.removeEventListener('webkitfullscreenchange',sync);};
 }
+
+export function isIOSDevice(nav:Pick<Navigator,'userAgent'|'platform'|'maxTouchPoints'>=navigator){return /iPhone|iPad|iPod/.test(nav.userAgent)||nav.platform==='MacIntel'&&nav.maxTouchPoints>1;}
+export function isInstalledGame(){return typeof window!=='undefined'&&(matchMedia('(display-mode: standalone)').matches||matchMedia('(display-mode: fullscreen)').matches||(navigator as Navigator&{standalone?:boolean}).standalone===true);}
