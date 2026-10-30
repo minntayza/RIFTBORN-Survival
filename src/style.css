@@ -1912,3 +1912,5 @@ svg[aria-label*="ninja" i],svg[aria-label*="samurai" i]{
  filter:saturate(1.25) brightness(1.12) contrast(1.08);
  image-rendering:auto;
 }
+
+.home-daily-showcase .home-defender-label{display:inline-block;color:#ffe3a2;background:#b18a3928;border:1px solid #d7b56e66;border-radius:20px;padding:6px 10px;letter-spacing:1.6px}.home-daily-mission{display:block;color:#eed5a1;font:600 13px system-ui;margin:8px 0}.home-daily-showcase .home-showcase:after{background:radial-gradient(ellipse,#e0b86730,transparent 70%)}.home-daily-practice{margin-top:18px;display:flex;align-items:center;gap:12px;flex-wrap:wrap}.home-daily-practice>small{font:12px/1.6 system-ui;color:#b8c9c9;max-width:230px}.home-daily-showcase .home-showcase canvas,.home-daily-showcase .hub-survivor{animation:daily-defender-arrive .35s ease-out}@keyframes daily-defender-arrive{from{opacity:.3;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}@media(prefers-reduced-motion:reduce){.home-daily-showcase .home-showcase canvas,.home-daily-showcase .hub-survivor{animation:none}}

@@ -9,12 +9,13 @@ export class LethweiTechniques{
  action?:LethweiAction;
  private clock=0;private lastSequence=-1;private landed=0;private chain=0;private lastContact=-10;
  private kickReady=0;private headReady=0;private ropeReady=0;private championReady=0;
+ private healReady=0;
  private boostUntil=0;private pending:{at:number;kind:'elbow'|'kick';aim:number}[]=[];
  private vulnerable=new Map<Enemy,number>();private events:Event[]=[];
  private prior?:{x:number;y:number};
  constructor(private s:ArenaScene){}
  get speedMultiplier(){return 1+this.s.u('ironshins')*.1;}
- damageMultiplier(e:Enemy){return (this.vulnerable.get(e)||0)>this.clock?1.5:1;}
+ damageMultiplier(e:Enemy){return (this.vulnerable.get(e)||0)>this.clock?1.25:1;}
  get reboundMultiplier(){return this.boostUntil>this.clock?1+this.s.u('ringmaster')*.5:1;}
  consumeRebound(echo:boolean,connected=true){const value=this.reboundMultiplier;if(!echo&&connected)this.boostUntil=0;return echo?1:value;}
  private effect(kind:Event['kind'],aim:number,x=this.s.x,y=this.s.y,life=.3){this.events.push({kind,x,y,aim,life,max:life});}
@@ -22,7 +23,7 @@ export class LethweiTechniques{
  onBasicContact(sequence:number,aim:number){
   if(sequence===this.lastSequence)return;this.lastSequence=sequence;
   const s=this.s;this.landed++;this.chain=this.clock-this.lastContact<=2?this.chain+1:1;this.lastContact=this.clock;
-  if(s.u('goldenbelt')&&!s.evolved('goldenbelt')&&s.hp<s.maxHp*.5)s.heal(2*s.u('goldenbelt'));
+  if(s.u('goldenbelt')&&!s.evolved('goldenbelt')&&s.hp<s.maxHp*.5&&this.clock>=this.healReady){s.heal(s.u('goldenbelt'));this.healReady=this.clock+.5;}
   if(s.u('nineweapons')&&this.landed%3===0){this.pending.push({at:this.clock+.08,kind:'elbow',aim},{at:this.clock+.34,kind:'kick',aim});}
   if(s.u('headbutt')&&this.chain>=5&&this.clock>=this.headReady){
    this.chain=0;this.headReady=this.clock+3;this.animate('headbutt',aim);this.effect('headbutt',aim);
@@ -33,10 +34,10 @@ export class LethweiTechniques{
    }
   }
  }
- onDamageDealt(actual:number,source?:string){if(this.s.evolved('goldenbelt')&&source!=='Iron Chin Reflect')this.s.heal(actual*.2);}
+ onDamageDealt(actual:number,source?:string){if(this.s.evolved('goldenbelt')&&source==='Lethwei Basic Punch')this.s.heal(actual*.1);}
  beforeDamage(value:number){
   const s=this.s;if(value<=0||!s.evolved('goldenbelt')||this.clock<this.championReady||s.hp-value>s.maxHp*.3)return false;
-  this.championReady=this.clock+20;s.protect(3);s.notifyCombat('GOLDEN CHAMPION · 3s INVULNERABLE');this.effect('champion',0,s.x,s.y,3);return true;
+  this.championReady=this.clock+25;s.protect(1.5);s.notifyCombat('GOLDEN CHAMPION · 1.5s INVULNERABLE');this.effect('champion',0,s.x,s.y,1.5);return true;
  }
  update(dt:number,ring:{active:boolean;x:number;y:number;radius:number}){
   const s=this.s;this.clock+=dt;
@@ -93,5 +94,5 @@ export class LethweiTechniques{
   }
   for(const [e] of this.vulnerable){g.lineStyle(1.5,0xffe5ae,.8);g.strokePoints([{x:e.x-4,y:e.y-e.r-10},{x:e.x,y:e.y-e.r-16},{x:e.x+4,y:e.y-e.r-10},{x:e.x,y:e.y-e.r-4}],true);}
  }
- clear(){this.action=undefined;this.pending=[];this.events=[];this.vulnerable.clear();this.prior=undefined;this.chain=0;this.landed=0;this.boostUntil=0;this.clock=0;this.lastSequence=-1;this.lastContact=-10;this.kickReady=0;this.headReady=0;this.ropeReady=0;this.championReady=0;}
+ clear(){this.action=undefined;this.pending=[];this.events=[];this.vulnerable.clear();this.prior=undefined;this.chain=0;this.landed=0;this.boostUntil=0;this.clock=0;this.lastSequence=-1;this.lastContact=-10;this.kickReady=0;this.headReady=0;this.ropeReady=0;this.championReady=0;this.healReady=0;}
 }

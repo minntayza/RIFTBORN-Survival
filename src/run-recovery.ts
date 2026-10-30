@@ -32,7 +32,9 @@ export function restoreRun(scene:any,recovery:RunRecovery){
  function decode(v:any):any{if(!v||typeof v!=='object')return v;if(Object.hasOwn(v,'$enemy')){if(!Number.isInteger(v.$enemy)||!enemies[v.$enemy])throw Error('Invalid saved enemy reference');return enemies[v.$enemy];}if(Object.hasOwn(v,'$set'))return new Set(v.$set.map(decode));if(Array.isArray(v))return v.map(decode);return Object.fromEntries(Object.entries(v).map(([k,x])=>[k,decode(x)]));}
  for(const key of RUN_FIELDS)scene[key]=Object.hasOwn(state,key)?decode(state[key]):undefined;
  // Use the same enemy instances that decoded references point to.
- scene.enemies=enemies;scene.particles=[];scene.paused=true;scene.ended=false;
+ scene.enemies=enemies;
+ if(scene.camp){scene.siegeEnemies=new Set(enemies.filter((e:any)=>e.active&&e.campTarget===true));scene.siegeWindups=new Map(enemies.filter((e:any)=>e.active&&e.campTarget===true&&e.telegraph>0).map((e:any)=>[e,e.telegraph]));scene.campStrikes=[];}
+ scene.particles=[];scene.paused=true;scene.ended=false;
  scene.random.setState?.(recovery.randomState);scene.cardRandom.setState?.(recovery.cardRandomState);
  scene.drawFloor();scene.applyMapView();scene.render();
 }

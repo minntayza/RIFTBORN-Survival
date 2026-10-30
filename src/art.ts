@@ -22,7 +22,7 @@ export const ART_NAMES: Record<WeaponId, string> = {
  aungzeyabow:"Duskstring Bow / longbow",
  solarcrossbow:"Solar Repeater / dual limbs",
  greatbow:"Phoenix Greatbow / heavy fire",
- hempwraps:"Hemp Wraps / raw weave",
+ hempwraps:"Pattee Wraps / raw weave",
  ironwraps:"Iron Wraps / studded fists",
  tigerwraps:"Tiger Wraps / claw caestus",
  arindamaspear:"Arindama Spear / Bagan royal spear",

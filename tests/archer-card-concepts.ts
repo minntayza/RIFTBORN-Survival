@@ -1,0 +1,10 @@
+import '../src/style.css';
+import {UPGRADES} from '../src/upgrades';
+import {visualUpgradeCard} from '../src/upgrade-ui';
+const unique=['arrowstorm','windfocuscard','sunburstcard','beasthunter','piercingeye'];
+const common=['health','speed','crit','magnet','regen','ward','fire','orbit','damage','cooldown'];
+const grid=document.querySelector('.grid')!;
+grid.className='levelup-panel concept-panel';
+grid.innerHTML=`<h2>Five unique cards · approved designs</h2><div class="concept-grid" id="unique-cards">${unique.map((id,i)=>visualUpgradeCard(UPGRADES.find(u=>u.id===id)!,i,'pyusawhti','aungzeyabow',0,'',true)).join('')}</div><h2>The other ten cards · existing designs</h2><div class="concept-grid">${common.map((id,i)=>visualUpgradeCard(UPGRADES.find(u=>u.id===id)!,i,'pyusawhti','aungzeyabow',0,'',true)).join('')}</div>`;
+document.querySelector('#status')!.textContent='Implemented · all fifteen use the same card layout. The five unique cards now use the approved illustrations and short descriptions.';
+document.querySelector('#download')!.addEventListener('click',()=>{const a=document.createElement('a');a.href='/assets/card-concepts/archer-upgrades-v1.png';a.download='archer-king-card-art-concepts.png';a.click();});

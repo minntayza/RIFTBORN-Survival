@@ -1,3 +1,5 @@
+import {archerCardArt} from './archer-card-art';
+import {lethweiCardArt} from './lethwei-card-art';
 /** Dedicated illustrated card artwork for Myanmar heroes: Pyusawhti, Lethwei Master, Kyansittha */
 export const MYANMAR_CARD_IDS = new Set([
  'arrowstorm',
@@ -19,11 +21,8 @@ export const MYANMAR_CARD_IDS = new Set([
 
 export function myanmarCardArt(id: string): string {
  if (!MYANMAR_CARD_IDS.has(id)) return '';
- const lethweiTiles:Record<string,[number,number]>={nineweapons:[0,0],ironshins:[1,0],headbutt:[2,0],ringmaster:[0,1],goldenbelt:[1,1]};
- if(lethweiTiles[id]){
-  const [column,row]=lethweiTiles[id],x=column*100+.4,y=row*100+.4;
-  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="${x} ${y} 99.2 99.2" class="upgrade-reference-art" style="overflow:hidden" aria-hidden="true"><defs><clipPath id="lethwei-card-${id}"><rect x="${x}" y="${y}" width="99.2" height="99.2"/></clipPath></defs><image clip-path="url(#lethwei-card-${id})" href="/assets/card-concepts/lethwei-upgrades-v2.png" width="300" height="200" preserveAspectRatio="none"/></svg>`;
- }
+ const archerArt=archerCardArt(id);if(archerArt)return archerArt;
+ const lethweiArt=lethweiCardArt(id);if(lethweiArt)return lethweiArt;
  switch (id) {
   case 'arrowstorm':
    return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" class="upgrade-reference-art" aria-hidden="true">

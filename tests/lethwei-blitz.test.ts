@@ -23,3 +23,22 @@ test('Iron Chin keeps mitigation and reflection, and expires cleanly',()=>{
  combat.onDamageTaken(20);assert.deepEqual(hits,[14]);combat.update(3.5);assert.equal(combat.damageReductionMultiplier,1);
  combat.onDamageTaken(20);assert.equal(hits.length,1);combat.clear();assert.equal(combat.ironChinTime,0);
 });
+
+test('Lethwei mitigation never exceeds 60% across all skill stacks',()=>{
+ const graphics={setDepth(){return this;}};
+ for(const chin of [false,true])for(const ring of [false,true])for(const belt of [false,true]){
+  const s={save:{lethweiSkills:['ironchin','lethweiring']},x:0,y:0,hp:20,maxHp:100,u:(id:string)=>id==='goldenbelt'&&belt?3:0,add:{graphics:()=>graphics}} as unknown as ArenaScene;
+  const c=new LethweiCombat(s);c.ironChinTime=chin?3:0;c.ring.active=ring;
+  const expected=Math.max(.4,(chin?.5:1)*(ring?.8:1)*(belt?.65:1));assert.equal(c.damageReductionMultiplier,expected);
+ }
+});
+test('Iron Chin shares one 0.5s pulse across a crowd; pause and clear respect cooldown',()=>{
+ const hits:number[]=[];const graphics={setDepth(){return this;}};
+ const scene={save:{lethweiSkills:['ironchin','blitz']},hero:'lethwei',paused:false,ended:false,countdown:0,options:{},angle:0,x:0,y:0,hp:100,maxHp:100,
+  add:{graphics:()=>graphics},u:()=>0,protect:()=>{},audio:{play:()=>{}},notifyCombat:()=>{},burst:()=>{},
+  enemies:[{active:true,x:40,y:0,r:10},{active:true,x:60,y:0,r:10},{active:true,x:300,y:0,r:10}],hit:(_:unknown,d:number)=>hits.push(d)} as unknown as ArenaScene;
+ const c=new LethweiCombat(scene);c.activate(0);c.onDamageTaken(20);c.onDamageTaken(20);assert.deepEqual(hits,[14,14]);
+ c.update(.49);c.onDamageTaken(20);assert.equal(hits.length,2);c.update(.01);c.onDamageTaken(20);assert.equal(hits.length,4);
+ scene.paused=true;c.update(1);scene.paused=false;c.onDamageTaken(20);assert.equal(hits.length,4);
+ c.clear();c.ironChinTime=1;c.onDamageTaken(20);assert.equal(hits.length,6);
+});

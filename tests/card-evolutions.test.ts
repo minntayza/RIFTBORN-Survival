@@ -66,7 +66,12 @@ test('in-game evolution cards display designed evolution artwork for all hero bu
 
    assert.ok(html.includes('evolution-card'));
 
-   assert.ok(html.includes(`/assets/evolution-cards/${hero}-${u.id}.webp`));
+   const shared=['health','speed','crit','magnet','regen','ward','fire','orbit','damage','cooldown'].includes(u.id);
+   const ninjaUnique=hero==='ninja'&&['wide','double','trail','clone'].includes(u.id);
+   const samuraiUnique=hero==='samurai'&&['range','bleed','counter','wind'].includes(u.id);
+   const gunnerUnique=hero==='gunner'&&['magazine','pierce','ricochet','explosive','reload'].includes(u.id);
+   const tankUnique=hero==='tank'&&['stamina','block','reflect','spikes','rush'].includes(u.id);
+   assert.ok(html.includes(shared?'common-evolutions-v1.png':ninjaUnique?'ninja-upgrades-v1.png':samuraiUnique?'samurai-upgrades-v1.png':gunnerUnique?'gunner-upgrades-v1.png':tankUnique?'tank-upgrades-v1.png':`/assets/evolution-cards/${hero}-${u.id}.webp`));
 
   }
 

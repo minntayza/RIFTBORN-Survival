@@ -1,8 +1,8 @@
 
 export const LETHWEI_SKILLS = {
  blitz: { name: 'Nine-Limb Blitz', cooldown: 8, icon: '⚔', description: 'Dash forward with a flying knee, elbow strike, and headbutt, knocking back and stunning foes.' },
- ironchin: { name: 'Iron Chin', cooldown: 11, icon: '✦', description: 'Harden your stance: gain 50% damage reduction for 3.5s and reflect 70% melee damage taken back as a shockwave.' },
- lethweiring: { name: 'Lethwei Ring', cooldown: 20, icon: '⬡', description: 'Establish a sacred square Lethwei ring for 6s (20s cooldown). Gain 20% damage reduction inside. A spirit clone aids you, and elastic ring ropes bounce foes back inside.' }
+ ironchin: { name: 'Iron Chin', cooldown: 11, icon: '✦', description: 'Harden your stance: gain 50% damage reduction for 3.5s and reflect 70% damage taken as a shockwave (0.5s pulse cooldown). Damage reduction stacks up to 60%.' },
+ lethweiring: { name: 'Lethwei Ring', cooldown: 20, icon: '⬡', description: 'Establish a sacred square Lethwei ring for 6s (20s cooldown). Gain 20% damage reduction inside. Damage reduction stacks up to 60%. A spirit clone aids you, and elastic ring ropes bounce foes back inside.' }
 } as const;
 
 export type LethweiSkill = keyof typeof LETHWEI_SKILLS;
@@ -31,12 +31,14 @@ export function lethweiSkillIcon(id: LethweiSkill) {
  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="${x+4} ${y+4} 92 92" class="skill-svg-icon" data-skill-icon="${id}" aria-hidden="true" style="border-radius:50%;overflow:hidden"><defs><clipPath id="${key}"><circle cx="${x+50}" cy="${y+50}" r="46"/></clipPath></defs><image clip-path="url(#${key})" href="/assets/ui/lethwei-ability-emblems-v1.png" width="200" height="200"/></svg>`;
 }
 
+export const LETHWEI_PORTRAIT = '/assets/characters/lethwei-tiger-portrait-v1.png';
+
 export function lethweiPortrait(cls = 'art-image') {
- return `<svg class="${cls}" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" role="img" aria-label="Lethwei Master with wrapped fists and traditional Htoe Kwin tattoos"><image href="/assets/characters/lethwei-tiger-portrait-v1.png" x="8" y="0" width="112" height="128" preserveAspectRatio="xMidYMid slice"/></svg>`;
+ return `<svg class="${cls}" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" role="img" aria-label="Lethwei Master with wrapped fists and traditional Htoe Kwin tattoos"><image href="${LETHWEI_PORTRAIT}" x="8" y="0" width="112" height="128" preserveAspectRatio="xMidYMid slice"/></svg>`;
 }
 
 export function hempWrapsPortrait(cls = 'weapon-reference-art') {
- return `<svg class="${cls}" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" role="img" aria-label="Hemp Wraps illustration">
+ return `<svg class="${cls}" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" role="img" aria-label="Pattee Wraps illustration">
   <defs>
    <linearGradient id="hempGrad" x1="0%" y1="0%" x2="100%" y2="100%">
     <stop offset="0%" stop-color="#f5e6ca"/>

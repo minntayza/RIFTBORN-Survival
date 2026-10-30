@@ -15,3 +15,30 @@ test('Moonwind retains movement and attack bonuses, and renders safely with shot
  for(let a=0;a<Math.PI*2;a+=Math.PI/4){scene.angle=a;scene.swing=0;combat.bowAttack();combat.update(.08);combat.render(a);}
  combat.clear();assert.equal(combat.arrows.length,0);assert.equal(combat.windFocusTime,0);combat.render(2);
 });
+
+test('spell pose locks to its projectile direction in all eight directions, including while moving',()=>{
+ for(let i=0;i<8;i++){
+  const angle=i*Math.PI/4,{scene,combat}=setup();
+  scene.angle=angle+Math.PI/2;
+  assert.ok(combat.activate(0,Math.cos(angle),Math.sin(angle)));
+  const committed=combat.lockedAim!;
+  assert.ok(Math.abs(Math.sin(committed-angle))<1e-8);
+  const origin=combat.arrows[0];
+  assert.equal(combat.laserBeams[0].angle,committed);
+  assert.equal(origin.angle,committed);
+  scene.x+=15;scene.y-=10;scene.angle=angle+Math.PI;
+  assert.equal(combat.lockedAim,committed);
+  // A self buff must not turn the bow away from an ongoing committed shot.
+  combat.activate(1,-Math.cos(angle),-Math.sin(angle));
+  assert.equal(combat.lockedAim,committed);
+  scene.swing=0;assert.equal(combat.lockedAim,undefined);
+ }
+});
+
+test('normal arrows and their recovery pose share committed aim',()=>{
+ const {scene,combat}=setup();
+ scene.angle=-Math.PI/4;combat.bowAttack();
+ scene.angle=Math.PI;combat.releasePendingShots(.075);
+ assert.equal(combat.lockedAim,-Math.PI/4);
+ assert.equal(combat.arrows[0].angle,combat.lockedAim);
+});

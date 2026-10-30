@@ -12,7 +12,9 @@ let stop=0;
 function play(kind:'shot'|'crown'|'wind'){
  clearTimeout(stop);scene.paused=false;scene.swing=0;scene.angle=aim;scene.attack=999;
  if(kind==='shot')scene.pyusawhti?.bowAttack();else{const c=scene.pyusawhti!;c.cooldowns=[0,0];c.activate(kind==='crown'?0:1,Math.cos(aim),Math.sin(aim));}
- for(let i=0;i<10;i++){scene.angle=aim;scene.update(0,16);}scene.angle=aim;scene.paused=true;scene.render();
+ for(let i=0;i<10;i++)scene.update(0,16);
+ scene.paused=true;scene.render();
+ status.textContent=kind==='wind'?'Moonwind follows the current bow direction':Math.abs(Math.sin(scene.angle-aim))<1e-8?'PASS · pose and projectile retain the selected aim':'FAIL · pose changed direction';
 }
 let aim=0;
 document.querySelector('#shot')!.addEventListener('click',()=>play('shot'));

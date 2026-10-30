@@ -1,3 +1,4 @@
+import {ninjaSkinPortrait} from '../src/ninja-cosmetics';
 import Phaser from 'phaser';
 import {startHomeScene} from '../src/home-scene';
 import {ArenaScene} from '../src/combat';
@@ -6,6 +7,8 @@ import {AudioManager} from '../src/audio';
 import {COSMETICS,buyCosmetic,equipCosmetic} from '../src/cosmetics';
 const chosen=new URLSearchParams(location.search).get('outfit');
 const outfit=chosen==='future'?'/assets/cosmetics/ninja-future.png':chosen==='ancient'?'/assets/cosmetics/ninja-ancient.png':'/assets/cosmetics/ninja-modern-rig-v3.png';
+const portraits=document.createElement('section');portraits.style.cssText='display:flex;gap:16px;padding:16px;flex-wrap:wrap';
+portraits.innerHTML=[['Ancient Shadow','/assets/cosmetics/ninja-ancient.png'],['Modern Street Shinobi','/assets/cosmetics/ninja-modern-rig-v3.png'],['Future Neon Ghost','/assets/cosmetics/ninja-future.png']].map(([name,url])=>`<article style="background:#203640;border:1px solid #637779;border-radius:12px;padding:12px;text-align:center"><div style="width:128px;height:128px;margin:auto">${ninjaSkinPortrait(url)}</div><b>${name}</b></article>`).join('');document.querySelector('header')!.after(portraits);
 document.querySelector('h2')!.textContent=outfit.includes('ancient')?'Ancient Shadow':outfit.includes('future')?'Future Neon Ghost':'Modern Street Shinobi';
 await startHomeScene(document.querySelector('#home')!,'ninja','katana',false,undefined,outfit);
 const save=freshSave();save.petals=100000;save.hero='ninja';save.weapon='katana';const cosmetic=COSMETICS.find(c=>c.kind==='character'&&c.asset===outfit)!;buyCosmetic(save,cosmetic.id);equipCosmetic(save,cosmetic.id);save.settings.sound=save.settings.music=save.settings.shake=false;

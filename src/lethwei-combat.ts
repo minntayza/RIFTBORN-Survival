@@ -34,6 +34,7 @@ export class LethweiCombat {
  private blitzBeat = 0;
  private blitzPops: {x:number;y:number;angle:number;beat:number;life:number}[] = [];
  ironChinTime = 0;
+ private chinReflectCooldown=0;
  private chinFlash=0;
  private chinFade=0;
  private chinPulses:{x:number;y:number;tx:number;ty:number;life:number}[]=[];
@@ -69,7 +70,7 @@ export class LethweiCombat {
   if (this.s.u('goldenbelt') > 0 && this.s.hp < this.s.maxHp * 0.5) {
    red *= 0.65; // 35% extra reduction
   }
-  return red;
+  return Math.max(.4,red);
  }
 
  activate(slot: number, dx = 0, dy = 0) {
@@ -123,7 +124,8 @@ export class LethweiCombat {
  }
 
  onDamageTaken(dmg: number) {
-  if (this.ironChinTime > 0) {
+  if (this.ironChinTime > 0 && this.chinReflectCooldown<=1e-8) {
+   this.chinReflectCooldown=.5;
    const s = this.s;
    const reflect = dmg * 0.7;
    for (const e of s.enemies) {
@@ -148,6 +150,7 @@ export class LethweiCombat {
   for (let i = 0; i < 2; i++) {
    this.cooldowns[i as 0 | 1] = Math.max(0, this.cooldowns[i as 0 | 1] - dt);
   }
+  this.chinReflectCooldown=Math.max(0,this.chinReflectCooldown-dt);
   this.chinFlash=Math.max(0,this.chinFlash-dt);this.chinFade=Math.max(0,this.chinFade-dt);
   for(const p of this.chinPulses)p.life-=dt;
   this.chinPulses=this.chinPulses.filter(p=>p.life>0);
@@ -282,7 +285,7 @@ export class LethweiCombat {
   this.clones.length = 0;
   this.ropeCooldown.clear();
   this.blitzTime = 0;
-  this.ironChinTime = 0;this.chinFlash=0;this.chinFade=0;this.chinPulses=[];
+  this.ironChinTime = 0;this.chinReflectCooldown=0;this.chinFlash=0;this.chinFade=0;this.chinPulses=[];
   this.blitzTrails.length = 0;
   for(const rig of this.blitzAfterimages)rig.setVisible(false);
   this.blitzPops.length = 0;this.blitzBeat=0;

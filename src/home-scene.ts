@@ -1,5 +1,5 @@
 import {FUTURE_ARMS,registerFutureArms} from './future-ghost-arms';
-import {LETHWEI_ART,LETHWEI_LEGS,LETHWEI_FOREARMS,LETHWEI_NEAR_FOREARM,drawFighter} from './lethwei-rig';
+import {LETHWEI_PORTRAIT} from './lethwei';
 import {ANCIENT_ARMS,registerAncientArms} from './ancient-shadow-arms';
 import {ninjaCosmeticPose,ninjaCosmeticShoulder,ninjaOutfitFit} from './ninja-cosmetic-pose';
 import {colorfulCharacter,outlinedWeapon} from './equipment-presentation';
@@ -42,10 +42,13 @@ function fitPreview(source:HTMLCanvasElement,target:HTMLCanvasElement){
 export async function startHomeScene(canvas:HTMLCanvasElement,hero:HeroId,weapon:WeaponId,portrait=false,colors={character:0xffffff,weapon:0xffffff},skin?:string,weaponSkin?:string){
  try{
  if(hero==='lethwei'){
- const [image,legs,forearms,nearForearm]=await Promise.all([load(LETHWEI_ART.url),load(LETHWEI_LEGS.url),load(LETHWEI_FOREARMS.url),load(LETHWEI_NEAR_FOREARM.url)]);if(!canvas.isConnected)return;
+ const image=await load(LETHWEI_PORTRAIT);if(!canvas.isConnected)return;
  canvas.width=portrait?840:1200;canvas.height=840;
  const g=canvas.getContext('2d')!;g.imageSmoothingEnabled=true;g.imageSmoothingQuality='high';
- g.save();g.translate(canvas.width/2,375);g.scale(5.5,5.5);drawFighter(g,image,legs,forearms,nearForearm);g.restore();canvas.dataset.ready='true';return;
+ const scale=Math.min((canvas.width-80)/image.width,730/image.height);
+ const width=image.width*scale,height=image.height*scale;
+ g.drawImage(image,(canvas.width-width)/2,(canvas.height-height)/2,width,height);
+ canvas.dataset.ready='true';return;
  }
  if(hero==='zawgyi'){
  const image=await load(ZAWGYI_ART.url);if(!canvas.isConnected)return;

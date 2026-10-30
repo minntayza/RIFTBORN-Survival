@@ -1,3 +1,4 @@
+import {FOX_RONIN_REWARD} from './challenge-rewards';
 import {tankWeaponSetAsset,tankWeaponTheme} from './tank-weapon-designs';
 import {HEROES,HERO_DEFINITIONS,WEAPONS,PLAYTEST,type HeroId,type WeaponId} from './config';
 import type {Save} from './save';
@@ -16,7 +17,7 @@ export const COSMETICS=([['character',HEROES],['weapon',WEAPONS]] as const).flat
 export function equippedWeaponSkin(s:Save,weapon:WeaponId){return COSMETICS.find(c=>c.id===s.cosmetics.equipped[`weapon:${weapon}`])?.asset;}
 export function equippedSkin(s:Save,hero:HeroId=s.hero){return COSMETICS.find(c=>c.id===s.cosmetics.equipped[`character:${hero}`])?.asset;}
 export function cosmeticColor(s:Save,kind:'character'|'weapon',target:string){const c=COSMETICS.find(c=>c.id===s.cosmetics.equipped[`${kind}:${target}`]);return c?.asset?0xffffff:c?.color||0xffffff;}
-export function buyCosmetic(s:Save,id:string){const c=COSMETICS.find(c=>c.id===id);if(!c||s.cosmetics.owned.includes(id)||(!PLAYTEST.unlimitedPetals&&s.petals<c.price))return false;if(!PLAYTEST.unlimitedPetals)s.petals-=c.price;s.cosmetics.owned.push(id);return true;}
+export function buyCosmetic(s:Save,id:string){const c=COSMETICS.find(c=>c.id===id);if(!c||id===FOX_RONIN_REWARD||s.cosmetics.owned.includes(id)||(!PLAYTEST.unlimitedPetals&&s.petals<c.price))return false;if(!PLAYTEST.unlimitedPetals)s.petals-=c.price;s.cosmetics.owned.push(id);return true;}
 export function equipCosmetic(s:Save,id:string){
  const c=COSMETICS.find(c=>c.id===id);if(!c||!s.cosmetics.owned.includes(id))return false;
  if(c.kind==='weapon'){

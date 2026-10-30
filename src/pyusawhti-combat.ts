@@ -15,6 +15,7 @@ type Arrow = {
 	sunburst?: boolean;
 	giant?: boolean;
 	hitEnemies: Set<Enemy>;
+ trailDistance?:number;
 };
 
 type SunBurst = {
@@ -41,6 +42,12 @@ export class PyusawhtiCombat {
 	readonly equipped: [PyusawhtiSkill, PyusawhtiSkill];
 	cooldowns: [number, number] = [0, 0];
 	windFocusTime = 0;
+ legendTime=0;
+ private legendCooldown=0;
+ private sunburstCooldown=0;
+ private bowShots=0;
+ private fieldTick=0;
+ readonly fields:{x:number;y:number;life:number;radius:number;kind:'gale'|'sun'}[]=[];
 	readonly arrows: Arrow[] = [];
  private glints:{x:number;y:number;age:number;crown:boolean}[]=[];
  private releases:{x:number;y:number;angle:number;age:number}[]=[];
@@ -56,12 +63,16 @@ export class PyusawhtiCombat {
 		this.effects = s.add.graphics().setDepth(5);
 	}
 
+ private shotAim=0;
+ /** Hold the pose on the same direction as the released arrows during recovery. */
+ get lockedAim(){return this.s.swing>0?this.shotAim:undefined;}
+
 	get speedMultiplier() {
 		return this.windFocusTime > 0 ? 1.25 : 1;
 	}
 
 	get attackRateMultiplier() {
-		return this.windFocusTime > 0 ? 1.8 : 1;
+		return (this.windFocusTime > 0 ? 1.8 : 1)*(this.legendTime>0?1.25:1);
 	}
 
 	activate(slot: number, dx = 0, dy = 0) {
@@ -71,38 +82,38 @@ export class PyusawhtiCombat {
 		}
 		const id = this.equipped[slot];
 		const angle = dx || dy ? Math.atan2(dy, dx) : s.angle;
-		this.cooldowns[slot] = PYUSAWHTI_SKILLS[id].cooldown * (s.options.build === 'mobility' ? 0.9 : 1);
+		this.cooldowns[slot] = PYUSAWHTI_SKILLS[id].cooldown * (1-Math.min(3,s.u('windfocuscard'))*.05) * (s.options.build === 'mobility' ? 0.9 : 1);
 
-		if(id!=='windfocus'){s.angle=angle;s.attackSequence++;s.swing=.28;}
+		if(id!=='windfocus'){this.shotAim=angle;s.angle=angle;s.attackSequence++;s.swing=.28;}
 		if (id === 'multishot') {
 			const baseDmg = (WEAPONS[s.weapon]?.damage || 28) * 1.1;
-			const flankBonus = s.u('arrowstorm') * 2;
-			const totalArrows = s.evolved('arrowstorm') ? 8 : (7 + flankBonus);
+			const flankBonus = Math.min(3,s.u('arrowstorm')) * 2;
+			const totalArrows = 7 + flankBonus;
 			for (let i = 0; i < totalArrows; i++) {
-				const a = s.evolved('arrowstorm') ? (i * Math.PI * 2 / 8) : (angle + (i - Math.floor(totalArrows / 2)) * 0.13);
-				const speed = 720 * (1 + s.u('windfocuscard') * 0.25);
+				const a = angle + (i - Math.floor(totalArrows / 2)) * 0.13;
+				const speed = 720 * (1 + Math.min(3,s.u('windfocuscard')) * 0.15);
 				this.arrows.push({
 					x: pyusawhtiArrowOrigin(s.x,s.y,angle).x,
 					y: pyusawhtiArrowOrigin(s.x,s.y,angle).y,
 					vx: Math.cos(a) * speed,
 					vy: Math.sin(a) * speed,
 					angle: a,
-					damage: baseDmg,
-					pierce: 3 + s.u('piercingeye') * 2 + (s.evolved('piercingeye') ? 99 : 0),
+					damage: baseDmg * (i<flankBonus/2||i>=totalArrows-flankBonus/2?.35:1),
+					pierce: s.evolved('piercingeye') ? Infinity : 3 + Math.min(3,s.u('piercingeye')),
 					remainingRange: 650,
-					sunburst: s.evolved('sunburstcard') || Math.random() < s.u('sunburstcard') * 0.25,
+					sunburst: Math.random() < Math.min(3,s.u('sunburstcard')) * .15,
 					hitEnemies: new Set()
 				});
 			}
 			s.audio.play('shotgun');
 			s.notifyCombat('GALE VOLLEY');
 		} else if (id === 'windfocus') {
-			this.windFocusTime = 5 + s.u('windfocuscard') * 1.2;
+			this.windFocusTime = 5;
 			s.audio.play('overdrive');
 			s.notifyCombat('MOONWIND FOCUS');
 		} else if (id === 'banepierce') {
 			// Five-Bane Pierce: Devastating 96px-wide (3 enemies wide) Solar Laser Beam Arrow
-			const baseDmg = (WEAPONS[s.weapon]?.damage || 28) * 5.4 * (1 + s.u('beasthunter') * 0.35);
+			const baseDmg = (WEAPONS[s.weapon]?.damage || 28) * 5.4;
 			const beamLen = 920;
 			const beamWidth = 96; // 3 enemies wide (~96px)
 			const startX = pyusawhtiArrowOrigin(s.x,s.y,angle).x;
@@ -140,16 +151,6 @@ export class PyusawhtiCombat {
 			const endY = startY + Math.sin(angle) * (beamLen * 0.88);
 			this.explodeSun(endX, endY, 190, baseDmg * 0.7);
 
-			// If sunburst evolved, leave radiant solar fire patches along the laser corridor
-			if (s.evolved('sunburstcard')) {
-				for (let f = 1; f <= 5; f++) {
-					const fx = startX + Math.cos(angle) * (beamLen * (f / 6));
-					const fy = startY + Math.sin(angle) * (beamLen * (f / 6));
-					if (s.firePatches.length >= 25) s.firePatches.shift();
-					s.firePatches.push({ x: fx, y: fy, life: 3.5 });
-				}
-			}
-
 			s.cameras.main.shake(200, 0.007);
 			s.audio.play('tank-slam');
 			s.notifyCombat('CROWNPIERCER');
@@ -160,19 +161,21 @@ export class PyusawhtiCombat {
 	bowAttack() {
 		const s = this.s;
 		if (s.paused || s.ended || s.swing > 0) return;
+		this.shotAim=s.angle;
 		s.attackSequence++;
 		const w = WEAPONS[s.weapon];
-		const speed = (s.weapon === 'solarcrossbow' ? 820 : s.weapon === 'greatbow' ? 580 : 700) * (1 + s.u('windfocuscard') * 0.25);
-		const pierce = (this.windFocusTime > 0 ? 12 : s.weapon === 'greatbow' ? 2 : 1) + s.u('pierce') + s.u('piercingeye') * 2 + (s.evolved('piercingeye') ? 99 : 0);
+		const speed = (s.weapon === 'solarcrossbow' ? 820 : s.weapon === 'greatbow' ? 580 : 700) * (1 + Math.min(3,s.u('windfocuscard')) * 0.15);
+		const pierce = s.evolved('piercingeye') ? Infinity : (this.windFocusTime > 0 ? 12 : s.weapon === 'greatbow' ? 2 : 1) + s.u('pierce') + Math.min(3,s.u('piercingeye'));
 		const damage = (w?.damage || 28) * (this.windFocusTime > 0 ? 1.2 : 1) * (1 + s.u('damage') * 0.15);
 
 		s.swing = (w?.cooldown || 0.35) / this.attackRateMultiplier;
 
 		const angles = [s.angle];
-		if (s.evolved('arrowstorm')) {
+		this.bowShots++;
+		if (s.evolved('arrowstorm') && this.bowShots%4===0) {
 			for (let i = 1; i < 8; i++) angles.push(s.angle + (i * Math.PI * 2 / 8));
 		} else if (s.u('arrowstorm') > 0) {
-			const extra = s.u('arrowstorm');
+			const extra = Math.min(3,s.u('arrowstorm'));
 			for (let i = 1; i <= extra; i++) {
 				angles.push(s.angle - i * 0.12);
 				angles.push(s.angle + i * 0.12);
@@ -180,17 +183,17 @@ export class PyusawhtiCombat {
 		}
 
 		const shotArrows:Arrow[]=[];
-		for (const a of angles) {
+		for (const [index,a] of angles.entries()) {
 			shotArrows.push({
 				x: pyusawhtiArrowOrigin(s.x,s.y,s.angle).x,
 				y: pyusawhtiArrowOrigin(s.x,s.y,s.angle).y,
 				vx: Math.cos(a) * speed,
 				vy: Math.sin(a) * speed,
 				angle: a,
-				damage,
+				damage:damage*(index===0?1:.35),
 				pierce,
 				remainingRange: w?.range || 650,
-				sunburst: s.weapon === 'greatbow' || s.evolved('sunburstcard') || Math.random() < s.u('sunburstcard') * 0.25,
+				sunburst: s.weapon === 'greatbow' || Math.random() < Math.min(3,s.u('sunburstcard')) * .15,
 				hitEnemies: new Set()
 			});
 		}
@@ -208,21 +211,39 @@ export class PyusawhtiCombat {
   }
  }
 
-	private explodeSun(x: number, y: number, radius: number, damage: number) {
-		const s = this.s;
-		this.bursts.push({ x, y, age: 0, maxAge: 0.65, radius });
-		for (const e of s.enemies) {
-			if (e.active && Math.hypot(e.x - x, e.y - y) <= radius + e.r) {
-				s.hit(e, damage, 45, false, false, 'Sunburst');
-				if (e.active) e.burn = Math.max(e.burn || 0, 3.5);
-			}
-		}
-		if (s.evolved('sunburstcard')) {
-			if (s.firePatches.length >= 20) s.firePatches.shift();
-			s.firePatches.push({ x, y, life: 3.5 });
-		}
-		s.audio.play('tank-slam');
-	}
+ private damageEnemy(e:Enemy,damage:number,knockback:number){
+  const elite=['elite','boss','shooterBoss','commander'].includes(e.type),alive=e.hp>0;
+  this.s.hit(e,damage*(elite?1+Math.min(3,this.s.u('beasthunter'))*.15:1),knockback);
+  if(alive&&e.hp<=0&&elite&&this.s.evolved('beasthunter')&&this.legendCooldown<=0){
+   this.legendTime=3;this.legendCooldown=10;this.s.notifyCombat('LEGEND OF BAGAN · +25% ATTACK SPEED');
+  }
+ }
+ private explodeSun(x:number,y:number,radius:number,damage:number){
+  this.bursts.push({x,y,age:0,maxAge:.65,radius});
+  for(const e of this.s.enemies)if(e.active&&Math.hypot(e.x-x,e.y-y)<=radius+e.r)this.damageEnemy(e,damage,45);
+  this.s.audio.play('tank-slam');
+ }
+ private arrowSunburst(a:Arrow){
+  if(!a.sunburst||this.sunburstCooldown>0)return;
+  this.sunburstCooldown=.5;
+  const evolved=this.s.evolved('sunburstcard');
+  this.explodeSun(a.x,a.y,evolved?110:85,a.damage*.9);
+  if(evolved)this.addField(a.x,a.y,'sun');
+ }
+ private addField(x:number,y:number,kind:'gale'|'sun'){
+  if(this.fields.length>=80)this.fields.shift();
+  this.fields.push({x,y,kind,life:kind==='gale'?.65:2,radius:kind==='gale'?20:55});
+ }
+ private updateFields(dt:number){
+  for(let i=this.fields.length-1;i>=0;i--){this.fields[i].life-=dt;if(this.fields[i].life<=0)this.fields.splice(i,1);}
+  this.fieldTick-=dt;if(this.fieldTick>0)return;this.fieldTick=.25;
+  const base=WEAPONS[this.s.weapon]?.damage||28;
+  // One strongest field hit per enemy per tick; overlapping trails never stack.
+  for(const e of this.s.enemies){if(!e.active)continue;let factor=0;
+   for(const f of this.fields)if(Math.hypot(e.x-f.x,e.y-f.y)<=f.radius+e.r)factor=Math.max(factor,f.kind==='sun'?.2:.15);
+   if(factor)this.damageEnemy(e,base*factor*.25,0);
+  }
+ }
 
 	update(dt: number) {
 		const s = this.s;
@@ -232,6 +253,9 @@ export class PyusawhtiCombat {
 		}
 		if (s.paused) return;
 
+  this.sunburstCooldown=Math.max(0,this.sunburstCooldown-dt);
+  this.legendCooldown=Math.max(0,this.legendCooldown-dt);this.legendTime=Math.max(0,this.legendTime-dt);
+  this.updateFields(dt);
   this.releasePendingShots(dt);
   for(const list of [this.glints,this.releases]){for(let i=list.length-1;i>=0;i--){list[i].age+=dt;if(list[i].age>.32)list.splice(i,1);}}
 
@@ -271,16 +295,8 @@ export class PyusawhtiCombat {
 					if (perp <= halfWidth + e.r) {
 						b.hitEnemies.add(e);
       this.glints.push({x:e.x,y:e.y,age:0,crown:true});
-						const isBoss = ['elite', 'boss', 'shooterBoss', 'commander'].includes(e.type);
-						const dmg = b.damage * (isBoss ? (1 + s.u('beasthunter') * 0.3) : 1);
-						s.hit(e, dmg, 85);
-						e.burn = Math.max(e.burn || 0, 4.5);
+						this.damageEnemy(e,b.damage,85);
 						e.stagger = Math.max(e.stagger || 0, 0.85);
-						if (isBoss && e.hp <= 0 && s.evolved('beasthunter')) {
-							s.invuln = Math.max(s.invuln, 4);
-							s.heal(25);
-							s.notifyCombat('LEGEND OF BAGAN · INVULNERABLE');
-						}
 						s.burst(e.x, e.y, 0xffd700, 10);
 					}
 				}
@@ -298,6 +314,7 @@ export class PyusawhtiCombat {
 			a.x += a.vx * dt;
 			a.y += a.vy * dt;
 			a.remainingRange -= stepDist;
+   if(s.evolved('windfocuscard')){a.trailDistance=(a.trailDistance||0)+stepDist;if(a.trailDistance>=28){a.trailDistance%=28;this.addField(a.x,a.y,'gale');}}
 
 			for (const e of s.enemies) {
 				if (!e.active || a.hitEnemies.has(e)) continue;
@@ -305,13 +322,8 @@ export class PyusawhtiCombat {
 				if (Math.hypot(e.x - a.x, e.y - a.y) <= hitRadius) {
 					a.hitEnemies.add(e);
      this.glints.push({x:e.x,y:e.y,age:0,crown:!!a.giant});
-					const isBoss = ['elite', 'boss', 'shooterBoss', 'commander'].includes(e.type);
-					s.hit(e, a.damage * (isBoss ? (1 + s.u('beasthunter') * 0.3) : 1), a.giant ? 65 : 18);
-					if (isBoss && e.hp <= 0 && s.evolved('beasthunter')) {
-						s.invuln = Math.max(s.invuln, 4);
-						s.heal(25);
-						s.notifyCombat('LEGEND OF BAGAN · INVULNERABLE');
-					}
+					this.damageEnemy(e,a.damage,a.giant?65:18);
+     if(!a.giant)this.arrowSunburst(a);
 					s.burst(a.x, a.y, a.giant ? 0xf4d589 : 0xb5fff2, a.giant ? 6 : 2);
 					a.pierce--;
 					if (a.giant) {
@@ -322,7 +334,7 @@ export class PyusawhtiCombat {
 			}
 
 			if (a.pierce <= 0 || a.remainingRange <= 0) {
-				if (a.sunburst || a.giant) {
+				if (a.giant) {
 					this.explodeSun(a.x, a.y, a.giant ? 175 : 85, a.damage * 0.9);
 				}
 				this.arrows.splice(i, 1);
@@ -331,7 +343,7 @@ export class PyusawhtiCombat {
 	}
 
 	clear() {
-  this.pendingShots.length=0;this.glints.length=0;this.releases.length=0;
+  this.pendingShots.length=0;this.glints.length=0;this.releases.length=0;this.fields.length=0;this.legendTime=0;this.legendCooldown=0;this.sunburstCooldown=0;this.bowShots=0;this.fieldTick=0;
 		this.arrows.length = 0;
 		this.bursts.length = 0;
 		this.laserBeams.length = 0;
@@ -360,12 +372,15 @@ export class PyusawhtiCombat {
      f.lineBetween(x+Math.cos(a)*31,y+14+Math.sin(a)*11,x+Math.cos(b)*31,y+14+Math.sin(b)*11);
     }
    }
-   const bow=pyusawhtiArrowOrigin(x,y,this.s.angle);
+   // The raised-bow attachment is valid only during a committed shot.
+   if(this.s.swing>0){
+   const bow=pyusawhtiArrowOrigin(x,y,this.lockedAim??this.s.angle);
    for(let i=0;i<2;i++){
     const a=time*2+i*Math.PI,px=x+Math.cos(a)*24,py=y+Math.sin(a)*9;
     g.lineStyle(1,teal,.35);g.lineBetween(px,py,bow.x,bow.y);star(px,py,2.5,.7,teal);
    }
    star(bow.x,bow.y,4+Math.sin(time*5),.9);
+   }
   }
   for(const b of this.laserBeams){
    const t=1-b.duration/b.maxDuration,fade=Math.pow(1-t,1.5);
@@ -383,6 +398,12 @@ export class PyusawhtiCombat {
    }
    star(b.x,b.y,18*fade,fade,gold);
   }
+  for(const field of this.fields){
+   const alpha=Math.min(1,field.life/.4),r=field.radius;
+   f.fillStyle(field.kind==='sun'?gold:teal,.06*alpha);f.fillCircle(field.x,field.y,r);
+   f.lineStyle(1.4,field.kind==='sun'?gold:teal,.5*alpha);f.beginPath();f.arc(field.x,field.y,r*.7,time*3,time*3+4.4);f.strokePath();
+  }
+  if(this.legendTime>0)star(this.s.x,this.s.y-40,4,.8,gold);
   for(const b of this.bursts){
    const t=b.age/b.maxAge,fade=1-t,r=b.radius*Math.min(1,.25+t*1.7);
    f.fillStyle(teal,fade*.045);f.fillCircle(b.x,b.y,r);

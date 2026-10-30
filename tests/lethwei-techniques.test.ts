@@ -25,7 +25,7 @@ test('Iron Shins adds speed and a cooldown-limited whole-leg kick; evolution stu
 });
 test('Headbutt needs five consecutive punches; Diamond Skull expires after three seconds',()=>{
  const f=fixture({headbutt:1},['headbutt']);for(let i=1;i<=4;i++)f.t.onBasicContact(i,0);assert.equal(f.hits.length,0);
- f.t.onBasicContact(5,0);assert.equal(f.hits[0].source,'Lethwei Headbutt');assert.equal(f.t.action?.kind,'headbutt');assert.equal(f.t.damageMultiplier(f.e),1.5);
+ f.t.onBasicContact(5,0);assert.equal(f.hits[0].source,'Lethwei Headbutt');assert.equal(f.t.action?.kind,'headbutt');assert.equal(f.t.damageMultiplier(f.e),1.25);
  f.t.update(3.01,f.ring);assert.equal(f.t.damageMultiplier(f.e),1);
  const g=fixture({headbutt:1});g.t.onBasicContact(1,0);g.t.update(2.1,g.ring);for(let i=2;i<=5;i++)g.t.onBasicContact(i,0);assert.equal(g.hits.length,0);
 });
@@ -33,10 +33,20 @@ test('Rope Rebound requires outward movement near an active rope and preserves b
  const f=fixture({ringmaster:2});f.ring.active=true;f.s.x=160;f.t.update(.1,f.ring);f.s.x=170;f.t.update(.1,f.ring);
  assert.equal(f.s.x,124);assert.equal(f.t.reboundMultiplier,2);assert.equal(f.t.consumeRebound(false,false),2);assert.equal(f.t.reboundMultiplier,2);assert.equal(f.t.consumeRebound(true),1);assert.equal(f.t.consumeRebound(false),2);assert.equal(f.t.reboundMultiplier,1);
 });
-test('Champion healing triggers once per landed punch; evolved leech and emergency protection respect limits',()=>{
- const f=fixture({goldenbelt:2});f.t.onBasicContact(1,0);f.t.onBasicContact(1,0);assert.deepEqual(f.heals,[4]);f.s.hp=60;f.t.onBasicContact(2,0);assert.deepEqual(f.heals,[4]);
- const g=fixture({goldenbelt:3},['goldenbelt']);g.t.onDamageDealt(50);g.t.onDamageDealt(50,'Iron Chin Reflect');assert.deepEqual(g.heals,[10]);g.s.hp=40;
- assert.equal(g.t.beforeDamage(15),true);assert.deepEqual(g.protection,[3]);assert.equal(g.t.beforeDamage(15),false);g.t.update(20,g.ring);assert.equal(g.t.beforeDamage(15),true);
+test('Champion healing is shared across punch sequences and requires low health',()=>{
+ const f=fixture({goldenbelt:3});f.t.onBasicContact(1,0);f.t.onBasicContact(1,0);f.t.onBasicContact(2,0);assert.deepEqual(f.heals,[3]);
+ f.t.update(.49,f.ring);f.t.onBasicContact(3,0);assert.deepEqual(f.heals,[3]);
+ f.t.update(.01,f.ring);f.t.onBasicContact(4,0);assert.deepEqual(f.heals,[3,3]);
+ f.s.hp=50;f.t.update(.5,f.ring);f.t.onBasicContact(5,0);assert.deepEqual(f.heals,[3,3]);
+});
+test('Golden Champion leeches only basic punches and gates 1.5s protection for 25s',()=>{
+ const g=fixture({goldenbelt:3},['goldenbelt']);
+ for(const source of [undefined,'Iron Chin Reflect','Spirit Clone Strike','Ring Ropes','Nine Limbs Combo','Warrior Spirit','Nine-Limb Blitz'])g.t.onDamageDealt(50,source);
+ assert.deepEqual(g.heals,[]);g.t.onDamageDealt(50,'Lethwei Basic Punch');assert.deepEqual(g.heals,[5]);
+ g.t.onBasicContact(1,0);assert.deepEqual(g.heals,[5]);g.s.hp=40;
+ assert.equal(g.t.beforeDamage(15),true);assert.deepEqual(g.protection,[1.5]);assert.equal(g.t.beforeDamage(15),false);
+ g.t.update(24.99,g.ring);assert.equal(g.t.beforeDamage(15),false);g.t.update(.01,g.ring);assert.equal(g.t.beforeDamage(15),true);
+ g.t.clear();assert.equal(g.t.beforeDamage(15),true);
 });
 test('Technique poses retain seven parts and whole legs; headbutt moves the whole rig together',()=>{
  const base=fighterPose(),kick=fighterPose(0,false,0,0,undefined,.2,0,{kind:'kick',time:.12,duration:.24,aim:0});assert.equal(kick.length,7);
