@@ -1,10 +1,101 @@
+<div align="center">
+  <img src="public/icons/riftborn-tab-192-v1.png" alt="RIFTBORN gold R emblem with a teal rift" width="88" />
+
 # RIFTBORN
 
-A mobile-first zombie survival roguelite built with **TypeScript, Phaser 3, and Vite**. Fight through growing hordes, combine upgrades, awaken your weapon, and survive as long as you can.
+### One survivor. An evolving arsenal. A last light worth defending.
 
-The game runs entirely in the browser. Progress is stored locally; no account, server, or database is required. Character illustrations, gameplay textures, and sound effects are generated locally.
+A browser action roguelite where cute fantasy heroes face relentless zombies and robots.
+Dodge the horde, shape your build, and awaken the weapon that carries your next stand.
 
-## Quick start
+**[▶ PLAY RIFTBORN](https://zombie-last-stand.vercel.app/) · [Quick start](#run-locally) · [Controls](#controls)**
+
+**Play in your browser · Desktop & mobile · No account required to start**
+
+</div>
+
+![RIFTBORN home — Zawgyi is today's defender, with Endless and Daily Challenge modes](docs/screenshots/home.png)
+
+## Your next stand starts here
+
+**Survive. Adapt. Come back stronger.** Collect XP, choose upgrades, and combine character-specific techniques with shared powers. Turn a simple attack into a crowd-clearing build, then see how long you can keep it alive.
+
+| Endless | Daily Challenge |
+| --- | --- |
+| Pick your survivor and loadout. Face growing waves and chase a personal best. | Take today's shared survivor and loadout into a ten-wave camp defence. |
+| Awaken after wave 10; fully evolve your element after wave 20. | Awaken after wave 5, reinforce the camp, and survive the final siege. |
+
+## Protect the last light
+
+The Daily Challenge gives the fight a second purpose: **keep the camp standing while keeping yourself alive.** Some enemies hunt you; marked attackers head for the camp. Choose your priorities, recover between waves, and call on a little woodland guardian to help defend the beacon.
+
+<p align="center">
+  <img src="docs/screenshots/daily-gameplay.png" alt="Daily Challenge gameplay: Zawgyi at the camp beacon with Dat Lone and Flame Step equipped" width="480" />
+</p>
+
+## Seven survivors. Seven ways to fight.
+
+| Survivor | Find your playstyle |
+| --- | --- |
+| **Ninja** | Fast melee attacks, shadow techniques, and a dash out of danger. |
+| **Samurai** | Powerful sword strikes, counters, and sweeping blade skills. |
+| **Gunner** | Ranged pressure, explosive tools, and tactical reloads. |
+| **Shield Tank** | Frontal defence, shield impacts, and ground-shaking attacks. |
+| **Zawgyi** | Magic staff combat with Dat Lone, Flame Step, or Staff Slam. |
+| **Archer King** | Duskstring Bow volleys, piercing arrows, and wind-powered archery. |
+| **Lethwei Master** | Close-range punches, nine-limb combos, and a spirit boxing ring. |
+
+Customize your survivor with outfits and weapon skins, then choose the skills that suit your next run. Ninja uses his signature Shadow Dash; the other survivors equip two skills.
+
+## Build something worth surviving for
+
+Shared upgrades support damage, movement, recovery, and crowd control. Each survivor also has **five unique cards** with their own evolutions. Max an eligible card to put its evolution into the level-up choice pool. The Field Guide lets you inspect cards and plan a build before entering combat.
+
+![Archer King card gallery — five illustrated unique upgrades and their evolution previews](docs/screenshots/archer-cards.png)
+
+*Card gallery shown in the development preview; these designs are used by the game's cards.*
+
+Weapon awakening adds another choice for the run:
+
+| Element | Awakening | Full evolution in Endless |
+| --- | --- | --- |
+| **Lightning** | Chain lightning to a nearby enemy. | Chain through more enemies and gain piercing projectiles. |
+| **Wildfire** | Ignite enemies on hit. | Add explosive attacks and burning ground on kills. |
+| **Phantom** | Faster attacks and an echo every third attack. | More attack speed and an echo on every attack. |
+
+## Earn your next reward
+
+Open the floating gift on the home screen to preview rewards, check progress, and claim them when ready.
+
+- **Lethwei Master:** clear wave 15 in Endless.
+- **Fox Ronin:** clear your first Daily Challenge to earn Samurai's outfit.
+
+**Both rewards are earned through play. Neither can be bought with Gold or Petals.** New saves start with **0 Gold and 0 Petals**; play to earn currency for purchases.
+
+## Controls
+
+| Action | Desktop | Mobile |
+| --- | --- | --- |
+| Move | WASD / arrow keys | On-screen joystick |
+| Aim | Mouse; directional input when aiming skills | Drag a skill button to aim |
+| Attack | Automatic combat; hold left click for applicable weapon actions | Automatic when a target is in range |
+| First skill / Ninja dash | Q / Space | First skill button |
+| Second skill, where equipped | E | Second skill button |
+| Cancel skill aim | Escape / right click | Drag to the cancel area |
+| Pause | Escape / pause button | Pause button |
+| Choose an upgrade | Click or press 1, 2, 3 | Tap a card |
+
+**Phones are best played sideways.** Joystick placement and size are configurable. The map-view button cycles **1× → 1.5× → 2×**, with 1.5× as the default on mobile. Fullscreen availability depends on the browser and device; portrait remains playable.
+
+## Progress and accounts
+
+Guest play saves progress in the current browser. Optional Supabase sign-in supports account progress and cloud saves when configured. Guest and account progress are separate; guest progress is not imported into an account.
+
+Local saves belong to the site's origin: localhost, a phone's network address, and the hosted game have separate storage. Clearing browser storage removes local progress. Daily records are personal records, not a public online leaderboard.
+
+## Run locally
+
+Built with **TypeScript · Phaser 3 · Vite**, with optional **Supabase** accounts.
 
 Requires **Node.js 20.19+ or 22.12+** and npm.
 
@@ -15,113 +106,44 @@ npm ci
 npm run dev
 ```
 
-Open the address printed by Vite. To play on a phone connected to the same Wi-Fi network, use the network address printed by the development server. The server listens on all network interfaces.
+Open the address printed by Vite. For a phone on the same Wi-Fi network, use the printed network address. The development server listens on all network interfaces.
 
 ```bash
 npm run build    # Type-check and build to dist/
-npm run preview  # Serve the production build locally
-npm test         # Run automated unit tests
+npm run preview  # Preview the production build
+npm test         # Run automated tests
 ```
 
-## Controls
+Guest play does not require backend credentials. To enable accounts, configure the public browser values documented in [.env.example](.env.example) and set up the Supabase project using [supabase/](supabase/). Never expose a service-role key in the browser.
 
-| Platform | Action | Control |
-| --- | --- | --- |
-| Mobile | Move | On-screen joystick |
-| Mobile | Attack | Automatic when a target is in range |
-| Mobile | Ability | Large ability button |
-| Desktop | Move | WASD or arrow keys |
-| Desktop | Aim / attack | Mouse / hold left click |
-| Desktop | Ability | Space |
-| Desktop | Pause | Escape or the pause button |
-| Desktop | Choose an upgrade | 1, 2, or 3 |
+## Development and testing
 
-Mobile aim assistance helps target nearby enemies while retreating and can be disabled in Settings. Joystick side and size are configurable. Open **Your Build** from the equipped-effect icons to pause and inspect upgrades, evolution requirements, and combinations.
+The repository includes unit tests, in-engine checks, and visual previews. With the development server running:
 
-## Features
+- `tests/browser.html` — in-engine integration checks.
+- `tests/universal-aim-preview.html` — survivor skill-aiming practice.
+- `tests/camp-guardian-preview.html` — camp guardian and siege presentation.
+- `tests/evolution-showcase.html` — card and weapon evolution previews.
+- `tests/mobile-review.html` — responsive layout review.
 
-- **Four survivors:** Ninja, Samurai, Gunner, and Shield Tank, each with a distinct ability, passive mechanic, and personal records.
-- **Twelve weapons:** Katana, Dual Blades, Kama, Nodachi, Cursed Blade, Naginata, Twin Pistols, Shotgun, SMG, Round Shield, Spiked Shield, and War Hammer.
-- **Run modes:** Endless, a ten-wave Last Stand mission, and a seeded daily challenge with local personal-best records.
-- **Open-world movement:** scrolling terrain, optional supply wrecks, XP beacons, elite patrols, and desert terrain with sandstorms after wave ten.
-- **Enemies:** ordinary hordes, armed zombies, elites, Siege Gunner and Horde Commander mini-bosses, and the Zombie General.
-- **Readable combat:** attack warnings, off-screen threat indicators, damage direction, weapon-specific impacts, and a compact mobile HUD.
-- **Wave pacing:** alternating encounter intensity, staggered packs, crowd-pressure limits, and short recovery periods.
-- **Progression:** XP upgrade choices, permanent purchases, and browser-local records.
+Automated checks complement browser inspection. Real-phone testing is still needed for touch comfort, long-session performance, and device-specific fullscreen behavior.
 
-### Evolutions
+| Location | Responsibility |
+| --- | --- |
+| `src/main.ts` | Menus, navigation, HUD integration, and persistence |
+| `src/combat.ts` | Arena scene, combat, enemies, and wave lifecycle |
+| `src/*-combat.ts` | Character-specific combat systems |
+| `src/upgrades.ts`, `src/card-evolutions.ts` | Card choices and evolution effects |
+| `src/last-camp*.ts`, `src/camp-guardian.ts` | Camp defence and guardian |
+| `src/save.ts`, `src/accounts.ts` | Local progress and account integration |
+| `public/assets/` | Runtime art assets |
+| `tests/` | Automated checks and development previews |
+| `docs/screenshots/` | README screenshots |
 
-Regular upgrades come from level-ups. Starting in **wave 11**, a maxed card can offer its one-time evolution alongside normal choices.
+## Deploy
 
-In **Endless**, clearing **wave 10** unlocks a weapon awakening. Clearing **wave 20** fully evolves that same element:
+Run `npm run build` and publish `dist/` to a static host. Vercel build settings are in [vercel.json](vercel.json). Set the optional Supabase environment values on the host if accounts are enabled. For subdirectory hosting, configure Vite's base path.
 
-| Element | Awakening | Full evolution |
-| --- | --- | --- |
-| Lightning | Chain to one nearby enemy | Chain to three enemies and gain piercing attacks |
-| Wildfire | Briefly ignite targets | Explosive fire attacks and burning ground |
-| Phantom | Faster attacks and periodic echoes | Stronger attack speed with an echo on every attack |
+---
 
-The ten-wave finite modes end at their final boss; use Endless to play through both weapon milestones. The **Field Guide** includes locked previews, requirements, and saved discovery/usage states for card and weapon evolutions.
-
-### Build combinations
-
-| Combination | Requirements | Effect |
-| --- | --- | --- |
-| Firestorm | Fire upgrade + a wind attack | Wind hits spread fire to nearby enemies |
-| Steel Reversal | Samurai + Storm Blade | Perfect counters return nearby enemy shots |
-| Shadow Harvest | Ninja + Echo Slash, Phantom Ally, or Phantom evolution | Dash kills summon or extend a fighting shadow |
-| Crossfire | Through the Dark + Trick Shot | Piercing rounds split a weaker shot toward another enemy |
-| Burning Aftershock | Ground Slam + Ember Circle | Ground Slam leaves burning ground |
-
-Combinations activate automatically when requirements are met. The build panel shows active combinations and ones to work toward.
-
-## Playtest configuration
-
-Guests have unlimited Gold and Petals. Signed-in accounts start with zero currency and default equipment, then retain earned rewards and purchases through Supabase cloud saves. Guest progress never transfers into an account. Existing account balances are preserved.
-
-Saves belong to the current browser and site origin. Moving between localhost, a phone's network address, or a hosted site creates separate save storage. Clearing browser storage removes local progress. Daily records are local; there is no online leaderboard.
-
-## Testing
-
-```bash
-npm test
-npm run build
-```
-
-With the development server running, open:
-
-- `/tests/browser.html` — in-engine integration checks for combat, abilities, saves, evolutions, synergies, crowd pacing, and touch behavior.
-- `/tests/hud-preview.html` — phone HUD and build-panel preview.
-- `/tests/evolution-showcase.html` — upgrade cards and weapon awakening previews.
-- `/tests/weapon-motion.html` — weapon motion preview.
-
-Automated checks are supplemented by browser inspection. Real-phone playtesting is still needed to tune comfort, difficulty, and long-session performance.
-
-## Project structure
-
-```text
-src/
-  main.ts             Menus, navigation, HUD integration, and persistence
-  combat.ts           Phaser scene, combat, enemies, pickups, and wave lifecycle
-  combat-hud.ts       Combat HUD and paused build details
-  combat-feel.ts      Aim assistance, spawn routing, and build combinations
-  config.ts           Hero, weapon, enemy, and balance data
-  waves.ts            Wave schedules and scaling
-  upgrades.ts         Upgrade selection and eligibility
-  card-evolutions.ts  Card evolution definitions
-  progression.ts      Weapon evolution options and encounter events
-  retention.ts        Run modes, daily seeds, and threat indicators
-  mastery.ts          Legacy save compatibility helpers
-  save.ts             Save validation and purchases
-  art.ts              Original vector art and gameplay texture generation
-  visuals.ts          Gameplay actors, equipment, and animation
-  weapon-effects.ts   Shared weapon movement and contact geometry
-  touch.ts            Mobile joystick and ability controls
-  audio.ts            Synthesized audio
-  style.css           Responsive menus and HUD styling
-tests/                Unit tests, browser checks, and visual fixtures
-```
-
-## Hosting
-
-Run `npm run build` and deploy the contents of `dist/` to a static host. For hosting under a subdirectory, configure Vite's base path for that location. No backend environment variables are required.
+**[Take your next stand →](https://zombie-last-stand.vercel.app/)**
