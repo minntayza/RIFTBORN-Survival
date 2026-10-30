@@ -8,3 +8,22 @@
 @keyframes gift-float{0%,100%{transform:translateY(0) rotate(-3deg)}50%{transform:translateY(-6px) rotate(3deg)}}
 @media(max-width:560px){.home-hub .home-showcase>.home-reward-gift{top:4px;right:0;width:90px}.gift-illustration{width:78px;height:78px}.gift-label{font-size:10px}.challenge-gift-dialog{padding:12px}.challenge-gift-dialog .challenge-rewards{padding-top:4px}}
 @media(prefers-reduced-motion:reduce){.gift-illustration{animation:none}}
+
+/* Gift previews give the earned characters room to be seen before unlocking. */
+.challenge-gift-dialog .challenge-reward{flex-direction:column;align-items:stretch;text-align:center;padding:22px 18px;gap:16px}
+.challenge-gift-dialog .reward-art{flex:none;display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:240px;background:radial-gradient(ellipse,#e9c27324,transparent 68%)}
+.challenge-gift-dialog .reward-art>svg{width:220px;height:230px;max-width:100%}
+.challenge-gift-dialog .reward-art>span{font-size:10px;margin-top:10px}
+.challenge-gift-dialog .reward-copy h3{font-size:25px}
+.challenge-gift-dialog .reward-copy>p{font-size:16px;color:#ffe6ab;min-height:48px}
+.challenge-gift-dialog .reward-copy>small{font-size:12px}
+.challenge-gift-dialog .reward-preview{display:block;width:100%;font-size:14px!important}
+.challenge-gift-dialog .reward-copy button{min-height:44px}
+.run-unlock-progress{margin:20px 0;padding:18px;border:1px solid #ba985550;border-radius:16px;background:#1c3039;text-align:left}
+.run-unlock-progress h3{font-size:18px;margin:0 0 14px;color:#f4dc9c}
+.run-unlock-row{display:flex;gap:14px;align-items:center;margin:12px 0}
+.run-unlock-art{flex:0 0 64px;display:flex;justify-content:center}.run-unlock-art>svg{width:64px;height:85px}
+.run-unlock-row b{font-size:14px;color:#f5e8c4}.run-unlock-row p{font-size:13px;color:#bdcecc;margin:6px 0;line-height:1.5}
+.run-unlock-progress>button{min-height:44px;white-space:normal}
+.reward-reveal .challenge-reward:only-child .reward-art{flex-basis:190px}.reward-reveal .challenge-reward:only-child .reward-art>svg{width:190px;height:230px}
+@media(max-width:480px){.challenge-gift-dialog .reward-art{min-height:190px}.challenge-gift-dialog .reward-art>svg{width:180px;height:190px}.reward-reveal .challenge-reward:only-child{flex-direction:column}.reward-reveal .challenge-reward:only-child .reward-art{flex-basis:auto}.run-unlock-progress{padding:12px}}

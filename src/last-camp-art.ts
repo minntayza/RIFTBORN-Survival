@@ -4,8 +4,17 @@ import type {ArenaScene,Enemy} from './combat';
 import {COURT_WALLS,COURT_ART_WIDTH,COURT_ART_HEIGHT} from './last-camp-occlusion';
 /** A bounded native 2D scene: stone court, lanterns, shelter, beacon and warning layer. */
 export class LastCampArt {
+ private guardian:Phaser.GameObjects.Image;
  private flames:Phaser.GameObjects.Graphics;private foreground:Phaser.GameObjects.Image;private sprite:Phaser.GameObjects.Image;private ground:Phaser.GameObjects.Image;private camp:Phaser.GameObjects.Graphics;private warnings:Phaser.GameObjects.Graphics;
- constructor(private scene:ArenaScene){scene.cameras.main.setBackgroundColor(0x10212c);this.ground=scene.add.image(scene.camp!.x,scene.camp!.y,'last-camp-court').setDisplaySize(1280,960).setDepth(-2.5);const key='last-camp-wall-foreground';if(!scene.textures.exists(key)){const source=scene.textures.get('last-camp-court').getSourceImage() as HTMLImageElement;const canvas=document.createElement('canvas');canvas.width=source.width;canvas.height=source.height;const ctx=canvas.getContext('2d')!;ctx.scale(canvas.width/COURT_ART_WIDTH,canvas.height/COURT_ART_HEIGHT);ctx.beginPath();for(const polygon of COURT_WALLS){ctx.moveTo(polygon[0][0],polygon[0][1]);for(const [x,y] of polygon.slice(1))ctx.lineTo(x,y);ctx.closePath();}ctx.clip();ctx.drawImage(source,0,0,COURT_ART_WIDTH,COURT_ART_HEIGHT);scene.textures.addCanvas(key,canvas);}this.foreground=scene.add.image(scene.camp!.x,scene.camp!.y,key).setDisplaySize(1280,960).setDepth(11);this.camp=scene.add.graphics().setDepth(1.9);this.flames=scene.add.graphics().setDepth(2.6);this.warnings=scene.add.graphics().setDepth(5.8);this.sprite=scene.add.image(scene.camp!.x,scene.camp!.y-10,'last-camp-beacon').setDisplaySize(320,320).setDepth(2.5);scene.events.once('shutdown',()=>{this.sprite.destroy();this.ground.destroy();this.foreground.destroy();this.camp.destroy();this.flames.destroy();this.warnings.destroy();});}
+ constructor(private scene:ArenaScene){scene.cameras.main.setBackgroundColor(0x10212c);this.ground=scene.add.image(scene.camp!.x,scene.camp!.y,'last-camp-court').setDisplaySize(1280,960).setDepth(-2.5);const key='last-camp-wall-foreground';if(!scene.textures.exists(key)){const source=scene.textures.get('last-camp-court').getSourceImage() as HTMLImageElement;const canvas=document.createElement('canvas');canvas.width=source.width;canvas.height=source.height;const ctx=canvas.getContext('2d')!;ctx.scale(canvas.width/COURT_ART_WIDTH,canvas.height/COURT_ART_HEIGHT);ctx.beginPath();for(const polygon of COURT_WALLS){ctx.moveTo(polygon[0][0],polygon[0][1]);for(const [x,y] of polygon.slice(1))ctx.lineTo(x,y);ctx.closePath();}ctx.clip();ctx.drawImage(source,0,0,COURT_ART_WIDTH,COURT_ART_HEIGHT);scene.textures.addCanvas(key,canvas);}this.foreground=scene.add.image(scene.camp!.x,scene.camp!.y,key).setDisplaySize(1280,960).setDepth(11);this.camp=scene.add.graphics().setDepth(1.9);this.flames=scene.add.graphics().setDepth(2.6);this.warnings=scene.add.graphics().setDepth(5.8);this.sprite=scene.add.image(scene.camp!.x,scene.camp!.y-10,'last-camp-beacon').setDisplaySize(320,320).setDepth(2.5);this.guardian=scene.add.image(scene.camp!.x+112,scene.camp!.y+88,'camp-guardian').setOrigin(.5,1).setDisplaySize(64,69).setDepth(5.7).setVisible(false);scene.events.once('shutdown',()=>{this.guardian.destroy();this.sprite.destroy();this.ground.destroy();this.foreground.destroy();this.camp.destroy();this.flames.destroy();this.warnings.destroy();});}
+ private arrival=-10000;private finale=-10000;private celebration=-10000;
+ summon(first:boolean){
+  if(first)this.arrival=this.scene.time.now;
+  this.scene.audio.play(first?'level':'buy');
+  this.scene.banner(first?'A LITTLE GUARDIAN. A BRAVE HEART.':'GUARDIAN STRENGTHENED',0xb9edbd);
+ }
+ finalStand(){this.finale=this.scene.time.now;this.scene.audio.play('camp-horn');this.scene.banner('FINAL STAND · PROTECT THE LAST LIGHT',0xffd991);}
+ celebrate(){this.celebration=this.scene.time.now;this.scene.audio.play('level');this.scene.banner('THE LAST LIGHT STILL BURNS',0xffe2a0);}
  render(time:number,siege:Enemy[],reduced:boolean,wide:boolean){const c=this.scene.camp!,g=this.camp,w=this.warnings,f=this.flames;g.clear();w.clear();f.clear();const x=c.x,y=c.y,threat=siege.some(e=>e.active&&Math.hypot(e.x-x,e.y-y)<190),hitAge=time-c.hitAt;
  this.sprite.setTint(c.fraction<.35?0xc5a58c:c.fraction<.7?0xe3cfb4:0xffffff);
  g.fillStyle(0xffb749,.035*c.fraction);g.fillEllipse(x,y,400,300);g.fillStyle(0xffc560,.07*c.fraction);g.fillEllipse(x,y,260,180);
@@ -13,6 +22,26 @@ export class LastCampArt {
  if(c.hp>0)for(const [size,color] of [[1,0xef8434],[.7,0xffc94d],[.38,0xfff0a1]]){f.fillStyle(color);f.fillPoints([{x:x-19*size,y:flameY},{x:x-13*size,y:flameY-height*.42*size},{x:x-5*size,y:flameY-height*.23*size},{x:x+flicker*size,y:flameY-height*size},{x:x+10*size,y:flameY-height*.52*size},{x:x+16*size,y:flameY-height*.28*size},{x:x+19*size,y:flameY}],true);f.fillEllipse(x,flameY-6,34*size,22*size);}
  if(c.hp>0&&!reduced&&!wide)for(let i=0;i<6;i++){const t=(time*.6+i/6)%1;f.fillStyle(0xffd175,(1-t)*.65);f.fillCircle(x+Math.sin(time+i*4)*17,flameY-8-t*65,1.8);}
 
+ // Approved wooden spirit artwork; recoil stays subtle and respects reduced motion.
+ const guardian=this.scene.campGuardian;
+ const arrivalAge=(this.scene.time.now-this.arrival)/1000,finalAge=(this.scene.time.now-this.finale)/1000,winAge=(this.scene.time.now-this.celebration)/1000;
+ this.guardian.setVisible(c.guardianLevel>0);
+ if(c.guardianLevel>0){const gx=c.x+112,gy=c.y+88,age=time-(guardian?.lastShot??-10),bounce=reduced?0:age>=0&&age<.55?-Math.pow(Math.sin(age/.55*Math.PI),2)*2.5:0;
+  w.fillStyle(0x102b2a,.3);w.fillEllipse(gx,gy+3,43,13);
+  const entering=arrivalAge<1,progress=Math.max(0,Math.min(1,arrivalAge)),ease=progress*progress*(3-2*progress),celebrating=winAge>=0&&winAge<1.2;
+  this.guardian.setPosition(gx,gy+7+bounce+(entering&&!reduced?(1-ease)*18:0)-(celebrating&&!reduced?Math.pow(Math.sin(winAge/1.2*Math.PI*2),2)*7:0));
+  this.guardian.setAlpha(entering?ease:1);
+  this.guardian.setRotation(!reduced&&finalAge>=0&&finalAge<2?Math.sin(finalAge/2*Math.PI)*-.07:0);
+  if(entering){if(progress<.35){w.fillStyle(0xd8ffbd);w.fillEllipse(gx,gy-65+(progress/.35)*45,7,10);}for(let i=0;i<8;i++){const a=i*Math.PI/4+progress*3,r=26*(1-progress)+8;w.fillStyle(i%2?0xb7e9a1:0xffdf91,(1-progress)*.8);w.fillEllipse(gx+Math.cos(a)*r,gy-20-progress*30+Math.sin(a)*r*.5,5,3);}}
+
+  const breathe=reduced?0:Math.sin(time*1.8)*.004;this.guardian.setDisplaySize(64*(1-breathe),69*(1+breathe));
+  for(const seed of guardian?.shots??[]){
+   if(!reduced){const points=[{x:seed.x,y:seed.y},...seed.trail];for(let i=points.length-1;i>0;i--){w.lineStyle(1.5+2*(1-i/points.length),0x83e5ae,.35*(1-i/points.length));w.lineBetween(points[i].x,points[i].y,points[i-1].x,points[i-1].y);}}
+   w.fillStyle(0x85e6b3,.06);w.fillCircle(seed.x,seed.y,12);w.fillStyle(0x85e6b3,.12);w.fillCircle(seed.x,seed.y,8);w.fillStyle(0xe0ffd2);w.fillEllipse(seed.x,seed.y,7,5);
+  }
+ }
+ if(finalAge>=0&&finalAge<2){for(const side of [1,0]){const entry=c.spawn(side,.5),dx=x-entry.x,dy=y-entry.y,d=Math.hypot(dx,dy),ux=dx/d,uy=dy/d;for(let i=0;i<3;i++){const px=entry.x+ux*(45+i*25),py=entry.y+uy*(45+i*25);w.lineStyle(3,0xffd991,.35+.4*Math.sin(finalAge/2*Math.PI));w.lineBetween(px-ux*8-uy*7,py-uy*8+ux*7,px,py);w.lineBetween(px,py,px-ux*8+uy*7,py-uy*8-ux*7);}}}
+ if(finalAge>=0&&finalAge<2||winAge>=0&&winAge<1.2){const age=finalAge<2?finalAge:winAge,alpha=Math.pow(Math.sin(Math.min(1,age/2)*Math.PI),2)*.22;f.fillStyle(0xffd47c,alpha);f.fillEllipse(x,y-65,150,200);}
  // Persistent, sparse cracks communicate camp condition without hiding enemies.
  if(c.fraction<.7){f.lineStyle(2.4,0x493426,.9);for(const dx of [-73,78])f.strokePoints([{x:x+dx-9,y:y+40},{x:x+dx,y:y+48},{x:x+dx-3,y:y+57},{x:x+dx+7,y:y+65}],false);}
  if(c.fraction<.35){f.lineStyle(3,0x3b2d2b,.9);f.strokePoints([{x:x-15,y:y-45},{x:x-5,y:y-29},{x:x-10,y:y-12},{x:x+5,y:y+2}],false);}

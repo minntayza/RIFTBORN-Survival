@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import {freshSave,validateSave,purchase} from '../src/save';
 import {buyCosmetic} from '../src/cosmetics';
 import {FOX_RONIN_REWARD,recordChallengeClear,challengeRewardState,claimChallengeReward} from '../src/challenge-rewards';
-import {challengeRewardsUi} from '../src/challenge-rewards-ui';
+import {challengeRewardsUi,challengeRunProgress} from '../src/challenge-rewards-ui';
 import {PLAYTEST} from '../src/config';
 test('Wave 15 must be cleared; grant is permanent and idempotent without changing loadout or currency',()=>{
  const s=freshSave();s.gold=9999;s.petals=999;
@@ -58,4 +58,17 @@ test('gift keeps ! for unfinished and claimable rewards, clearing only after bot
  assert.match(challengeRewardsUi(restored,'Challenge Gifts',undefined,true),/reward-claim:fox/);
  claimChallengeReward(restored,FOX_RONIN_REWARD);assert.match(challengeGiftButton(restored),/gift-count">✓<\/span>/);
  assert.doesNotMatch(challengeGiftButton(restored),/gift-count">!<\/span>/);
+});
+
+test('run reward progress reports cleared waves, ready claims and hides owned rewards',()=>{
+ const s=freshSave();s.bestClearedWave=8;
+ assert.match(challengeRunProgress(s,9,false,false),/Wave 8 cleared/);
+ assert.match(challengeRunProgress(s,9,false,false),/Clear Wave 15/);
+ assert.doesNotMatch(challengeRunProgress(s,9,false,false),/Fox Ronin/);
+ assert.match(challengeRunProgress(s,8,false,true),/7 \/ 10 waves cleared/);
+ recordChallengeClear(s,15,true);
+ assert.match(challengeRunProgress(s,10,true,true),/Lethwei Master is ready to claim/);
+ assert.match(challengeRunProgress(s,10,true,true),/Fox Ronin is ready to claim/);
+ claimChallengeReward(s,'lethwei');claimChallengeReward(s,FOX_RONIN_REWARD);
+ assert.equal(challengeRunProgress(s,10,true,true),'');
 });

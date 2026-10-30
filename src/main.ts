@@ -1,5 +1,5 @@
 import {FOX_RONIN_REWARD,claimChallengeReward} from './challenge-rewards';
-import {challengeRewardsUi,challengeGiftButton} from './challenge-rewards-ui';
+import {challengeRewardsUi,challengeGiftButton,challengeRunProgress} from './challenge-rewards-ui';
 import './challenge-rewards.css';
 import {observeGameViewport} from './viewport';
 import {createAccounts} from './accounts';
@@ -246,7 +246,7 @@ async function start(options:RunOptions={mode:selectedMode,build:selectedBuild,t
  s.onLoading=(progress)=>{const bar=overlay.querySelector<HTMLProgressElement>('progress');if(bar)bar.value=Math.round(progress*100);const label=overlay.querySelector('[data-load-progress]');if(label)label.textContent=progress>=1?'Preparing the first frame…':`${Math.round(progress*100)}%`;};
  s.onArenaReady=()=>requestAnimationFrame(()=>{if(scene!==s||menuState!=='loading')return;clearTimeout(loadingTimer);overlay.style.display='none';overlay.className='ingame';menuState='game';});
  s.onLoadingError=()=>loadingFailed(generation);
- touchControls=new TouchControls(()=>{if(!s.paused&&!s.ended&&s.countdown<=0)s.activate(touchControls!.state.x,touchControls!.state.y);});touchControls.setLayout(save.settings.joystickSide,save.settings.joystickSize);s.touch=touchControls.state; game = new Phaser.Game({ type: Phaser.AUTO, parent: 'game', width: 1200, height: 760, backgroundColor: '#101b28', scene: [s], scale: { mode: Phaser.Scale.RESIZE, autoCenter: Phaser.Scale.CENTER_BOTH }, render: { antialias: true }, audio: { noAudio: true } }); const runningGame=game;stopGameViewport=observeGameViewport(document.getElementById('game')!, (width,height)=>{if(game!==runningGame)return;touchControls?.reset();runningGame.scale.resize(width,height);}); persist(); }
+ touchControls=new TouchControls((event)=>{if(s.skillAim?.startTouch(0,event))return;if(!s.paused&&!s.ended&&s.countdown<=0)s.activate(touchControls!.state.x,touchControls!.state.y);});touchControls.setLayout(save.settings.joystickSide,save.settings.joystickSize);s.touch=touchControls.state; game = new Phaser.Game({ type: Phaser.AUTO, parent: 'game', width: 1200, height: 760, backgroundColor: '#101b28', scene: [s], scale: { mode: Phaser.Scale.RESIZE, autoCenter: Phaser.Scale.CENTER_BOTH }, render: { antialias: true }, audio: { noAudio: true } }); const runningGame=game;stopGameViewport=observeGameViewport(document.getElementById('game')!, (width,height)=>{if(game!==runningGame)return;touchControls?.reset();runningGame.scale.resize(width,height);}); persist(); }
 function pause() {
     if (!scene || scene.ended)
         return;
@@ -305,6 +305,7 @@ function results() { const s = scene!, r = s.stats;s.heroAbilities?.clear();
  <section class="camp-result-rewards" aria-label="Rewards kept"><div><span aria-hidden="true"><span class="gold-coin currency-coin" aria-hidden="true">✦</span></span><b>+${r.gold.toLocaleString()}</b><small>Gold kept</small></div><div class="petals"><span aria-hidden="true"><span class="gold-coin currency-coin petal-coin" aria-hidden="true">✿</span></span><b>+${(r.petals||0).toLocaleString()}</b><small>Petals kept</small></div></section>
  ${scoreBreakdown?`<section class="daily-score-parts" aria-label="Daily score breakdown">${Object.entries(scoreBreakdown.parts).map(([key,value])=>`<div><span>${({combat:'Enemies defeated',waves:'Waves cleared',victory:'Victory bonus',preservation:'Camp health preserved',siege:'Siege enemies stopped',speed:'Clear-time bonus'} as Record<string,string>)[key]}</span><b>+${value.toLocaleString()}</b></div>`).join('')}</section><p class="muted">Camp ${Math.ceil(s.camp!.fraction*100)}% · ${s.camp!.siegeStopped} siege stopped · ${s.victory?'Clear time':'Time survived'} ${format(r.time)}</p>`:''}
  ${s.options.mode==='daily'?`<div class="camp-result-daily"><span>Daily score <b>${dailyScore.toLocaleString()}</b></span><span>Personal best <b>${save.daily[s.options.date!]?.score.toLocaleString()||dailyScore.toLocaleString()}</b></span></div>`:''}
+ ${challengeRunProgress(save,r.wave,s.victory,s.options.mode==='daily')}
  <div class="camp-result-actions">${button('Play again →','retry','primary')}<div>${button('Change loadout','loadout','quiet')}${button('Back to camp','menu','quiet')}</div></div>
  <details class="camp-result-details"><summary>More run details</summary><dl><div><dt>Damage dealt</dt><dd>${Math.round(r.dealt).toLocaleString()}</dd></div><div><dt>Damage taken</dt><dd>${Math.round(r.taken).toLocaleString()}</dd></div><div><dt>Highest combo</dt><dd>${r.combo}</dd></div><div><dt>Objectives</dt><dd>${s.objectives}</dd></div><div><dt>Elites &amp; bosses</dt><dd>${r.elites}</dd></div><div><dt>Top upgrade</dt><dd>${top?`${UPGRADES.find(u=>u.id===top[0])?.name||top[0]} ×${top[1]}`:'None'}</dd></div></dl>${s.victory?'':`<p class="camp-result-tip"><b>Next attempt</b>${deathTip(s.lastCause)}</p>`}</details>`,true);
  overlay.querySelector('.panel')?.classList.add('camp-results');
@@ -377,7 +378,7 @@ overlay.addEventListener('click', e => {
     if(a==='preview-retry'){if(menuState==='run-loadout')runLoadout();else menu();}
 
     if(a==='home-mode'&&(b==='daily'||b==='endless')){selectedMode=b;save.runSetup={mode:selectedMode,build:selectedBuild};persist();menu();overlay.querySelector<HTMLButtonElement>(`[data-action="home-mode:${b}"]`)?.focus({preventScroll:true});}
-    if(a==='camp-reward'&&menuState==='camp-reward'&&scene?.camp?.reward(b as CampReward,scene.stats.wave)){audio.play('buy');if(scene.evolutionDue)evolutionMenu();else finishIntermission();}
+    if(a==='camp-reward'&&menuState==='camp-reward'&&scene?.camp?.reward(b as CampReward,scene.stats.wave)){if(b==='defense')scene.campArt?.summon(scene.camp.guardianLevel===1);else audio.play('buy');if(scene.evolutionDue)evolutionMenu();else finishIntermission();}
     if(a==='daily-practice')start({...dailySetup(),practice:true});
     if(a==='practice-to-daily')start(dailySetup());
     if(a==='daily-loadout'){selectedMode='daily';runLoadout();}
@@ -531,12 +532,12 @@ function toggleMapView(fromPause=false){if(!scene||scene.paused&&!fromPause||sce
 hud.addEventListener('pointerdown',e=>{
     if(e.button!==0)return;
     const paired=(e.target as Element).closest<HTMLElement>('[data-hud^="hero-skill-"]');if(paired){e.preventDefault();if(scene?.skillAim?.startTouch(Number(paired.dataset.hud!.slice(-1)),e))return;if(scene?.hero==='tank')scene.requestAbility(Number(paired.dataset.hud!.slice(-1)),scene.touch?.x||0,scene.touch?.y||0);else scene?.heroAbilities?.activate(Number(paired.dataset.hud!.slice(-1)),scene.touch?.x||0,scene.touch?.y||0);return;}
-    const mystic=(e.target as Element).closest<HTMLElement>('[data-hud^="zawgyi-"]');if(mystic){e.preventDefault();const slot=Number(mystic.dataset.hud!.slice(-1)),tx=scene?.touch?.x||0,ty=scene?.touch?.y||0;if(scene?.hero==='zawgyi')scene.zawgyi?.activate(slot,tx,ty);else if(scene?.hero==='pyusawhti')scene.pyusawhti?.activate(slot,tx,ty);else if(scene?.hero==='lethwei')scene.lethwei?.activate(slot,tx,ty);else if(scene?.hero==='kyansittha')scene.kyansittha?.activate(slot,tx,ty);return;}
+    const mystic=(e.target as Element).closest<HTMLElement>('[data-hud^="zawgyi-"]');if(mystic){e.preventDefault();if(scene?.skillAim?.startTouch(Number(mystic.dataset.hud!.slice(-1)),e))return;const slot=Number(mystic.dataset.hud!.slice(-1)),tx=scene?.touch?.x||0,ty=scene?.touch?.y||0;if(scene?.hero==='zawgyi')scene.zawgyi?.activate(slot,tx,ty);else if(scene?.hero==='pyusawhti')scene.pyusawhti?.activate(slot,tx,ty);else if(scene?.hero==='lethwei')scene.lethwei?.activate(slot,tx,ty);else if(scene?.hero==='kyansittha')scene.kyansittha?.activate(slot,tx,ty);return;}
     if((e.target as Element).closest('[data-hud="mapView"]')){e.preventDefault();toggleMapView();return;}
     const button=(e.target as Element).closest<HTMLButtonElement>('[data-hud="ability"]');
     if(!button||button.disabled||!scene||scene.paused||scene.ended||scene.countdown>0)return;
     e.preventDefault();
-    scene.activate(scene.touch?.x||0,scene.touch?.y||0);
+    if(!scene.skillAim?.startTouch(0,e))scene.activate(scene.touch?.x||0,scene.touch?.y||0);
 });
 hud.addEventListener('click',e=>{const action=(e.target as Element).closest<HTMLElement>('[data-hud]')?.dataset.hud;if(!scene||scene.paused||scene.ended)return;if(action?.startsWith('hero-skill-')){if(e.detail===0){if(scene.hero==='tank')scene.requestAbility(Number(action.slice(-1)),scene.touch?.x||0,scene.touch?.y||0);else scene.heroAbilities?.activate(Number(action.slice(-1)),scene.touch?.x||0,scene.touch?.y||0);}}else if(action?.startsWith('zawgyi-')){if(e.detail===0){const slot=Number(action.slice(-1)),tx=scene.touch?.x||0,ty=scene.touch?.y||0;if(scene.hero==='zawgyi')scene.zawgyi?.activate(slot,tx,ty);else if(scene.hero==='pyusawhti')scene.pyusawhti?.activate(slot,tx,ty);else if(scene.hero==='lethwei')scene.lethwei?.activate(slot,tx,ty);else if(scene.hero==='kyansittha')scene.kyansittha?.activate(slot,tx,ty);}}else if(action==='mapView'){if(e.detail===0)toggleMapView();}else if(action==='practice-exit'&&scene.options.practice){scene.ended=true;scene.paused=true;scene.stats.time=scene.elapsed;results();}else if(action==='pause')pause();else if(action==='ability'&&scene.countdown<=0)scene.activate(scene.touch?.x||0,scene.touch?.y||0);});
 setInterval(() => {

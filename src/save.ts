@@ -6,7 +6,7 @@ import {validZawgyiLoadout,type ZawgyiLoadout} from './zawgyi';
 import {validRun,type RunRecovery} from './run-recovery';
 import {COSMETICS} from './cosmetics';
 import type { TechniqueId,RunMode,BuildId } from './retention';
-import { HEROES, HERO_DEFINITIONS, WEAPONS, PERMANENT, PLAYTEST, type HeroId, type WeaponId } from './config';
+import { HEROES, WEAPONS, PERMANENT, PLAYTEST, type HeroId, type WeaponId } from './config';
 export type Save = {
     runSetup:{mode:RunMode;build:BuildId};
     version: 1;
@@ -47,12 +47,12 @@ export type Save = {
     };
 };
 export const defaultMapView = (): 1|2 => typeof matchMedia !== 'undefined' && (matchMedia('(pointer:coarse)').matches || navigator.maxTouchPoints > 0) ? 2 : 1;
-export const freshSave = (): Save => ({ version: 1, heroAbilities:{samurai:validHeroAbilities('samurai',null),gunner:validHeroAbilities('gunner',null),tank:validHeroAbilities('tank',null)}, zawgyiSkills:['datlone','flame'], pyusawhtiSkills:['banepierce','windfocus'], lethweiSkills:['blitz','lethweiring'], kyansitthaSkills:['crescentsweep','arindamathunder'], runSetup:{mode:'endless',build:'assault'}, archive:{}, petals:0, cosmetics:{owned:[],equipped:{}}, gold: 0, heroes: ['ninja'], weapons: ['katana', 'nodachi', 'pistols', 'shield', 'mysticstaff', 'aungzeyabow', 'hempwraps', 'arindamaspear'], hero: 'ninja', weapon: 'katana', permanent: {}, bestWave: 0, bestClearedWave:0, firstDailyCleared:false, bestTime: 0, bestKills: 0, mastery: {}, techniques:{},daily:{},shortWins:0, settings: { sound: true, music: true, shake: true,aimAssist:true,skillCast:'hold',joystickSide:'left',joystickSize:115,mapView:defaultMapView() } });
+export const freshSave = (): Save => ({ version: 1, heroAbilities:{samurai:validHeroAbilities('samurai',null),gunner:validHeroAbilities('gunner',null),tank:validHeroAbilities('tank',null)}, zawgyiSkills:['datlone','flame'], pyusawhtiSkills:['banepierce','windfocus'], lethweiSkills:['blitz','lethweiring'], kyansitthaSkills:['crescentsweep','arindamathunder'], runSetup:{mode:'endless',build:'assault'}, archive:{}, petals:0, cosmetics:{owned:[],equipped:{}}, gold: 0, heroes: ['ninja'], weapons: ['katana', 'nodachi', 'pistols', 'shield', 'mysticstaff', 'aungzeyabow', 'hempwraps'], hero: 'ninja', weapon: 'katana', permanent: {}, bestWave: 0, bestClearedWave:0, firstDailyCleared:false, bestTime: 0, bestKills: 0, mastery: {}, techniques:{},daily:{},shortWins:0, settings: { sound: true, music: true, shake: true,aimAssist:true,skillCast:'hold',joystickSide:'left',joystickSize:115,mapView:defaultMapView() } });
 const num = (x: unknown, max = 1e9) => typeof x === 'number' && Number.isFinite(x) ? Math.max(0, Math.min(max, Math.floor(x))) : 0;
 export const compatible = (h: HeroId, w: WeaponId) => WEAPONS[w]?.hero === h;
 export function validateSave(raw: unknown): Save { const d = freshSave(); if (!raw || typeof raw !== 'object')
     return d; const r = raw as Partial<Save>; if (r.version !== 1)
-    return d; d.accountCurrencyVersion=r.accountCurrencyVersion===1?1:undefined; d.gold = num(r.gold,Number.MAX_SAFE_INTEGER); d.heroes = Array.from(new Set(['ninja' as HeroId, ...(Array.isArray(r.heroes) ? r.heroes.filter(h => typeof h === 'string' && Object.hasOwn(HERO_DEFINITIONS, h)) : [])])); d.weapons = Array.from(new Set([...d.weapons, ...(Array.isArray(r.weapons) ? r.weapons.filter(w => typeof w === 'string' && Object.hasOwn(WEAPONS, w)) : [])])); d.hero = r.hero && d.heroes.includes(r.hero) ? r.hero : 'ninja'; d.weapon = r.weapon && d.weapons.includes(r.weapon) && compatible(d.hero, r.weapon) ? r.weapon : d.weapons.find(w => compatible(d.hero, w))!; for (const [k, v] of Object.entries(PERMANENT))
+    return d; d.accountCurrencyVersion=r.accountCurrencyVersion===1?1:undefined; d.gold = num(r.gold,Number.MAX_SAFE_INTEGER); d.heroes = Array.from(new Set(['ninja' as HeroId, ...(Array.isArray(r.heroes) ? r.heroes.filter(h => typeof h === 'string' && Object.hasOwn(HEROES, h)) : [])])); d.weapons = Array.from(new Set([...d.weapons, ...(Array.isArray(r.weapons) ? r.weapons.filter(w => typeof w === 'string' && Object.hasOwn(WEAPONS, w)) : [])])); d.hero = r.hero && d.heroes.includes(r.hero) ? r.hero : 'ninja'; d.weapon = r.weapon && d.weapons.includes(r.weapon) && compatible(d.hero, r.weapon) ? r.weapon : d.weapons.find(w => compatible(d.hero, w))!; for (const [k, v] of Object.entries(PERMANENT))
     d.permanent[k] = num(r.permanent?.[k], v.cap); d.bestWave = num(r.bestWave); d.bestClearedWave=r.bestClearedWave===undefined?Math.max(0,d.bestWave-1):num(r.bestClearedWave); d.bestTime = num(r.bestTime); d.bestKills = num(r.bestKills); if (r.mastery && typeof r.mastery === 'object')
     for (const h of Object.keys(HEROES)) {
         const m = r.mastery[h];
