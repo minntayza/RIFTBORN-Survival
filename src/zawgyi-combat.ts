@@ -17,6 +17,7 @@ export class ZawgyiCombat {
  slamTime=0;slamAim=0;flameTime=0;private slamHit=false;private flameAim=0;private strikeTime=0;private strikeAim=0;private strikeHits=new Set<unknown>();harmonyGlow=0;
  readonly spheres:Sphere[]=[];readonly flames:Flame[]=[];
  private bursts:Burst[]=[];private lastFlame?:{x:number;y:number};private step=0;
+ private echoes:{delay:number;x:number;y:number;aim:number;damage:number;sequence:number}[]=[];
  private ground;private effects;
  constructor(private s:ArenaScene){this.cards=new ZawgyiCards(s);s.events?.once('shutdown',()=>this.cards.destroy());this.equipped=validZawgyiLoadout(s.save.zawgyiSkills);this.ground=s.add.graphics().setDepth(1);this.effects=s.add.graphics().setDepth(4.5);}
  get slamAge(){return this.slamTime>0?ZAWGYI_SLAM.duration-this.slamTime:-1;}
@@ -24,7 +25,7 @@ export class ZawgyiCombat {
  get speedMultiplier(){return 1;}
  get actionLocked(){return this.flameTime>0||this.slamTime>0&&this.slamAge<ZAWGYI_SLAM.hold;}
  get lockedAim(){return this.slamTime>0&&this.slamAge<ZAWGYI_SLAM.hold?this.slamAim:this.flameTime>0?this.flameAim:this.strikeTime>0?this.strikeAim:undefined;}
- staffAttack(){const s=this.s;if(this.flameTime>0||this.slamTime>0)return;const target=s.enemies.filter(e=>e.active&&Math.hypot(e.x-s.x,e.y-s.y)<=WEAPONS.mysticstaff.range+e.r).sort((a,b)=>Math.hypot(a.x-s.x,a.y-s.y)-Math.hypot(b.x-s.x,b.y-s.y))[0];if(!target)return;this.strikeAim=Math.atan2(target.y-s.y,target.x-s.x);s.angle=this.strikeAim;s.attackSequence++;s.swing=.24;this.strikeTime=.24;this.strikeHits.clear();}
+ staffAttack(){const s=this.s;if(this.flameTime>0||this.slamTime>0)return;const target=s.enemies.filter(e=>e.active&&Math.hypot(e.x-s.x,e.y-s.y)<=WEAPONS.mysticstaff.range+e.r).sort((a,b)=>Math.hypot(a.x-s.x,a.y-s.y)-Math.hypot(b.x-s.x,b.y-s.y))[0];if(!target)return;this.strikeAim=Math.atan2(target.y-s.y,target.x-s.x);s.angle=this.strikeAim;s.attackSequence++;s.swing=.24;this.strikeTime=.24;this.strikeHits.clear();if((s.evolution?.tempo||0)>=2||s.evolution?.tempo===1&&s.attackSequence%3===0)this.echoes.push({delay:.32,x:s.x,y:s.y,aim:this.strikeAim,sequence:s.attackSequence,damage:WEAPONS.mysticstaff.damage*.35*(s.earlyPower?1.12:1)});}
  private burst(kind:Burst['kind'],x:number,y:number,radius:number){this.bursts.push({kind,x,y,age:0,radius});if(this.bursts.length>16)this.bursts.shift();}
  private leaveFlame(){const s=this.s,last=this.lastFlame,dx=last?s.x-last.x:Math.cos(s.angle),dy=last?s.y-last.y:Math.sin(s.angle),angle=Math.atan2(dy,dx),side=this.step++%2?1:-1;this.flames.push({x:s.x-Math.sin(angle)*side*5,y:s.y+Math.cos(angle)*side*5+12,angle,life:2,side});if(this.flames.length>48)this.flames.shift();this.lastFlame={x:s.x,y:s.y};}
  activate(slot:number,dx=0,dy=0){const s=this.s;if(slot!==0&&slot!==1||s.hero!=='zawgyi'||s.paused||s.ended||s.countdown>0||this.actionLocked||this.cooldowns[slot]>0)return false;
@@ -38,7 +39,7 @@ export class ZawgyiCombat {
  private explode(orb:Sphere){const s=this.s;for(const e of s.enemies)if(e.active&&Math.hypot(e.x-orb.x,e.y-orb.y)<=160+e.r){s.hit(e,datLoneExplosionDamage(orb.twin||0,orb.royal),30,false,false,orb.royal?'Royal Dat Lone':orb.twin?'Twin Dat Lone':'Dat Lone');if(e.active)e.burn=Math.max(e.burn,3);}this.burst(orb.royal?'royal':'fire',orb.x,orb.y,160);s.audio.play('tank-slam');}
  private slam(){const s=this.s,contact=zawgyiSlamContact(s.x,s.y,this.slamAim);for(const e of s.enemies)if(e.active&&Math.hypot(e.x-contact.x,e.y-contact.y)<=175+e.r){s.hit(e,95,110);if(e.active){const locked=e.telegraph>0||e.skillWindup>0||e.chargeTime>0;const stun=boss(e.type)?locked?0:.12:['elite','brute','armoured','cleaver','abomination'].includes(e.type)?1.2:.7;e.stagger=Math.max(e.stagger,stun);}}this.cards.aftershock(contact);this.burst('slam',contact.x,contact.y,175);s.burst(contact.x,contact.y,0xe5cfa2,14);s.strongStop=Math.max(s.strongStop,.045);if(s.save.settings.shake)s.cameras.main.shake(90,.0025);s.audio.play('tank-slam');}
 
- update(dt:number){const s=this.s;if(s.ended){this.clear();return;}if(s.paused)return;this.cards.update(dt);for(let i=0;i<2;i++)this.cooldowns[i as 0|1]=Math.max(0,this.cooldowns[i as 0|1]-dt);
+ update(dt:number){const s=this.s;if(s.ended){this.clear();return;}if(s.paused)return;this.cards.update(dt);for(const echo of this.echoes)echo.delay-=dt;const ready=this.echoes.filter(e=>e.delay<=0);this.echoes=this.echoes.filter(e=>e.delay>0);for(const echo of ready){this.burst('tap',echo.x+Math.cos(echo.aim)*55,echo.y+Math.sin(echo.aim)*55,35);for(const e of s.enemies)if(e.active&&zawgyiStaffContact(echo.x,echo.y,echo.aim,.12,echo.sequence,s.elapsed,e,e.r))s.hit(e,echo.damage,12,false,false);}for(let i=0;i<2;i++)this.cooldowns[i as 0|1]=Math.max(0,this.cooldowns[i as 0|1]-dt);
  this.harmonyGlow=Math.max(0,this.harmonyGlow-dt);
  for(const e of this.bursts)e.age+=dt;this.bursts=this.bursts.filter(e=>e.age<(e.kind==='tap'?.22:.8));
  for(let i=this.flames.length-1;i>=0;i--){this.flames[i].life-=dt;if(this.flames[i].life<=1e-6)this.flames.splice(i,1);}
@@ -48,7 +49,7 @@ export class ZawgyiCombat {
  for(let remaining=previous;remaining>=this.strikeTime-1e-8;remaining-=Math.min(.008,dt||.008)){
  if(remaining>.192||remaining<.0672)continue;
  for(const e of s.enemies)if(e.active&&!this.strikeHits.has(e)&&zawgyiStaffContact(s.x,s.y,this.strikeAim,remaining,s.attackSequence,s.elapsed,e,e.r)){
- this.strikeHits.add(e);const x=e.x,y=e.y;s.hit(e,WEAPONS.mysticstaff.damage*(s.earlyPower?1.12:1)*(1+this.cards.staffBonus(e)),24);this.boltHit();this.burst('tap',x,y,12);if(this.strikeHits.size===1)s.audio.play('staff-contact');}
+ this.strikeHits.add(e);const x=e.x,y=e.y;s.hit(e,WEAPONS.mysticstaff.damage*(s.earlyPower?1.12:1)*(1+this.cards.staffBonus(e)),24);this.boltHit();this.burst('tap',x,y,12);if(this.strikeHits.size===1){if((s.evolution?.reach||0)>=2)s.windSlash(WEAPONS.mysticstaff.damage*.9,{x,y},this.strikeAim);if((s.evolution?.power||0)>=2){for(const n of s.enemies)if(n.active&&Math.hypot(n.x-x,n.y-y)<105+n.r)s.hit(n,WEAPONS.mysticstaff.damage*.5,12,false,false);this.burst('fire',x,y,105);}}if(this.strikeHits.size===1)s.audio.play('staff-contact');}
  }}
 
  for(const e of s.enemies)if(e.active&&this.flames.some(p=>Math.hypot(e.x-p.x,e.y-p.y)<24+e.r*.5)){e.burn=Math.max(e.burn,.4);e.slow=Math.max(e.slow,.35);}
@@ -59,7 +60,7 @@ export class ZawgyiCombat {
  }
  s.visuals.zawgyiLift=this.lift;s.visuals.zawgyiSlam=this.slamAge;
  }
- clear(){this.cards.clear();this.spheres.length=this.flames.length=this.bursts.length=0;this.slamTime=this.flameTime=this.strikeTime=0;this.strikeHits.clear();}
+ clear(){this.echoes=[];this.cards.clear();this.spheres.length=this.flames.length=this.bursts.length=0;this.slamTime=this.flameTime=this.strikeTime=0;this.strikeHits.clear();}
  boltHit(){const s=this.s;s.identityCharge+=100/6;if(s.identityCharge>=99.99){s.identityCharge=0;s.identityProcs++;const restored=Math.min(s.maxHp*.05,s.maxHp-s.hp);if(restored>0){s.heal(restored);this.harmonyGlow=.9;this.burst('heal',s.x,s.y,35);}}}
  render(time:number){const g=this.effects,f=this.ground;g.clear();f.clear();const reduced=matchMedia('(prefers-reduced-motion: reduce)').matches,wide=this.s.save.settings.mapView===2;this.cards.render(time,reduced||wide);
  const star=(x:number,y:number,r:number,alpha=1,color=0xffe3a0)=>{g.fillStyle(color,alpha);g.fillPoints([{x,y:y-r},{x:x+r*.3,y:y-r*.3},{x:x+r,y},{x:x+r*.3,y:y+r*.3},{x,y:y+r},{x:x-r*.3,y:y+r*.3},{x:x-r,y},{x:x-r*.3,y:y-r*.3}],true);};

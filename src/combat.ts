@@ -341,9 +341,9 @@ export class ArenaScene extends Phaser.Scene {
     awakened:EvolutionId|undefined;
     fullEvolution=false;
     earlyAwakened=false;
-    get earlyPower(){return this.earlyAwakened&&this.stats.wave<=10;}
-    get earlyTechnique(){return ({zawgyi:"Alchemist’s Spark · +12% magic damage",ninja:"Shadow Edge · +5% critical chance",samurai:"Tempered Edge · +12% weapon damage",gunner:"Hot Chamber · +10% fire rate",tank:"Iron Impact · +20% knockback",pyusawhti:"Eagle Eye · +15% arrow velocity & pierce",lethwei:"Lethwei Heart · +10% physical power",kyansittha:"Vanguard Thrust · +10% spear reach"})[this.hero];}
-    get evolutionDue(){return !!weaponMilestone(this.stats.wave,!!this.awakened,this.fullEvolution);}
+    get earlyPower(){return this.earlyAwakened;}
+    get earlyTechnique(){return ({zawgyi:"Alchemist’s Spark · +12% staff damage",ninja:"Shadow Edge · +5% critical chance",samurai:"Tempered Edge · +12% damage",gunner:"Hot Chamber · +10% fire rate",tank:"Iron Impact · +20% knockback",pyusawhti:"Eagle Eye · +15% arrow speed, +1 pierce",lethwei:"Lethwei Heart · +10% damage",kyansittha:"Vanguard Thrust · +10% spear reach"})[this.hero];}
+    get evolutionDue(){return !!weaponMilestone(this.stats.wave,!!this.awakened,this.fullEvolution,this.options.mode==='daily');}
     identityCharge=0;
     openingShots=0;
     identitySequence=-1;
@@ -587,7 +587,7 @@ export class ArenaScene extends Phaser.Scene {
     hit(e: Enemy, base: number, knock = 20, bullet = false,elemental=true,sourceOverride?:string) {
         if (!e.active)
             return;
-        const crit = this.random() < .05 + (this.earlyPower&&this.hero==='ninja'?.05:0) + this.u('crit') * .07, raw = damageValue(base, HEROES[this.hero].damage * (1 + (this.camp?.damageBonus||0) + this.u('damage') * .12 + this.meta('damage') * .05 + this.honour * .05 + (this.options.build==='assault'?.1:0) + (this.boostDamage>0?.4:0) + (this.earlyPower&&this.hero==='samurai'?.12:0)), crit, bullet && e.type === 'armoured');
+        const crit = this.random() < .05 + (this.earlyPower&&this.hero==='ninja'?.05:0) + this.u('crit') * .07, raw = damageValue(base, HEROES[this.hero].damage * (1 + (this.camp?.damageBonus||0) + this.u('damage') * .12 + this.meta('damage') * .05 + this.honour * .05 + (this.options.build==='assault'?.1:0) + (this.boostDamage>0?.4:0) + (this.earlyPower&&this.hero==='samurai'?.12:0)+(this.earlyPower&&this.hero==='lethwei'?.1:0)), crit, bullet && e.type === 'armoured');
         const d=Math.max(1,Math.round((crit&&this.evolved('crit')?raw*1.2:raw)*robotProtection(e,this.enemies)*(this.lethwei?.techniques.damageMultiplier(e)||1)));
         const contactX=e.x,contactY=e.y;
         e.hp -= d;

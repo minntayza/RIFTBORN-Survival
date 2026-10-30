@@ -16,6 +16,8 @@ type Arrow = {
 	giant?: boolean;
 	hitEnemies: Set<Enemy>;
  trailDistance?:number;
+ echo?:boolean;
+ explosive?:boolean;
 };
 
 type SunBurst = {
@@ -91,7 +93,7 @@ export class PyusawhtiCombat {
 			const totalArrows = 7 + flankBonus;
 			for (let i = 0; i < totalArrows; i++) {
 				const a = angle + (i - Math.floor(totalArrows / 2)) * 0.13;
-				const speed = 720 * (1 + Math.min(3,s.u('windfocuscard')) * 0.15);
+				const speed = 720 * (1 + Math.min(3,s.u('windfocuscard')) * 0.15)*(s.earlyPower?1.15:1);
 				this.arrows.push({
 					x: pyusawhtiArrowOrigin(s.x,s.y,angle).x,
 					y: pyusawhtiArrowOrigin(s.x,s.y,angle).y,
@@ -143,7 +145,8 @@ export class PyusawhtiCombat {
 				remainingRange: beamLen,
 				giant: true,
 				sunburst: true,
-				hitEnemies: new Set()
+				hitEnemies: new Set(),
+ explosive:(s.evolution?.power||0)>=2
 			});
 
 			// Terminal solar explosion at the far end of the laser
@@ -164,11 +167,12 @@ export class PyusawhtiCombat {
 		this.shotAim=s.angle;
 		s.attackSequence++;
 		const w = WEAPONS[s.weapon];
-		const speed = (s.weapon === 'solarcrossbow' ? 820 : s.weapon === 'greatbow' ? 580 : 700) * (1 + Math.min(3,s.u('windfocuscard')) * 0.15);
-		const pierce = s.evolved('piercingeye') ? Infinity : (this.windFocusTime > 0 ? 12 : s.weapon === 'greatbow' ? 2 : 1) + s.u('pierce') + Math.min(3,s.u('piercingeye'));
+		const speed = (s.weapon === 'solarcrossbow' ? 820 : s.weapon === 'greatbow' ? 580 : 700) * (1 + Math.min(3,s.u('windfocuscard')) * 0.15)*(s.earlyPower?1.15:1);
+		const pierce = s.evolved('piercingeye') ? Infinity : (this.windFocusTime > 0 ? 12 : s.weapon === 'greatbow' ? 2 : 1) + s.u('pierce') + Math.min(3,s.u('piercingeye'))+(s.earlyPower?1:0)+((s.evolution?.reach||0)>=2?4:0);
 		const damage = (w?.damage || 28) * (this.windFocusTime > 0 ? 1.2 : 1) * (1 + s.u('damage') * 0.15);
 
-		s.swing = (w?.cooldown || 0.35) / this.attackRateMultiplier;
+		s.swing = Math.max(ARCHER_DRAW_TIME,(w?.cooldown || 0.35) / (this.attackRateMultiplier*(1+(s.evolution?.tempo||0)*.1)));
+ s.attack=Math.min(s.attack||s.swing,s.swing);
 
 		const angles = [s.angle];
 		this.bowShots++;
@@ -194,11 +198,15 @@ export class PyusawhtiCombat {
 				pierce,
 				remainingRange: w?.range || 650,
 				sunburst: s.weapon === 'greatbow' || Math.random() < Math.min(3,s.u('sunburstcard')) * .15,
-				hitEnemies: new Set()
+				hitEnemies: new Set(),
+ explosive:(s.evolution?.power||0)>=2
 			});
 		}
 
 		this.pendingShots.push({remaining:ARCHER_DRAW_TIME,aim:s.angle,arrows:shotArrows});
+  if((s.evolution?.tempo||0)>=2||s.evolution?.tempo===1&&s.attackSequence%3===0){
+   this.pendingShots.push({remaining:ARCHER_DRAW_TIME+.16,aim:s.angle,arrows:[{...shotArrows[0],damage:damage*.35,echo:true,sunburst:false,explosive:false,hitEnemies:new Set()}]});
+  }
 	}
 
  releasePendingShots(dt:number){
@@ -323,7 +331,8 @@ export class PyusawhtiCombat {
 					a.hitEnemies.add(e);
      this.glints.push({x:e.x,y:e.y,age:0,crown:!!a.giant});
 					this.damageEnemy(e,a.damage,a.giant?65:18);
-     if(!a.giant)this.arrowSunburst(a);
+     if(!a.giant&&!a.echo)this.arrowSunburst(a);
+     if(a.explosive&&!a.echo){a.explosive=false;this.explodeSun(a.x,a.y,85,a.damage*.5);}
 					s.burst(a.x, a.y, a.giant ? 0xf4d589 : 0xb5fff2, a.giant ? 6 : 2);
 					a.pierce--;
 					if (a.giant) {

@@ -26,3 +26,10 @@ test('field guide previews locked card and weapon evolutions with real requireme
  for(const u of UPGRADES){assert.ok(cardBenefit(u).length<65);assert.match(visualUpgradeCard(u,0,'ninja','katana',0),/aria-label="Choose/);}
 });
 test('death advice follows the attack that defeated the player',()=>{assert.match(deathTip('Siege Gunner volley'),/aim lines/);assert.match(deathTip('Zombie General slam'),/charge lane/);assert.match(deathTip('Pike guard'),/sideways/);});
+
+test('daily awakening is playable after wave five and never offers full evolution',()=>{
+ assert.equal(weaponMilestone(4,false,false,true),undefined);
+ assert.equal(weaponMilestone(5,false,false,true),'awakening');
+ assert.equal(weaponMilestone(10,true,false,true),undefined);
+ assert.equal(weaponMilestone(20,true,false,true),undefined);
+});

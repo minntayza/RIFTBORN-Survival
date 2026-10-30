@@ -180,8 +180,8 @@ game.events.once('ready', () => {
  check('Crowd pressure defers ordinary packs without postponing the boss',()=>{
  for(const e of scene.enemies)e.active=false;scene.landmark=undefined;scene.hero='ninja';scene.weapon='katana';scene.levels={};scene.pendingStrikes=[];scene.pendingEchoes=[];scene.firePatches=[];scene.touch=undefined;scene.paused=false;scene.ended=false;scene.countdown=0;scene.strongStop=0;scene.waveTime=1;scene.spawnPulse=0;scene.spawnIndex=0;scene.plan=[{time:0,type:'basic',count:4,formation:0},{time:0,type:'boss',count:1,formation:0}];scene.xp=0;scene.xpNeed=10000;for(let i=0;i<18;i++){const e=scene.spawn('basic')!;e.x=scene.x+100+Math.cos(i)*20;e.y=scene.y+Math.sin(i)*20;}scene.update(0,16);ok(scene.plan[0].count===4&&scene.enemies.some(e=>e.active&&e.type==='boss'));
  });
- check('Wave five grants one hero awakening and late waves ignore its power',()=>{
- scene.options.mode='endless';scene.stats.wave=5;scene.waiting=false;scene.ended=false;scene.earlyAwakened=false;scene.finishWave();ok(scene.earlyAwakened&&scene.earlyPower);scene.stats.wave=11;ok(!scene.earlyPower);
+ check('Wave five grants one hero awakening and its power remains in late waves',()=>{
+ scene.options.mode='endless';scene.stats.wave=5;scene.waiting=false;scene.ended=false;scene.earlyAwakened=false;scene.finishWave();ok(scene.earlyAwakened&&scene.earlyPower);scene.stats.wave=11;ok(scene.earlyPower);
  });
  check('Only XP causes upgrade choices; damage labels merge in a crowded early fight',()=>{
  scene.stats.wave=4;scene.xp=scene.xpNeed;scene.paused=false;let choices=0;const original=scene.onChoice;scene.onChoice=wave=>{if(!wave)choices++;};scene.updateDrops(0);ok(choices===1&&scene.paused);scene.onChoice=original;

@@ -38,3 +38,14 @@ test('overlapping evolution fields do not stack; fields expire and pause freezes
  combat.update(0);assert.equal(hits.length,1);assert.equal(hits[0].damage,WEAPONS.aungzeyabow.damage*.2*.25);
  scene.paused=true;combat.update(5);assert.equal(combat.fields.length,20);scene.paused=false;combat.update(3);assert.equal(combat.fields.length,0);
 });
+
+test('awakening arrows gain early speed/pierce, full lightning pierce, and bounded phantom echoes',()=>{
+ const {scene,combat}=setup();scene.earlyAwakened=true;Object.defineProperty(scene,'earlyPower',{value:true});scene.evolution={reach:2,power:0,tempo:0};shoot(combat,scene);
+ assert.ok(Math.abs(combat.arrows[0].vx-805)<1e-8);assert.equal(combat.arrows[0].pierce,6);
+ scene.evolution={reach:0,power:0,tempo:1};combat.arrows.length=0;
+ scene.attackSequence=2;shoot(combat,scene);assert.equal(combat.arrows.length,1);combat.releasePendingShots(.16);assert.equal(combat.arrows.length,2);assert.equal(combat.arrows[1].echo,true);assert.equal(combat.arrows[1].damage,WEAPONS.aungzeyabow.damage*.35);
+ scene.evolution={reach:0,power:2,tempo:0};combat.arrows.length=0;shoot(combat,scene);assert.equal(combat.arrows[0].explosive,true);
+});
+test('phantom attack speed shortens actual bow recovery',()=>{
+ const {scene,combat}=setup();scene.evolution={reach:0,power:0,tempo:0};combat.bowAttack();const normal=scene.swing;scene.swing=0;scene.evolution.tempo=2;combat.bowAttack();assert.ok(scene.swing<normal);assert.equal(scene.swing,normal/1.2);
+});

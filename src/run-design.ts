@@ -17,9 +17,9 @@ export function encounterRhythm(wave:number){
  if(wave%5===3)return {name:'Elite pressure',density:.8,recovery:6};
  return {name:'Horde surge',density:1,recovery:4};
 }
-export function weaponMilestone(wave:number,awakened:boolean,full:boolean){return !awakened&&wave>=10?'awakening':awakened&&!full&&wave>=20?'full':undefined;}
+export function weaponMilestone(wave:number,awakened:boolean,full:boolean,daily=false){return daily?(wave>=5&&!awakened?'awakening':undefined):!awakened&&wave>=10?'awakening':awakened&&!full&&wave>=20?'full':undefined;}
 export const EVOLUTION_STAGES={
- reach:{awakening:'Occasionally chain lightning to 1 nearby enemy.',full:'Chain lightning to 3 enemies; charged attacks pierce crowds.'},
+ reach:{awakening:'Occasionally chain lightning to 1 nearby enemy.',full:'Chain lightning to 3 enemies; attacks gain piercing projectiles.'},
  power:{awakening:'Direct hits ignite enemies briefly.',full:'Fiery attacks explode and leave burning ground on kills.'},
  tempo:{awakening:'Attack 10% faster; every third attack adds a ghost echo.',full:'Attack 20% faster; every attack releases a ghost echo.'}
 };
