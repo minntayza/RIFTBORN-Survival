@@ -100,8 +100,8 @@ Built with **TypeScript · Phaser 3 · Vite**, with optional **Supabase** accoun
 Requires **Node.js 20.19+ or 22.12+** and npm.
 
 ```bash
-git clone https://github.com/minntayza/zombie-last-stand.git
-cd zombie-last-stand
+git clone https://github.com/minntayza/RIFTBORN-Survival.git
+cd RIFTBORN-Survival
 npm ci
 npm run dev
 ```
