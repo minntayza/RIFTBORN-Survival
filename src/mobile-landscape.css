@@ -1,0 +1,53 @@
+/* Short, wide phones keep the complete launch flow in one landscape viewport. */
+@media (orientation:landscape) and (max-height:600px) and (max-width:1100px){
+ #overlay:has(.home-hub){padding:0!important;align-items:stretch}
+ .landing-panel:has(.home-hub){height:100dvh!important;max-height:100dvh!important;width:100vw!important;overflow-y:auto!important}
+ .landing-screen.home-hub{box-sizing:border-box;display:grid!important;grid-template-columns:minmax(0,.95fr) minmax(0,1.05fr)!important;grid-template-rows:44px minmax(0,1fr) auto!important;height:100dvh!important;min-height:0!important;padding:max(8px,env(safe-area-inset-top)) max(16px,env(safe-area-inset-right)) max(8px,env(safe-area-inset-bottom)) max(16px,env(safe-area-inset-left))!important;gap:8px 22px!important;overflow:visible}
+ .home-hub .home-header{grid-column:1/-1!important;grid-row:1!important;min-height:0!important;padding:0 0 5px!important;display:flex!important;flex-direction:row!important;align-items:center!important;justify-content:space-between;gap:8px!important}
+ .home-hub .home-brand{width:auto!important;font-size:21px!important;flex-shrink:0}
+ .home-hub .hub-wallets{width:auto!important;gap:5px;flex-wrap:nowrap}
+ .home-hub .hub-wallet{min-height:32px!important;padding:5px 7px!important;gap:4px}.home-hub .hub-wallet small{font-size:10px}.home-hub .hub-wallet b{font-size:13px}
+ .home-hub .hub-wallets button{min-height:36px;padding:6px 9px;font-size:11px}
+ .home-hub .home-showcase{grid-column:1!important;grid-row:2!important;width:100%!important;max-width:none!important;align-self:stretch!important;min-height:0!important;justify-content:flex-end!important;margin:0!important}
+ .home-hub .home-showcase canvas{height:clamp(105px,calc(100dvh - 190px),255px)!important;min-height:0!important;width:100%!important;flex:1;object-fit:contain;animation:none}
+ .home-hub .home-survivor-poster{height:calc(100% - 70px)!important;max-height:255px!important}
+ .home-hub .hub-survivor{width:100%!important;padding:6px 0 0!important;gap:6px!important;grid-template-columns:minmax(0,1fr) auto!important}
+ .home-hub .hub-survivor h2{font-size:22px!important;margin:3px 0!important}.home-hub .hub-survivor p{font-size:11px!important}.home-hub .hub-survivor small{font-size:9px!important;letter-spacing:.08em}
+ .home-hub .hub-survivor>button{padding:7px 9px!important;min-height:38px;font-size:11px!important}
+ .home-hub .camp-equipped-skills{margin-top:4px;gap:4px}.home-hub .camp-equipped-skills span{padding:3px 5px;font-size:10px}.home-hub .camp-equipped-skills kbd{display:none}
+ .home-hub .home-showcase>.home-reward-gift{width:70px;min-height:80px;top:0;right:0;gap:0}.home-hub .gift-illustration{width:58px;height:58px}.home-hub .gift-label{font-size:9px;padding:3px 5px}.home-hub .gift-count{width:18px;height:18px;font-size:10px}
+ .home-hub .hub-run-setup{grid-column:2!important;grid-row:2!important;align-self:center!important;max-width:none!important;width:100%!important;padding:0!important;margin:0!important}.home-hub .hub-run-setup>h1{display:none}
+ .home-hub .hub-mode-list{gap:8px}.home-hub .hub-mode{grid-template-columns:68px minmax(0,1fr) 18px!important;min-height:64px!important;gap:10px!important;padding:0 9px 0 0!important;border-radius:10px}
+ .home-hub .hub-mode-picture{width:68px!important;min-height:64px!important;height:100%!important}.home-hub .hub-mode-copy b{font-size:16px!important}.home-hub .hub-mode-copy>span{font-size:11px!important;line-height:1.3}.home-hub .hub-mode-copy small{font-size:10px!important;line-height:1.3}.home-hub .hub-mode-check{font-size:18px}
+ .home-hub .hub-launch{margin-top:9px!important;gap:6px}.home-hub .hub-launch .primary{min-height:43px!important;padding:9px!important;font-size:14px!important}.home-hub .hub-launch>small{font-size:10px}
+ .home-hub .home-daily-practice{margin-top:6px;display:flex;align-items:center;gap:6px}.home-hub .home-daily-practice button{min-height:34px!important;padding:6px 9px;font-size:11px}.home-hub .home-daily-practice small{font-size:10px}
+ .home-hub .hub-footer{grid-column:1/-1!important;grid-row:3!important;align-self:end;margin:0!important;padding-top:5px!important;gap:8px!important;flex-wrap:nowrap!important;align-items:center!important}.home-hub .hub-footer nav{gap:5px;flex-wrap:wrap}.home-hub .hub-footer nav button{min-height:32px!important;padding:5px 7px;font-size:10px}.home-hub .hub-footer nav a{font-size:10px;align-self:center}.home-hub .hub-records{min-width:94px}.home-hub .hub-records summary{font-size:10px;padding:5px}
+ .challenge-gift-dialog{width:min(850px,calc(100vw - 24px));max-height:calc(100dvh - 16px);padding:8px 12px}.challenge-gift-dialog .challenge-rewards{padding:0}.challenge-gift-dialog .challenge-reward-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.challenge-gift-dialog .challenge-reward{flex-direction:row;text-align:left;padding:12px;gap:10px}.challenge-gift-dialog .reward-art{min-height:0;flex:0 0 100px}.challenge-gift-dialog .reward-art>svg{width:100px;height:135px}.challenge-gift-dialog .reward-art>span{font-size:8px}.challenge-gift-dialog .reward-copy h3{font-size:19px}.challenge-gift-dialog .reward-copy>p{font-size:12px;min-height:0}.challenge-gift-dialog .reward-copy>small{font-size:10px}.challenge-gift-dialog .challenge-rewards h2{font-size:23px}.challenge-gift-dialog .reward-copy button{margin-top:6px;padding:6px;font-size:11px!important;min-height:34px}
+}
+@media (orientation:landscape) and (max-height:400px) and (max-width:750px){
+ .landing-screen.home-hub{gap:6px 14px!important;grid-template-rows:40px minmax(0,1fr) auto!important}
+ .home-hub .hub-mode,.home-hub .hub-mode-picture{min-height:57px!important}.home-hub .hub-mode{grid-template-columns:52px minmax(0,1fr) 16px!important;gap:7px!important}.home-hub .hub-mode-picture{width:52px!important}.home-hub .hub-mode-copy b{font-size:14px!important}.home-hub .hub-mode-copy small{display:none}.home-hub .hub-survivor h2{font-size:18px!important}.home-hub .camp-equipped-skills{display:none}.home-hub .hub-records{display:none}
+ .challenge-gift-dialog .reward-art{flex-basis:70px}.challenge-gift-dialog .reward-art>svg{width:70px;height:100px}
+}
+.landscape-welcome{box-sizing:border-box;width:min(350px,calc(100vw - 32px));padding:24px;border:1px solid #d3b46b88;border-radius:20px;background:radial-gradient(ellipse at top,#31464a,#10232e);color:#f6e9c8;text-align:center;box-shadow:0 20px 80px #0009}
+.landscape-welcome::backdrop{background:#07141de8;backdrop-filter:blur(5px)}.landscape-welcome h2{font-size:25px;margin:14px 0 10px}.landscape-welcome p{font-size:15px;line-height:1.5;color:#c5d6d0}.landscape-welcome button{display:block;min-height:44px;width:100%;margin-top:10px;white-space:normal}.rotate-phone-art{display:block;margin:auto;width:68px;height:40px;border:3px solid #e9ce8f;border-radius:10px;position:relative}.rotate-phone-art:after{content:'↻';position:absolute;right:-26px;top:-22px;font-size:32px;color:#b0dbcb}
+@media (orientation:landscape) and (max-height:600px) and (max-width:1100px){
+ .home-hub .hub-run-setup{min-height:0!important}
+ .home-hub .home-daily-practice{flex-direction:row!important;min-height:0!important;padding:0!important;gap:6px!important}
+ .home-hub .home-daily-practice small{display:none!important}
+ .home-hub .hub-footer{min-height:0!important;height:38px!important}
+ .home-hub .hub-records{padding-right:44px}
+}
+@media (orientation:landscape) and (max-height:600px) and (max-width:1100px){
+ .panel.dress-panel{width:calc(100vw - 16px)!important;height:calc(100dvh - 16px)!important;max-height:calc(100dvh - 16px)!important;overflow:hidden!important}
+ .dressing-room{display:grid;grid-template-rows:44px minmax(0,1fr) 58px;height:100%;min-height:0}
+ .dress-header{padding:5px 14px;min-height:0}.dress-header>b{font-size:12px}.dress-header>div{gap:8px}.dress-header button{min-height:32px;padding:5px 8px;font-size:11px}
+ .dress-body{grid-template-columns:minmax(0,.7fr) minmax(0,1.3fr)!important;min-height:0!important;overflow:hidden}
+ .dress-stage{padding:8px 12px!important;border-right:1px solid #38505a;border-bottom:0!important;min-height:0;overflow:auto}
+ .dress-stage>small,.dress-status{display:none}.dress-stage h2{font-size:22px!important;margin:3px 0}.dress-outfit{font-size:11px}.dress-canvas{height:clamp(90px,calc(100dvh - 225px),200px)!important;flex:1;min-height:75px}.dress-chips{gap:4px}.dress-chips span{font-size:10px;padding:4px 6px}
+ .dress-options{padding:8px 12px;overflow-y:auto;min-height:0}.dress-tabs{position:sticky;top:-8px;z-index:2;background:#101e28;padding:4px 0 7px;margin-bottom:10px}.dress-tabs button{min-height:36px;padding:7px 3px;font-size:12px}.dress-title{margin-bottom:10px}.dress-title h3{font-size:15px}.dress-grid{grid-template-columns:repeat(3,minmax(0,1fr));gap:7px}.dress-tile{min-height:112px;padding:7px 5px}.dress-tile-art{height:66px}.dress-tile b{font-size:11px}.dress-tile small{font-size:10px}
+ .dress-footer{position:relative;bottom:auto;min-height:0;padding:6px 12px!important;gap:8px!important;flex-wrap:nowrap!important}.dress-footer .primary{min-height:40px;padding:8px 12px;font-size:12px}.dress-footer .dress-mode{min-height:40px;padding:6px 10px;font-size:12px}.dress-footer small{display:none}
+}
+@media (orientation:landscape) and (max-height:600px) and (max-width:1100px){
+ body:has(.dress-panel) .music-toggle{top:max(12px,env(safe-area-inset-top))!important;bottom:auto!important;right:calc(50% - 16px)!important;width:32px!important;height:32px!important}
+}

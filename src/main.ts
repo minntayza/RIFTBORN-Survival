@@ -46,6 +46,8 @@ import './art-direction.css';
 import './dressing-room.css';
 import {openSkillPreview} from './loadout-skill-preview';
 import './mobile-combat.css';
+import './mobile-landscape.css';
+import {welcomeMobileLandscape} from './mobile-landscape';
 import type { ArenaScene } from './combat';
 import { HEROES, WEAPONS, ENEMIES, PERMANENT, type HeroId, type WeaponId } from './config';
 import { loadSave, storeSave, purchase, freshSave, compatible } from './save';
@@ -545,7 +547,7 @@ hud.addEventListener('click',e=>{const action=(e.target as Element).closest<HTML
 setInterval(() => {
     const s = scene;
     setMusicScene(scene?.camp&&!scene.ended?(scene.paused?'camp':[...scene.siegeEnemies].some(e=>e.active)?'siege':'camp'):'menu');
-    touchControls?.update(!!s&&!s.ended&&!s.paused&&menuState==='game',s&&s.countdown>0?s.countdown:s?.ability||0,HEROES[s?.hero||save.hero].ability,s?HEROES[s.hero].cooldown:1,s?outfitUltimateIcon(s.save,s.hero,abilityIcons[s.hero]):'➤',!!s&&(s.hero==='gunner'?s.overdrive>0:s.hero==='samurai'?s.counter>0:s.hero==='ninja'?s.dash>0:false),!!s?.heroAbilities);
+    touchControls?.update(!!s&&!s.ended&&!s.paused&&menuState==='game',s&&s.countdown>0?s.countdown:s?.ability||0,HEROES[s?.hero||save.hero].ability,s?HEROES[s.hero].cooldown:1,s?outfitUltimateIcon(s.save,s.hero,abilityIcons[s.hero]):'➤',!!s&&(s.hero==='gunner'?s.overdrive>0:s.hero==='samurai'?s.counter>0:s.hero==='ninja'?s.dash>0:false),!!s&&(!!s.heroAbilities||!!s.zawgyi||!!s.pyusawhti||!!s.lethwei));
     if (!s || s.ended || menuState !== 'game') {
         if (menuState !== 'game')
             hud.innerHTML = '';
@@ -582,3 +584,5 @@ overlay.addEventListener('keydown',e=>{if(!['ArrowRight','ArrowDown','ArrowLeft'
 
 // Fullscreen covers the document so the HUD, menus and touch controls stay visible.
 bindFullscreenControls(()=>toast('Fullscreen is unavailable here. Your game still fills the browser window.'));
+
+welcomeMobileLandscape();

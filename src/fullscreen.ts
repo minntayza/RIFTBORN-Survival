@@ -7,7 +7,7 @@ export async function enterGameFullscreen(doc:Document=document){
  if(isGameFullscreen(doc))return true;
  const root=doc.documentElement as FullscreenRoot,request=root.requestFullscreen||root.webkitRequestFullscreen;
  if(!request)return false;
- try{await request.call(root);return isGameFullscreen(doc);}catch{return false;}
+ try{await request.call(root);if(typeof window!=='undefined'&&typeof screen!=='undefined'&&(matchMedia('(pointer:coarse)').matches||navigator.maxTouchPoints>0)){const orientation=screen.orientation as ScreenOrientation&{lock?:(orientation:string)=>Promise<void>};void orientation?.lock?.('landscape').catch(()=>{});}return isGameFullscreen(doc);}catch{return false;}
 }
 export async function toggleGameFullscreen(doc:Document=document){
  if(!isGameFullscreen(doc))return enterGameFullscreen(doc);
