@@ -29,7 +29,7 @@ test('threat indicators ignore visible and distant normal enemies, group packs, 
 
 test('joystick settings survive validation with bounded sizes',()=>{const s=freshSave();s.settings.joystickSide='right';s.settings.joystickSize=135;assert.equal(validateSave(s).settings.joystickSize,135);assert.equal(validateSave(s).settings.joystickSide,'right');s.settings.joystickSize=999;assert.equal(validateSave(s).settings.joystickSize,115);});
 
-test('map view defaults to standard and saves only supported zoom options',()=>{
+test('desktop map view defaults to 1x and saves only supported zoom options',()=>{
  assert.equal(freshSave().settings.mapView,1);
  const s=freshSave();s.settings.mapView=2;s.settings.mapViewChosen=true;assert.equal(validateSave(s).settings.mapView,2);
  assert.equal(validateSave({settings:{mapView:99}}).settings.mapView,1);

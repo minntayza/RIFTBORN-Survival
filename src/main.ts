@@ -80,7 +80,7 @@ function persist() {
     if (!storeSave(save))
         toast('Browser storage is unavailable. Progress lasts for this session.');
 }
-function syncAudio() { audio.sound = save.settings.sound; audio.music = false; }
+function syncAudio() { audio.sound = save.settings.sound; audio.haptics.enabled=save.settings.haptics!==false; audio.music = false; }
 function toast(message: string) { const t = document.createElement('div'); t.className = 'toast'; t.textContent = message; document.body.append(t); setTimeout(() => t.remove(), 3000); }
 const button = (label: string, action: string, cls = '') => `<button class="${cls}" data-action="${action}">${label}</button>`;
 type ScreenPosition={outer:number;panel:number;focus?:{attribute:string;value:string};card?:number};
@@ -240,8 +240,8 @@ function openGuide(tab='enemies'){
 
 function settings() {
  menuState='settings';
- const toggle=(key:'sound'|'music'|'shake'|'aimAssist',title:string,description:string)=>`<label class="preference-row"><span class="preference-copy"><b>${title}</b><small>${description}</small></span><input class="preference-switch" type="checkbox" aria-label="${title}" data-setting="${key}" ${save.settings[key]?'checked':''}></label>`;
- shell(`${header('Make it your game','Your sound. Your controls. Your next stand.')}<div class="preferences-grid"><section class="preference-group"><div class="preference-heading"><span aria-hidden="true">♫</span><div><small>SET THE MOOD</small><h3>Sound & atmosphere</h3></div></div>${toggle('sound','Sound effects','Hear every hit, shot and enemy attack.')}${toggle('shake','Screen shake','Add impact to powerful attacks. Turn off for a calmer view.')}</section><section class="preference-group"><div class="preference-heading"><span aria-hidden="true">✥</span><div><small>FIND YOUR COMFORT</small><h3>Touch controls</h3></div></div>${toggle('aimAssist','Aim assistance','Help aim your attacks when playing on mobile.')}<label class="preference-row"><span class="preference-copy"><b>Joystick side</b><small>Choose which thumb handles movement.</small></span><select aria-label="Joystick side" data-control="joystickSide"><option value="left" ${save.settings.joystickSide==='left'?'selected':''}>Left</option><option value="right" ${save.settings.joystickSide==='right'?'selected':''}>Right</option></select></label><label class="preference-row"><span class="preference-copy"><b>Joystick size</b><small>Pick a size that feels easy to reach.</small></span><select aria-label="Joystick size" data-control="joystickSize">${[95,115,135].map(n=>`<option value="${n}" ${save.settings.joystickSize===n?'selected':''}>${n===95?'Compact':n===115?'Standard':'Large'}</option>`).join('')}</select></label><label class="preference-row"><span class="preference-copy"><b>Ranged skill casting</b><small>Gunner’s bomb and beacon. Hold Q/E or drag a skill button to aim; release to cast.</small></span><select aria-label="Ranged skill casting" data-control="skillCast"><option value="hold" ${save.settings.skillCast!=='quick'?'selected':''}>Aim on hold</option><option value="quick" ${save.settings.skillCast==='quick'?'selected':''}>Quick cast</option></select></label><p class="preference-note">Cancel aiming with Esc, right-click, or the Cancel area. Movement stays active.</p></section></div><div class="preferences-footer"><span>✓ Changes save automatically<small>Progress is stored in this browser.</small></span>${button(scene&&!scene.ended?'← Back to pause':'← Back to menu',scene&&!scene.ended?'pause':'menu','primary')}</div><details class="preferences-reset"><summary>Progress management</summary><div><p>Start over by clearing your saved progress in this browser.</p>${button('Reset progress','reset','danger')}</div></details>`,true);
+ const toggle=(key:'sound'|'music'|'shake'|'aimAssist'|'haptics',title:string,description:string)=>`<label class="preference-row"><span class="preference-copy"><b>${title}</b><small>${description}</small></span><input class="preference-switch" type="checkbox" aria-label="${title}" data-setting="${key}" ${(key==='haptics'?save.settings.haptics!==false:save.settings[key])?'checked':''}></label>`;
+ shell(`${header('Make it your game','Your sound. Your controls. Your next stand.')}<div class="preferences-grid"><section class="preference-group"><div class="preference-heading"><span aria-hidden="true">♫</span><div><small>SET THE MOOD</small><h3>Sound & atmosphere</h3></div></div>${toggle('sound','Sound effects','Hear every hit, shot and enemy attack.')}${button('Test attack sound','test-attack-sound','quiet')}${typeof navigator.vibrate==='function'?toggle('haptics','Hit vibration','Short pulses on landed hits and damage.'): '<p class="preference-note">Attack vibration is unavailable in this browser.</p>'}${toggle('shake','Screen shake','Add impact to powerful attacks. Turn off for a calmer view.')}</section><section class="preference-group"><div class="preference-heading"><span aria-hidden="true">✥</span><div><small>FIND YOUR COMFORT</small><h3>Touch controls</h3></div></div>${toggle('aimAssist','Aim assistance','Help aim your attacks when playing on mobile.')}<label class="preference-row"><span class="preference-copy"><b>Joystick side</b><small>Choose which thumb handles movement.</small></span><select aria-label="Joystick side" data-control="joystickSide"><option value="left" ${save.settings.joystickSide==='left'?'selected':''}>Left</option><option value="right" ${save.settings.joystickSide==='right'?'selected':''}>Right</option></select></label><label class="preference-row"><span class="preference-copy"><b>Joystick size</b><small>Pick a size that feels easy to reach.</small></span><select aria-label="Joystick size" data-control="joystickSize">${[95,115,135].map(n=>`<option value="${n}" ${save.settings.joystickSize===n?'selected':''}>${n===95?'Compact':n===115?'Standard':'Large'}</option>`).join('')}</select></label><label class="preference-row"><span class="preference-copy"><b>Ranged skill casting</b><small>Gunner’s bomb and beacon. Hold Q/E or drag a skill button to aim; release to cast.</small></span><select aria-label="Ranged skill casting" data-control="skillCast"><option value="hold" ${save.settings.skillCast!=='quick'?'selected':''}>Aim on hold</option><option value="quick" ${save.settings.skillCast==='quick'?'selected':''}>Quick cast</option></select></label><p class="preference-note">Cancel aiming with Esc, right-click, or the Cancel area. Movement stays active.</p></section></div><div class="preferences-footer"><span>✓ Changes save automatically<small>Progress is stored in this browser.</small></span>${button(scene&&!scene.ended?'← Back to pause':'← Back to menu',scene&&!scene.ended?'pause':'menu','primary')}</div><details class="preferences-reset"><summary>Progress management</summary><div><p>Start over by clearing your saved progress in this browser.</p>${button('Reset progress','reset','danger')}</div></details>`,true);
  overlay.querySelector('.panel')?.classList.add('preferences-panel');
 }
 let lastRunOptions:RunOptions|undefined,loadGeneration=0,loadingTimer:ReturnType<typeof setTimeout>|undefined;
@@ -329,6 +329,7 @@ overlay.addEventListener('click', e => {
         return;
     audio.unlock();
     const [a, b, c] = el.dataset.action!.split(':');
+    if(a==='test-attack-sound'){if(!audio.sound)toast('Turn on Sound effects to hear the preview.');else{audio.character=save.hero;audio.element='';audio.play(save.hero==='pyusawhti'?'bow-release':save.hero==='zawgyi'?'staff-swish':save.weapon);setTimeout(()=>audio.play('hit'),180);}return;}
     if(a==='loadout-mode-toggle'){
      const menu=overlay.querySelector<HTMLElement>('#loadout-mode-menu')!,trigger=el;
      if(menu.matches(':popover-open')){menu.hidePopover();return;}
@@ -513,7 +514,7 @@ overlay.addEventListener('pointerup',e=>{
 });
 overlay.addEventListener('pointercancel',()=>{modeSwipeStart=undefined;});
 overlay.addEventListener('change', e => {
-    const el = e.target as HTMLInputElement, k = el.dataset.setting as 'sound' | 'music' | 'shake' | 'aimAssist';
+    const el = e.target as HTMLInputElement, k = el.dataset.setting as 'sound' | 'music' | 'shake' | 'aimAssist' | 'haptics';
     if (k) {
         save.settings[k] = el.checked;
         syncAudio();
@@ -587,3 +588,7 @@ overlay.addEventListener('keydown',e=>{if(!['ArrowRight','ArrowDown','ArrowLeft'
 bindFullscreenControls(()=>toast('Fullscreen is unavailable here. Your game still fills the browser window.'));
 
 welcomeMobileLandscape();
+
+// Resume effects from a real gesture after browser interruptions, independently of music.
+document.addEventListener('pointerdown',()=>{if(audio.sound&&audio.context?.state!=='running')audio.unlock();},{passive:true,capture:true});
+document.addEventListener('keydown',()=>{if(audio.sound&&audio.context?.state!=='running')audio.unlock();});

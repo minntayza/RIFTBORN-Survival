@@ -215,7 +215,7 @@ export class PyusawhtiCombat {
    const origin=pyusawhtiArrowOrigin(this.s.x,this.s.y,shot.aim);
    for(const arrow of shot.arrows){arrow.x=origin.x;arrow.y=origin.y;this.arrows.push(arrow);}
    this.releases.push({...origin,angle:shot.aim,age:0});
-   this.s.audio.play('reload-swish');this.pendingShots.splice(i,1);
+   this.s.audio.play('bow-release');this.pendingShots.splice(i,1);
   }
  }
 

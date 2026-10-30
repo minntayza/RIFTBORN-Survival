@@ -1,8 +1,8 @@
 import './music-preview.css';
-const track = new Audio('/audio/across-the-ridge-preview.mp3');
+const track = new Audio('/audio/riftborn-last-light-v1.mp3');
 track.loop = true;
 track.preload = 'none';
-track.volume = 0.25;
+track.volume = 0.14;
 let enabled = true;
 try { enabled = localStorage.getItem('zls-music-enabled') !== 'false'; } catch { /* Use the default when storage is unavailable. */ }
 const toggle = document.createElement('button');
@@ -36,10 +36,10 @@ document.body.append(toggle);
 if (enabled) void track.play().catch(() => {});
 
 let musicScene='menu',musicFade=0;
-/** Reuse the existing track and mute choice; only blend its level between scenes. */
+/** Use the original Last Light score and mute choice; only blend its level between scenes. */
 export function setMusicScene(scene:'menu'|'camp'|'siege'){
  if(scene===musicScene)return;musicScene=scene;cancelAnimationFrame(musicFade);
- const start=track.volume,target=scene==='camp'?.2:scene==='siege'?.28:.25,born=performance.now();
+ const start=track.volume,target=scene==='camp'?.10:scene==='siege'?.13:.14,born=performance.now();
  const blend=(now:number)=>{const t=Math.min(1,(now-born)/600);track.volume=start+(target-start)*t;if(t<1)musicFade=requestAnimationFrame(blend);};
  musicFade=requestAnimationFrame(blend);
 }

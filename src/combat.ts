@@ -585,6 +585,7 @@ export class ArenaScene extends Phaser.Scene {
         n.text.setPosition(x - 8, y - 20).setText(String(Math.round(value))).setColor(crit ? '#ffd87d' : '#dcece3').setFontSize(crit ? 21 : 14).setAlpha(1).setVisible(true);
     }
     hit(e: Enemy, base: number, knock = 20, bullet = false,elemental=true,sourceOverride?:string) {
+        this.audio.character=this.hero;this.audio.element=this.awakened||'';
         if (!e.active)
             return;
         const crit = this.random() < .05 + (this.earlyPower&&this.hero==='ninja'?.05:0) + this.u('crit') * .07, raw = damageValue(base, HEROES[this.hero].damage * (1 + (this.camp?.damageBonus||0) + this.u('damage') * .12 + this.meta('damage') * .05 + this.honour * .05 + (this.options.build==='assault'?.1:0) + (this.boostDamage>0?.4:0) + (this.earlyPower&&this.hero==='samurai'?.12:0)+(this.earlyPower&&this.hero==='lethwei'?.1:0)), crit, bullet && e.type === 'armoured');
@@ -741,6 +742,7 @@ export class ArenaScene extends Phaser.Scene {
         this.tweens.add({ targets: g, alpha: 0, duration: 140, onComplete: () => g.destroy() });
     }
     basicAttack() {
+        this.audio.character=this.hero;this.audio.element=this.awakened||'';
         if(this.zawgyi&&this.zawgyi.slamTime>0||this.heroAbilities?.actionLocked)return;
         const w = WEAPONS[this.weapon];
         this.attack = cooldownValue(w.cooldown, HEROES[this.hero].rate * (this.earlyPower&&this.hero==='gunner'?1.1:1) * (1 + (this.momentum > 0 ? .1 * Math.min(3, Math.floor(this.combo / 5)) : 0))*(1+this.evolution.tempo*.1)*(this.overdrive>0?1.6:1));

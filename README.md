@@ -93,7 +93,7 @@ Open the floating gift on the home screen to preview rewards, check progress, an
 | Pause | Escape / pause button | Pause button |
 | Choose an upgrade | Click or press 1, 2, 3 | Tap a card |
 
-**Phones are best played sideways.** Joystick placement and size are configurable. The map-view button cycles **1× → 1.5× → 2×**, with 1.5× as the default on mobile. Fullscreen availability depends on the browser and device; portrait remains playable.
+**Phones are best played sideways.** Joystick placement and size are configurable. The map-view button cycles **1× → 1.5× → 2×**, with 1.5× as the default on mobile and 1× for Endless on desktop. Fullscreen availability depends on the browser and device; portrait remains playable.
 
 ## Progress and accounts
 
