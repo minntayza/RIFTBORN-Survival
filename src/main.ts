@@ -109,7 +109,7 @@ function shell(content: string, wide = false) {
  };
  restore();requestAnimationFrame(restore);
 }
-function header(title: string, sub: string) { return `<div class="eyebrow"><span class="rift-wordmark">RIFTBORN</span> <span>● OFFLINE / SOLO</span></div><h2>${title}</h2><p class="muted">${sub}</p>`; }
+function header(title: string, sub: string) { return `<div class="eyebrow"><span class="rift-wordmark">RIFTBORN</span></div><h2>${title}</h2><p class="muted">${sub}</p>`; }
 function back() { return button('← Back', 'menu', 'quiet'); }
 function openChallengeGifts(){
  let dialog=overlay.querySelector<HTMLDialogElement>('#challenge-gifts');
