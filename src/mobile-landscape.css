@@ -1,5 +1,5 @@
 /* Short, wide phones keep the complete launch flow in one landscape viewport. */
-@media (orientation:landscape) and (max-height:600px) and (max-width:1100px){
+@media (orientation:landscape) and (max-height:600px){
  #overlay:has(.home-hub){padding:0!important;align-items:stretch}
  .landing-panel:has(.home-hub){height:100dvh!important;max-height:100dvh!important;width:100vw!important;overflow-y:auto!important}
  .landing-screen.home-hub{box-sizing:border-box;display:grid!important;grid-template-columns:minmax(0,.95fr) minmax(0,1.05fr)!important;grid-template-rows:44px minmax(0,1fr) auto!important;height:100dvh!important;min-height:0!important;padding:max(8px,env(safe-area-inset-top)) max(16px,env(safe-area-inset-right)) max(8px,env(safe-area-inset-bottom)) max(16px,env(safe-area-inset-left))!important;gap:8px 22px!important;overflow:visible}
@@ -31,14 +31,14 @@
 }
 .landscape-welcome{box-sizing:border-box;width:min(350px,calc(100vw - 32px));padding:24px;border:1px solid #d3b46b88;border-radius:20px;background:radial-gradient(ellipse at top,#31464a,#10232e);color:#f6e9c8;text-align:center;box-shadow:0 20px 80px #0009}
 .landscape-welcome::backdrop{background:#07141de8;backdrop-filter:blur(5px)}.landscape-welcome h2{font-size:25px;margin:14px 0 10px}.landscape-welcome p{font-size:15px;line-height:1.5;color:#c5d6d0}.landscape-welcome button{display:block;min-height:44px;width:100%;margin-top:10px;white-space:normal}.rotate-phone-art{display:block;margin:auto;width:68px;height:40px;border:3px solid #e9ce8f;border-radius:10px;position:relative}.rotate-phone-art:after{content:'↻';position:absolute;right:-26px;top:-22px;font-size:32px;color:#b0dbcb}
-@media (orientation:landscape) and (max-height:600px) and (max-width:1100px){
+@media (orientation:landscape) and (max-height:600px){
  .home-hub .hub-run-setup{min-height:0!important}
  .home-hub .home-daily-practice{flex-direction:row!important;min-height:0!important;padding:0!important;gap:6px!important}
  .home-hub .home-daily-practice small{display:none!important}
  .home-hub .hub-footer{min-height:0!important;height:38px!important}
  .home-hub .hub-records{padding-right:44px}
 }
-@media (orientation:landscape) and (max-height:600px) and (max-width:1100px){
+@media (orientation:landscape) and (max-height:600px){
  .panel.dress-panel{width:calc(100vw - 16px)!important;height:calc(100dvh - 16px)!important;max-height:calc(100dvh - 16px)!important;overflow:hidden!important}
  .dressing-room{display:grid;grid-template-rows:44px minmax(0,1fr) 58px;height:100%;min-height:0}
  .dress-header{padding:5px 14px;min-height:0}.dress-header>b{font-size:12px}.dress-header>div{gap:8px}.dress-header button{min-height:32px;padding:5px 8px;font-size:11px}
@@ -48,6 +48,15 @@
  .dress-options{padding:8px 12px;overflow-y:auto;min-height:0}.dress-tabs{position:sticky;top:-8px;z-index:2;background:#101e28;padding:4px 0 7px;margin-bottom:10px}.dress-tabs button{min-height:36px;padding:7px 3px;font-size:12px}.dress-title{margin-bottom:10px}.dress-title h3{font-size:15px}.dress-grid{grid-template-columns:repeat(3,minmax(0,1fr));gap:7px}.dress-tile{min-height:112px;padding:7px 5px}.dress-tile-art{height:66px}.dress-tile b{font-size:11px}.dress-tile small{font-size:10px}
  .dress-footer{position:relative;bottom:auto;min-height:0;padding:6px 12px!important;gap:8px!important;flex-wrap:nowrap!important}.dress-footer .primary{min-height:40px;padding:8px 12px;font-size:12px}.dress-footer .dress-mode{min-height:40px;padding:6px 10px;font-size:12px}.dress-footer small{display:none}
 }
-@media (orientation:landscape) and (max-height:600px) and (max-width:1100px){
+@media (orientation:landscape) and (max-height:600px){
  body:has(.dress-panel) .music-toggle{top:max(12px,env(safe-area-inset-top))!important;bottom:auto!important;right:calc(50% - 16px)!important;width:32px!important;height:32px!important}
+}
+
+/* Very short browser windows scroll the content instead of overlapping the header. */
+@media (orientation:landscape) and (max-height:600px){
+ .landing-screen.home-hub{grid-template-rows:44px minmax(240px,1fr) auto!important;height:auto!important;min-height:100dvh!important}
+ #overlay:has(.weapon-awakening-panel){align-items:flex-start!important;padding:max(8px,env(safe-area-inset-top)) max(12px,env(safe-area-inset-right)) max(8px,env(safe-area-inset-bottom)) max(12px,env(safe-area-inset-left))!important;overflow-y:auto}
+ .panel.weapon-awakening-panel{box-sizing:border-box;margin:auto;width:min(960px,100%);max-height:calc(100dvh - 16px);overflow-y:auto;flex-shrink:0}
+ .weapon-awakening-panel .awakening-heading{position:relative;margin-top:0}
+ .weapon-awakening-panel .awakening-footer{padding-right:48px}
 }

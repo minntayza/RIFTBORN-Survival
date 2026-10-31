@@ -8,7 +8,7 @@ test('chosen intermediate view survives save validation and invalid values stay 
 test('daily practice view changes reach its isolated camera settings',async()=>{
  const {prepareRunSave}=await import('../src/daily-appearance');const {dailySetup}=await import('../src/retention');
  const s=freshSave();s.settings.mapView=1;const run=prepareRunSave(s,{...dailySetup('2026-10-30'),practice:true});assert.notEqual(run.settings,s.settings);
- for(const expected of [1.5,2,1]){cycleRunMapView(s.settings,run.settings);assert.equal(run.settings.mapView,expected);assert.equal(s.settings.mapView,expected);}
+ for(const expected of [2,1,1.5]){cycleRunMapView(s.settings,run.settings);assert.equal(run.settings.mapView,expected);assert.equal(s.settings.mapView,expected);}
 });
 
 test('desktop Endless defaults to 1x with Daily at 1.5x and preserves explicit player choices',async()=>{
