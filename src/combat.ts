@@ -384,7 +384,7 @@ export class ArenaScene extends Phaser.Scene {
     hazard: {x:number;y:number;time:number} | undefined;
     rewardPool(){return rollReward(this.hp,this.maxHp);}
     private goldPayout=new GoldPayout();private waveBaseGold=0;
-    grantGold(n:number){this.waveBaseGold+=n;const paid=this.goldPayout.grant(n);this.stats.gold+=paid;this.waveStats.gold+=paid;this.save.gold+=paid;return paid;}
+    grantGold(n:number,multiplier:1|.5=1){this.waveBaseGold+=n*multiplier;const paid=this.goldPayout.grant(n,multiplier);this.stats.gold+=paid;this.waveStats.gold+=paid;this.save.gold+=paid;return paid;}
     grantPetals(n:number){this.stats.petals=(this.stats.petals||0)+n;this.waveStats.petals=(this.waveStats.petals||0)+n;this.save.petals=(this.save.petals||0)+n;}
     grantReward(id:RewardId){
         if(id==='heal')this.heal(this.maxHp*.25);
@@ -412,7 +412,7 @@ export class ArenaScene extends Phaser.Scene {
         if(l.progress<=0)return;
         if(l.kind==='beacon'){if(distance<95)l.progress+=dt;if(l.progress<6)return;}
         else if(l.guards.some(e=>e.active)||distance>65)return;
-        l.done=true;this.grantGold(90+this.stats.wave*12);
+        l.done=true;this.grantGold(90+this.stats.wave*12,l.kind==='cache'?.5:1);
         if(l.kind==='cache')this.heal(this.maxHp*.2);
         if(l.kind==='beacon')this.xp+=Math.ceil(this.xpNeed*.6);
         if(l.kind==='patrol')this.rewardShield=Math.max(1,this.rewardShield);
@@ -422,7 +422,7 @@ export class ArenaScene extends Phaser.Scene {
     updateEvent(dt:number){
         if(this.camp)return;
         this.updateLandmark(dt);
-        for(const c of this.supplies)if(c.active&&Math.hypot(c.x-this.x,c.y-this.y)<35){c.active=false;this.heal(this.maxHp*.15);this.grantGold(80+this.stats.wave*10);this.objectiveComplete('SUPPLY SECURED · HEAL + GOLD');}
+        for(const c of this.supplies)if(c.active&&Math.hypot(c.x-this.x,c.y-this.y)<35){c.active=false;this.heal(this.maxHp*.15);this.grantGold(80+this.stats.wave*10,.5);this.objectiveComplete('SUPPLY SECURED · HEAL + GOLD');}
         if(this.eventName==='Elite hunt'&&this.huntTarget&&!this.huntTarget.active){this.huntTarget=undefined;this.grantGold(250+this.stats.wave*15);this.objectiveComplete('ELITE BOUNTY CLAIMED');}
         if(this.eventName==='Hold the zone'&&!this.zone.done&&Math.hypot(this.x-this.zone.x,this.y-this.zone.y)<140){this.zone.progress+=dt;this.zoneSpawnClock-=dt;if(this.zoneSpawnClock<=0){this.zoneSpawnClock=5;this.spawn('runner');this.spawn('basic');}if(this.zone.progress>=20){this.zone.done=true;this.grantGold(300+this.stats.wave*15);this.rewardShield=3;this.objectiveComplete('ZONE SECURED · SHIELD + GOLD');}}
         if(this.stats.wave>10&&!this.recovery){this.hazardClock-=dt;if(this.hazardClock<=0){this.hazardClock=12;this.hazard={x:this.x+Math.cos(this.angle)*75,y:this.y+Math.sin(this.angle)*75,time:3};}if(this.hazard){this.hazard.time-=dt;if(this.hazard.time<1&&Math.hypot(this.x-this.hazard.x,this.y-this.hazard.y)<65)this.hurt(8,undefined,Math.atan2(this.hazard.y-this.y,this.hazard.x-this.x));if(this.hazard.time<=0)this.hazard=undefined;}}
@@ -1483,7 +1483,7 @@ export class ArenaScene extends Phaser.Scene {
             if (dist < 22) {
                 d.active = false;
                 if (d.gold) {
-                    this.grantGold(d.value);
+                    this.grantGold(d.value,.5);
                     this.audio.play('gold');
                 }
                 else {
