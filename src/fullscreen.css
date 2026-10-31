@@ -3,3 +3,8 @@ html:fullscreen body,html.game-fullscreen body{width:100%;height:100%;margin:0;o
 html:fullscreen #game,html.game-fullscreen #game{position:fixed;inset:0;width:100%;height:100%}
 .fullscreen-toggle{min-height:44px;white-space:normal}
 
+
+/* The arena fills the current visible page even as mobile browser bars resize it. */
+html,body{margin:0;width:100%;height:100%;overflow:hidden}
+#game{position:fixed;inset:0;width:100%;height:100vh;height:100dvh;overflow:hidden}
+#game canvas{display:block;width:100%;height:100%}

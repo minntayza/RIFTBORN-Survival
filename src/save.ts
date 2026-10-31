@@ -48,7 +48,7 @@ export type Save = {
         mapViewChosen?: boolean;
     };
 };
-export const defaultMapView = (mode:RunMode='endless'): MapView => typeof matchMedia !== 'undefined' && (matchMedia('(pointer:coarse)').matches || navigator.maxTouchPoints > 0) ? 1.5 : 1;
+export const defaultMapView = (mode:RunMode='endless'): MapView => typeof matchMedia !== 'undefined' && (matchMedia('(pointer:coarse)').matches || navigator.maxTouchPoints > 0) ? 1.5 : mode==='daily'?1.5:1;
 export const freshSave = (): Save => ({ version: 1, heroAbilities:{samurai:validHeroAbilities('samurai',null),gunner:validHeroAbilities('gunner',null),tank:validHeroAbilities('tank',null)}, zawgyiSkills:['datlone','flame'], pyusawhtiSkills:['banepierce','windfocus'], lethweiSkills:['blitz','lethweiring'], kyansitthaSkills:['crescentsweep','arindamathunder'], runSetup:{mode:'endless',build:'assault'}, archive:{}, petals:0, cosmetics:{owned:[],equipped:{}}, gold: 0, heroes: ['ninja'], weapons: ['katana', 'nodachi', 'pistols', 'shield', 'mysticstaff', 'aungzeyabow', 'hempwraps'], hero: 'ninja', weapon: 'katana', permanent: {}, bestWave: 0, bestClearedWave:0, firstDailyCleared:false, bestTime: 0, bestKills: 0, mastery: {}, techniques:{},daily:{},shortWins:0, settings: { sound: true, haptics:true, music: true, shake: true,aimAssist:true,skillCast:'hold',joystickSide:'left',joystickSize:115,mapView:defaultMapView() } });
 const num = (x: unknown, max = 1e9) => typeof x === 'number' && Number.isFinite(x) ? Math.max(0, Math.min(max, Math.floor(x))) : 0;
 export const compatible = (h: HeroId, w: WeaponId) => WEAPONS[w]?.hero === h;
