@@ -11,7 +11,7 @@ export type Spawn = {
     formation: number;
     faction?: EnemyFaction;
 };
-export function wavePlan(w: number, random=Math.random, dailyBosses?: { wave5: BossConfig; wave10: BossConfig }): Spawn[] {
+export function wavePlan(w: number, random=Math.random, dailyBosses?: { wave5: BossConfig; wave10: BossConfig }, endless=false): Spawn[] {
     if (w === 1)
         return [{ time: 0, type: 'basic', count: 4, formation: 0 }, { time: 6, type: 'basic', count: 3, formation: 1 }, { time: 6, type: 'runner', count: 1, formation: 1 }, { time: 12, type: 'basic', count: 3, formation: 2 }, { time: 18, type: 'runner', count: 2, formation: 3 }, { time: 24, type: 'basic', count: 3, formation: 0 }, { time: 24, type: 'runner', count: 1, formation: 0 }, { time: 30, type: 'basic', count: 3, formation: 2 }, { time: 35, type: 'brute', count: 1, formation: 1 }];
     const counts: Partial<Record<EnemyId, number>>[] = [{}, {},
@@ -34,6 +34,10 @@ export function wavePlan(w: number, random=Math.random, dailyBosses?: { wave5: B
                 if (c[key] && c[key]! > 2) c[key] = Math.max(2, Math.round(c[key]! * 0.8));
             }
         }
+    }
+    if(endless&&!dailyBosses&&w>=5&&w<=9){
+        const target=[3,4,6,8,10][w-5],extra=target-(counts[w].rifle??0);
+        counts[w].basic=(counts[w].basic??0)-extra;counts[w].rifle=target;
     }
     const out: Spawn[] = [];
     if (w <= 10) {
@@ -89,9 +93,18 @@ export function wavePlan(w: number, random=Math.random, dailyBosses?: { wave5: B
             if(runners)out.push({time:Math.min(39,time+.4),type:'runner',count:runners,formation:3});
         }
     }
+    if(endless&&!dailyBosses&&(w===13||w===14)){
+        let remaining=w===13?6:8;
+        // Exchange supporting melee units, preserving the total population.
+        for(const pack of [...out].reverse()){
+            if(pack.type!=='basic'||remaining===0)continue;
+            const count=Math.min(remaining,pack.count);pack.count-=count;remaining-=count;
+            out.push({time:Math.min(39,pack.time+.8),type:'rifle',count,formation:pack.formation,faction:'robot'});
+        }
+    }
     // Three short gaps let players collect drops without stopping the encounter.
     if(w>=3)for(const spawn of out)if(spawn.time>=12&&spawn.time<15||spawn.time>=26&&spawn.time<29)spawn.time=Math.min(39,spawn.time+3);
-    return out.sort((a, b) => a.time - b.time);
+    return out.filter(pack=>pack.count>0).sort((a, b) => a.time - b.time);
 }
 export const damageValue = (base: number, multiplier: number, crit: boolean, armour = false) => Math.round(base * multiplier * (crit ? 1.8 : 1) * (armour ? .55 : 1));
 export const cooldownValue = (base: number, rate: number, reduction = 0) => Math.max(.08, base / rate * (1 - Math.min(.75, reduction)));

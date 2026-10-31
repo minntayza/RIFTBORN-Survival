@@ -78,7 +78,7 @@ Open the floating gift on the home screen to preview rewards, check progress, an
 - **Lethwei Master:** clear wave 15 in Endless.
 - **Fox Ronin:** clear your first Daily Challenge to earn Samurai's outfit.
 
-**Both rewards are earned through play. Neither can be bought with Gold or Petals.** New saves start with **0 Gold and 0 Petals**; play to earn currency for purchases.
+**Both rewards are earned through play. Neither can be bought with Gold or Petals.** New saves start with **0 Gold and 0 Petals**; earn Gold in Endless and Petals by clearing Daily Challenge waves. Endless does not award Petals.
 
 ## Controls
 

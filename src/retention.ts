@@ -43,3 +43,6 @@ export function edgePosition(angle:number,width:number,height:number){
  const vertical=Math.max(18,dy<0?cy-Math.min(110,height*.25):height-Math.min(190,height*.35)-cy)/Math.max(.001,Math.abs(dy));
  const scale=Math.min(horizontal,vertical);return{x:cx+dx*scale,y:cy+dy*scale};
 }
+
+/** Endless earns Gold; Petals are reserved for finite challenge clears. */
+export function wavePetals(mode:RunMode,wave:number){return mode==='endless'?0:wave===10?60:wave===5?40:mode==='daily'?20:10;}

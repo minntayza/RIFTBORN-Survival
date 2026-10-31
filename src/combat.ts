@@ -66,7 +66,7 @@ import {assistedAim,escapeDirection,routedSpawn,buildSynergies,COMBAT_CACHE_KILL
 import {HERO_IDENTITIES,encounterRhythm,weaponMilestone} from './run-design';
 import {CARD_EVOLUTIONS} from './card-evolutions';
 import {WEAPON_EFFECTS,weaponPose,meleeContact,isGun} from './weapon-effects';
-import { seededRandom, earnedWaveGold, type RunOptions, type BossConfig } from './retention';
+import { seededRandom, earnedWaveGold, wavePetals, type RunOptions, type BossConfig } from './retention';
 import {UPGRADES} from './upgrades';
 import { rollReward, waveEvent, type RewardId, type EvolutionId } from './progression';
 import type { TouchState } from './touch';
@@ -279,6 +279,7 @@ export class ArenaScene extends Phaser.Scene {
     comboTime = 0;
     waveTime = 0;
     elapsed = 0;
+    nextRifleAimAt = 0;
     spawnIndex = 0;
     plan: Spawn[] = [];
     levels: Record<string, number> = {};
@@ -529,12 +530,12 @@ export class ArenaScene extends Phaser.Scene {
     get maxAmmo() { return (this.weapon === 'shotgun' ? 6 : this.weapon==='smg'?28:12) + this.u('magazine') * 4; }
     startWave() { this.cataclysm.clear();this.bossMarks=[];if(this.floorTheme !== (this.stats.wave>10?1:0)){this.drawFloor();this.cameras.main.fadeIn(900,15,8,12);} this.boostDamage=this.pendingReward==='damage'?15:0;this.boostSpeed=this.pendingReward==='speed'?15:0;this.pendingReward=undefined;this.eventName=waveEvent(this.stats.wave);if(this.stats.wave<=10)this.eventName=({2:'Supply rush',4:'Hold the zone',6:'Elite hunt',8:'Supply rush',10:'Boss encounter'} as Record<number,string>)[this.stats.wave]||'Survival';this.waveObjectives=0;this.zoneSpawnClock=5;this.bossDefeated=false;this.supplies=[];this.huntTarget=undefined;this.zone={x:this.x+180,y:this.y,progress:0,done:false};this.hazard=undefined;this.hazardClock=8;
         if(this.eventName==='Supply rush')this.supplies=Array.from({length:3},(_,i)=>{const x=this.x+Math.cos(i*2.1)*260,y=this.y+Math.sin(i*2.1)*260;return {...this.clearGroundPoint(x,y,65),active:true};});
-        if(this.camp){this.supplies=[];this.eventName='Defend the beacon';}this.createLandmark();this.waveTime = 0; this.spawnIndex = 0; this.plan = wavePlan(this.stats.wave,this.random,this.options.mode==='daily'?this.dailyBosses:undefined); if(this.options.mode==='daily'){if(this.stats.wave===5)this.eventName='Boss encounter';else if(this.stats.wave===10)this.eventName='Final boss';} if(this.camp){const info=campWave(this.stats.wave);this.eventName=info.name;if([2,8].includes(this.stats.wave))this.plan.push({time:14,type:this.stats.wave===8?'armoured':'brute',count:2,formation:0,faction:'zombie'},{time:14,type:'basic',count:5,formation:0,faction:'zombie'});if([3,6,7,9].includes(this.stats.wave))this.plan.push({time:20,type:'brute',count:2,formation:0,faction:'zombie'});if(this.stats.wave===4)this.plan.push({time:12,type:'runner',count:6,formation:0,faction:'zombie'});this.plan.sort((a,b)=>a.time-b.time);}if(this.camp&&[5,10].includes(this.stats.wave)){this.plan.push({time:18,type:'brute',count:this.stats.wave===10?3:2,formation:0,faction:'zombie'});this.plan.sort((a,b)=>a.time-b.time);}this.waveStats = { kills: 0, gold: 0, damage: 0, time: 0, petals: 0 };this.waveBaseGold=0; this.waiting = false;if(this.evolved('ward'))this.rewardShield=Math.max(this.rewardShield,3); this.waveWard = !!this.u('ward'); if(this.eventName==='Elite hunt'){this.spawn('elite');this.huntTarget=this.enemies.find(e=>e.active&&e.type==='elite');} if(this.camp&&this.stats.wave===10){this.campFinalIntro=2;this.campArt?.finalStand();}this.audio.play('wave'); if(!(this.camp&&this.stats.wave===10))this.banner(this.camp?`WAVE ${this.stats.wave} · ${campWave(this.stats.wave).name.toUpperCase()} · ${campWave(this.stats.wave).sides.map(side=>CAMP_DIRECTIONS[side]).join(' + ')}`:`WAVE ${String(this.stats.wave).padStart(2, '0')} · ${this.eventName.toUpperCase()}`,this.camp?0xffcf80:0x9eefae); }
+        if(this.camp){this.supplies=[];this.eventName='Defend the beacon';}this.createLandmark();this.waveTime = 0; this.spawnIndex = 0; this.plan = wavePlan(this.stats.wave,this.random,this.options.mode==='daily'?this.dailyBosses:undefined,this.options.mode==='endless'); if(this.options.mode==='daily'){if(this.stats.wave===5)this.eventName='Boss encounter';else if(this.stats.wave===10)this.eventName='Final boss';} if(this.camp){const info=campWave(this.stats.wave);this.eventName=info.name;if([2,8].includes(this.stats.wave))this.plan.push({time:14,type:this.stats.wave===8?'armoured':'brute',count:2,formation:0,faction:'zombie'},{time:14,type:'basic',count:5,formation:0,faction:'zombie'});if([3,6,7,9].includes(this.stats.wave))this.plan.push({time:20,type:'brute',count:2,formation:0,faction:'zombie'});if(this.stats.wave===4)this.plan.push({time:12,type:'runner',count:6,formation:0,faction:'zombie'});this.plan.sort((a,b)=>a.time-b.time);}if(this.camp&&[5,10].includes(this.stats.wave)){this.plan.push({time:18,type:'brute',count:this.stats.wave===10?3:2,formation:0,faction:'zombie'});this.plan.sort((a,b)=>a.time-b.time);}this.waveStats = { kills: 0, gold: 0, damage: 0, time: 0, petals: 0 };this.waveBaseGold=0; this.waiting = false;if(this.evolved('ward'))this.rewardShield=Math.max(this.rewardShield,3); this.waveWard = !!this.u('ward'); if(this.eventName==='Elite hunt'){this.spawn('elite');this.huntTarget=this.enemies.find(e=>e.active&&e.type==='elite');} if(this.camp&&this.stats.wave===10){this.campFinalIntro=2;this.campArt?.finalStand();}this.audio.play('wave'); if(!(this.camp&&this.stats.wave===10))this.banner(this.camp?`WAVE ${this.stats.wave} · ${campWave(this.stats.wave).name.toUpperCase()} · ${campWave(this.stats.wave).sides.map(side=>CAMP_DIRECTIONS[side]).join(' + ')}`:`WAVE ${String(this.stats.wave).padStart(2, '0')} · ${this.eventName.toUpperCase()}`,this.camp?0xffcf80:0x9eefae); }
     banner(message: string, color = 0xffffff) { const t = this.add.text(this.cameras.main.width/2, 125, message, { fontFamily: 'monospace', fontSize: Math.min(26,Math.max(13,this.cameras.main.width/32))+'px', color: '#' + color.toString(16).padStart(6, '0'), fontStyle: 'bold' }).setOrigin(.5).setScrollFactor(0).setDepth(this.camp?7:0); this.tweens.add({ targets: t, alpha: 0, y: 100, delay: 1400, duration: 600, onComplete: () => t.destroy() }); }
     spawnSerial=0;
     spawn(type: EnemyId, side = Math.floor(this.random() * 4), offset = this.random(), factionOverride?:EnemyFaction) {
         const serial=this.spawnSerial++,faction=factionOverride??spawnFaction(this.stats.wave,serial,type);
-        if(rosterSpawn(type,faction)===undefined)return;
+        if(rosterSpawn(type,faction)===undefined&&!(this.options.mode==='endless'&&type==='rifle'&&faction==='robot'))return;
         if(this.count>=BALANCE.maxEnemies){if(['boss','shooterBoss','commander'].includes(type)){const replace=this.enemies.filter(e=>e.active&&['basic','runner'].includes(e.type)).sort((a,b)=>Math.hypot(b.x-this.x,b.y-this.y)-Math.hypot(a.x-this.x,a.y-this.y))[0];if(!replace)return;replace.active=false;}else return;}
         const d = ENEMIES[type], s = scaling(this.stats.wave), robot=faction==='robot'?robotStats(type):{health:1,damage:1,speed:1};
         const dailyWave5BossMod = (this.options.mode === 'daily' && this.stats.wave === 5 && ['boss','commander'].includes(type)) ? 0.65 : 1;
@@ -544,7 +545,7 @@ export class ArenaScene extends Phaser.Scene {
             this.enemies.push(e);
         }
         const view=this.cameras.main.worldView; const halfW=view.width/2||600,halfH=view.height/2||380; const x=side===0?this.x-halfW-70:side===1?this.x+halfW+70:this.x-halfW+view.width*offset,y=side===2?this.y-halfH-70:side===3?this.y+halfH+70:this.y-halfH+view.height*offset;
-        Object.assign(e, { active: true, campTarget:false,campLane:undefined,campAssignedAt:undefined, skillAge:99,skillWindup:1.15,skillAction:undefined,squad:Math.floor(serial/8), x, y, hp: d.hp * s.health*robot.health*dailyWave5BossMod, max: d.hp * s.health*robot.health*dailyWave5BossMod, type, faction, r: d.radius, speed: d.speed * s.speed*robot.speed, slow:0, stagger:0, burn:0, commandTime:0, shotKick:0, chargeTime:0, chargeHit:false, damage: d.damage * s.damage*robot.damage, flash: 0, attack: type === 'boss' ? 3 : 2, telegraph: 0, targetX: x, targetY: y, bleed: 0, touched: false, mod: Math.floor(this.random() * 5), phase: 0, threshold: 0 });
+        Object.assign(e, { active: true, campTarget:false,campLane:undefined,campAssignedAt:undefined, skillAge:99,skillWindup:1.15,skillAction:undefined,squad:Math.floor(serial/8), x, y, hp: d.hp * s.health*robot.health*dailyWave5BossMod, max: d.hp * s.health*robot.health*dailyWave5BossMod, type, faction, r: d.radius, speed: d.speed * s.speed*robot.speed, slow:0, stagger:0, burn:0, commandTime:0, shotKick:0, chargeTime:0, chargeHit:false, damage: d.damage * s.damage*robot.damage, flash: 0, attack: type === 'boss' ? 3 : this.options.mode==='endless'&&type==='rifle'?1.2+(serial%5)*.18:2, telegraph: 0, targetX: x, targetY: y, bleed: 0, touched: false, mod: Math.floor(this.random() * 5), phase: 0, threshold: 0 });
         if (['elite','boss','brute','shooterBoss','commander'].includes(type)) {
             this.burst(x, y, 0xef6879, 22);
             this.audio.play(type === 'boss' ? 'boss' : 'elite');
@@ -961,9 +962,9 @@ export class ArenaScene extends Phaser.Scene {
         if(rewards.length)this.notifyCombat('GIFT READY TO CLAIM · '+rewards.map(id=>id==='lethwei'?'LETHWEI MASTER':'FOX RONIN').join(' + '));
         this.earned=earnedWaveGold(this.stats.wave,this.waveStats.kills,this.waveStats.damage,this.waveObjectives);
         const earnedGold=this.grantGold(this.earned.combat+this.earned.perfect+this.earned.objective);
-        const earnedPetals = this.stats.wave === 10 ? 60 : this.stats.wave === 5 ? 40 : (this.options.mode === 'daily' ? 20 : 10);
-        this.grantPetals(earnedPetals);
-        this.banner(`WAVE CLEAR · +${earnedGold} GOLD · +${earnedPetals} ✿ PETALS`,0xd8ba85);
+        const earnedPetals = wavePetals(this.options.mode,this.stats.wave);
+        if(earnedPetals>0)this.grantPetals(earnedPetals);
+        this.banner(`WAVE CLEAR · +${earnedGold} GOLD${earnedPetals>0?` · +${earnedPetals} ✿ PETALS`:''}`,0xd8ba85);
         if(this.stats.wave===5&&!this.earlyAwakened){this.earlyAwakened=true;this.reveal(this.earlyTechnique);}
         if(this.stats.wave>10&&[3,6,8].includes(this.stats.wave)&&(this.earned.combat>0||this.waveObjectives>0)){this.xp+=this.xpNeed;this.notifyCombat('COMBAT MILESTONE · BONUS LEVEL-UP');}
 
@@ -1305,7 +1306,7 @@ export class ArenaScene extends Phaser.Scene {
             }
             if(e.type==='cleaver'||e.type==='spear'||e.type==='rifle'){
                 const ranged=e.type==='rifle';if(ranged){if(d<180)speed*=-.5;else if(d<330)speed=0;}
-                if(e.attack<=0&&d<(ranged?480:e.type==='spear'?175:130)&&(!ranged||view.contains(e.x,e.y))){e.telegraph=ranged?.9:.8;e.attack=ranged?3.5:e.type==='spear'?2.8:2.5;e.targetX=this.x;e.targetY=this.y;if(e.faction==='robot'&&e.type==='cleaver'){e.skillAction='slam';e.skillAge=0;e.skillWindup=.8;}continue;}
+                if(e.attack<=0&&d<(ranged?480:e.type==='spear'?175:130)&&(!ranged||view.contains(e.x,e.y))&&(!ranged||this.options.mode!=='endless'||this.elapsed>=this.nextRifleAimAt)){if(ranged&&this.options.mode==='endless')this.nextRifleAimAt=this.elapsed+.24;e.telegraph=ranged?.9:.8;e.attack=ranged?3.5:e.type==='spear'?2.8:2.5;e.targetX=this.x;e.targetY=this.y;if(e.faction==='robot'&&e.type==='cleaver'){e.skillAction='slam';e.skillAge=0;e.skillWindup=.8;}continue;}
             }
             if (e.type === 'spitter'||e.type==='bioScreer') {
                 if (d < 210)
@@ -1540,7 +1541,16 @@ export class ArenaScene extends Phaser.Scene {
             if(this.camp&&this.siegeEnemies.has(e))continue;
             if(e.type==='commander'&&e.commandTime>0){g.lineStyle(2,0x91a9d0,.65);g.strokeCircle(e.x,e.y,220);for(const n of this.enemies)if(n.active&&n!==e&&Math.hypot(n.x-e.x,n.y-e.y)<220){g.lineStyle(2,0x9bb2d1,.8);g.strokeCircle(n.x,n.y,n.r+7);}}
             if(e.telegraph>0&&['shooterBoss','commander'].includes(e.type)){if(e.type==='commander'){g.lineStyle(3,0x98b5d6,.8);g.strokeCircle(e.x,e.y,80+Math.sin(this.elapsed*8)*12);}else if(e.phase%3!==2){const aim=Math.atan2(e.targetY-e.y,e.targetX-e.x);for(const offset of e.phase%2===0?[0]:[-.5,0,.5]){g.lineStyle(3,0x1c2733,.9);g.lineBetween(e.x,e.y,e.x+Math.cos(aim+offset)*480,e.y+Math.sin(aim+offset)*480);g.lineStyle(1,0xc7ab7d,.9);g.lineBetween(e.x,e.y,e.x+Math.cos(aim+offset)*480,e.y+Math.sin(aim+offset)*480);}}continue;}
-            if(e.telegraph>0&&e.type==='rifle')continue;
+            if(e.telegraph>0&&e.type==='rifle'){
+                // A compact muzzle spark signals the locked shot, without body rings or aim lines.
+                const aim=Math.atan2(e.targetY-e.y,e.targetX-e.x),distance=e.r+12;
+                const x=e.x+Math.cos(aim)*distance,y=e.y+Math.sin(aim)*distance;
+                const size=e.telegraph<.22?6:3,alpha=e.telegraph<.22?.95:.55;
+                g.fillStyle(e.faction==='robot'?0xb5f4ff:0xffdf9c,alpha);
+                g.fillTriangle(x-size,y,x,y-size*1.5,x+size,y);
+                g.fillTriangle(x-size,y,x,y+size*1.5,x+size,y);
+                continue;
+            }
             if(e.telegraph>0&&['cleaver','spear'].includes(e.type)){
                 const aim=Math.atan2(e.targetY-e.y,e.targetX-e.x),range=e.type==='spear'?155:110;
                 if(e.type!=='cleaver'){g.lineStyle(6,0x142027,.9);g.lineBetween(e.x,e.y,e.x+Math.cos(aim)*range,e.y+Math.sin(aim)*range);g.lineStyle(2,0xc1967c,.9);g.lineBetween(e.x,e.y,e.x+Math.cos(aim)*range,e.y+Math.sin(aim)*range);}else{g.fillStyle(0xb88d77,.15);g.fillPoints([{x:e.x,y:e.y},...Array.from({length:12},(_,i)=>({x:e.x+Math.cos(aim-.95+i*1.9/11)*range,y:e.y+Math.sin(aim-.95+i*1.9/11)*range}))],true);}
