@@ -58,7 +58,7 @@ RIFTBORN's retention design connects **a satisfying fight now, a visible goal ne
 
 Neither reward can be purchased with Gold or Petals. The gift stays marked until both rewards are claimed. You can inspect the characters before earning them.
 
-New saves start with **0 Gold and 0 Petals**. Endless awards **Gold, never Petals**. Daily Challenge wave clears award Petals. Outfits and weapon skins offer additional collection goals.
+New saves start with **0 Gold and 0 Petals**. Endless awards **Gold, never Petals**. Clearing Endless Waves 1–15 awards **1,600 Gold** in total. A full ten-wave Daily Challenge awards **900 Gold and 250 Petals**. Gold pickups and bonuses count toward each wave’s budget; clearing the wave pays the remainder. Daily Challenge wave clears award Petals. Outfits and weapon skins offer additional collection goals.
 
 ## Burmese inspiration at the heart of the roster
 

@@ -184,7 +184,7 @@ function runLoadout(){
  const tile=(name:string,art:string,action:string,selected:boolean,note:string,disabled=false)=>`<button class="dress-tile" data-action="${action}" aria-pressed="${selected}" ${disabled?'disabled':''}><span class="dress-tile-art" aria-hidden="true">${art}</span><b>${name}</b><small>${note}</small>${selected?'<span class="dress-check" aria-hidden="true">✓</span>':''}</button>`;
  let choices='';
  if(dailyMode&&dressTab!=='skills')choices=`<div class="dress-daily"><span class="dress-daily-portrait">${combatPortrait(previewSave,hero)}</span><h3>Today’s shared loadout</h3><p>${HEROES[hero].name} · ${WEAPONS[weapon].name}</p><small>Everyone defends the camp with the same survivor, weapon, and outfit. Your personal equipment stays saved.</small><button data-action="dress-endless">Customize Endless loadout →</button></div>`;
- else if(dressTab==='survivor')choices=`<div class="dress-title"><h3>Your survivors</h3></div><div class="dress-grid">${(Object.keys(HEROES) as HeroId[]).map(id=>tile(HEROES[id].name,combatPortrait(save,id),`dress-hero:${id}`,hero===id,save.heroes.includes(id)?'Owned':id==='lethwei'?'Clear Wave 15 · Challenge reward':`Locked · ${HEROES[id].price} gold`,!save.heroes.includes(id))).join('')}</div><details class="dress-info"><summary>About ${HEROES[hero].name}</summary><p>${HEROES[hero].description}</p><p>${HERO_IDENTITIES[hero].name} · ${HERO_IDENTITIES[hero].benefit}</p><p>Health ${HEROES[hero].hp} · Speed ${HEROES[hero].speed}</p></details>${button('Unlock survivors in shop','shop','quiet')}`;
+ else if(dressTab==='survivor')choices=`<div class="dress-title"><h3>Your survivors</h3></div><div class="dress-grid">${(Object.keys(HEROES) as HeroId[]).map(id=>tile(HEROES[id].name,combatPortrait(save,id),save.heroes.includes(id)?`dress-hero:${id}`:id==='lethwei'?'reward-open-gifts':`buy:heroes:${id}`,hero===id,save.heroes.includes(id)?'Owned':id==='lethwei'?'Clear Wave 15 · View reward':`Buy & select · <span class="gold-coin currency-coin" aria-hidden="true">✦</span> ${HEROES[id].price}`)).join('')}</div><details class="dress-info"><summary>About ${HEROES[hero].name}</summary><p>${HEROES[hero].description}</p><p>${HERO_IDENTITIES[hero].name} · ${HERO_IDENTITIES[hero].benefit}</p><p>Health ${HEROES[hero].hp} · Speed ${HEROES[hero].speed}</p></details><p class="dress-hint">Select a survivor to equip them or buy them with Gold. Lethwei Master is earned by clearing Wave 15.</p>`;
  else if(dressTab==='weapon')choices=`<div class="dress-title"><h3>Pick your weapon</h3></div><div class="dress-grid">${(Object.keys(WEAPONS) as WeaponId[]).filter(id=>compatible(hero,id)).map(id=>tile(WEAPONS[id].name,weaponShopImage(id),`dress-weapon:${id}`,weapon===id,save.weapons.includes(id)?'Owned':`Locked · ${WEAPONS[id].price} gold`,!save.weapons.includes(id))).join('')}</div><details class="dress-info"><summary>About ${WEAPONS[weapon].name}</summary><p>Damage ${Math.round(WEAPONS[weapon].damage*HEROES[hero].damage)} · Range ${WEAPONS[weapon].range} · Interval ${WEAPONS[weapon].cooldown}s</p></details>${(hero==='pyusawhti'||hero==='lethwei')?'':button('Unlock weapons in shop','shop','quiet')}`;
  else if(dressTab==='skills')choices=dressSkills(hero,previewSave);
  else{
@@ -278,7 +278,7 @@ function waveClear(){
 
  if(scene!.evolutionDue)evolutionMenu();else finishIntermission();
 }
-function renderChoices() { const s = scene!; const rewardReveal=scene!.challengeUnlocks.length?challengeRewardsUi(save,'Rewards ready to claim!',scene!.challengeUnlocks.splice(0)):''; const title=waveChoice?header(`Wave ${s.stats.wave} survived`,'Recover. Adapt. The next horde is coming.'):`<div class="choice-heading"><b>SKILL CHOICE</b><small>LEVEL ${s.level} · PICK ONE</small></div>`; shell(`${title}${rewardReveal} ${waveChoice ? `<div class="wave-recap"><span>${s.waveStats.time.toFixed(1)}s <small>CLEAR TIME</small></span><span>${s.waveStats.kills} <small>KILLS</small></span><span><span class="gold-coin currency-coin" aria-hidden="true">✦</span> ${s.waveStats.gold} <small>GOLD</small></span><span>${Math.round(s.waveStats.damage)} <small>DAMAGE TAKEN</small></span></div><p class="badges">${s.waveStats.time < 45 ? '✦ QUICK CLEAR · +15% GOLD' : ''} ${s.waveStats.damage === 0 ? '◇ PERFECT CLEAR · +1 REROLL' : ''}</p>` : ''}<div class="cards upgrade-cards">${choices.map((u,i)=>visualUpgradeCard(u,i,s.hero,s.weapon,s.levels[u.id]||0,upgradeBuildHint(u,s.levels))).join('')}</div><div class="actions"><span class="muted">${button('Evolution guide','guide-cards','quiet')}</span>${button(`↻ Reroll (${s.rerolls} left)`, 'reroll', 'quiet')}</div>`, true); overlay.querySelector('.panel')?.classList.add('levelup-panel');const reroll=overlay.querySelector<HTMLButtonElement>('[data-action=reroll]');if(reroll)reroll.disabled=s.rerolls<=0; }
+function renderChoices() { const s = scene!; const rewardReveal=scene!.challengeUnlocks.length?challengeRewardsUi(save,'Rewards ready to claim!',scene!.challengeUnlocks.splice(0)):''; const title=waveChoice?header(`Wave ${s.stats.wave} survived`,'Recover. Adapt. The next horde is coming.'):`<div class="choice-heading"><b>SKILL CHOICE</b><small>LEVEL ${s.level} · PICK ONE</small></div>`; shell(`${title}${rewardReveal} ${waveChoice ? `<div class="wave-recap"><span>${s.waveStats.time.toFixed(1)}s <small>CLEAR TIME</small></span><span>${s.waveStats.kills} <small>KILLS</small></span><span><span class="gold-coin currency-coin" aria-hidden="true">✦</span> ${s.waveStats.gold} <small>GOLD</small></span><span>${Math.round(s.waveStats.damage)} <small>DAMAGE TAKEN</small></span></div><p class="badges">${s.waveStats.time < 45 ? (s.options.mode==='endless'||s.options.mode==='daily'?'✦ QUICK CLEAR':'✦ QUICK CLEAR · +15% GOLD') : ''} ${s.waveStats.damage === 0 ? '◇ PERFECT CLEAR · +1 REROLL' : ''}</p>` : ''}<div class="cards upgrade-cards">${choices.map((u,i)=>visualUpgradeCard(u,i,s.hero,s.weapon,s.levels[u.id]||0,upgradeBuildHint(u,s.levels))).join('')}</div><div class="actions"><span class="muted">${button('Evolution guide','guide-cards','quiet')}</span>${button(`↻ Reroll (${s.rerolls} left)`, 'reroll', 'quiet')}</div>`, true); overlay.querySelector('.panel')?.classList.add('levelup-panel');const reroll=overlay.querySelector<HTMLButtonElement>('[data-action=reroll]');if(reroll)reroll.disabled=s.rerolls<=0; }
 async function pick(index: number) {
     if (menuState !== 'choice' || !choices[index])
         return;
@@ -459,6 +459,8 @@ overlay.addEventListener('click', e => {
         if(b==='permanent')return;
         if (purchasePending)
             return;
+        const fromLoadout=menuState==='run-loadout'&&b==='heroes';
+        if(fromLoadout&&selectedMode==='daily')return;
         const kind = b as 'heroes' | 'weapons' | 'permanent';
         const cost = kind === 'heroes' ? HEROES[c as HeroId].price : kind === 'weapons' ? WEAPONS[c as WeaponId].price : 250 + 150 * (save.permanent[c] || 0);
         if (!PLAYTEST.unlimitedGold && save.gold < cost) {
@@ -467,14 +469,15 @@ overlay.addEventListener('click', e => {
         }
         purchasePending = true;
         if (purchase(save, kind, c)) {
+            if(fromLoadout){save.hero=c as HeroId;if(!compatible(save.hero,save.weapon))save.weapon=save.weapons.find(w=>compatible(save.hero,w))!;dressPreview=undefined;}
             audio.play('reward-unlock');
             persist();
-            toast('Unlocked. Make it count.');
+            toast(fromLoadout?'Survivor unlocked and selected.':'Unlocked. Make it count.');
         }
         else
             toast('Already owned or unavailable.');
         purchasePending = false;
-        shop(b);
+        if(fromLoadout)runLoadout();else shop(b);
     }
     if (a === 'upgrade')
         void pick(Number(b));

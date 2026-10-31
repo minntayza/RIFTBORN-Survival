@@ -45,4 +45,4 @@ export function edgePosition(angle:number,width:number,height:number){
 }
 
 /** Endless earns Gold; Petals are reserved for finite challenge clears. */
-export function wavePetals(mode:RunMode,wave:number){return mode==='endless'?0:wave===10?60:wave===5?40:mode==='daily'?20:10;}
+export function wavePetals(mode:RunMode,wave:number){return mode==='endless'?0:wave===10?50:wave===5?40:mode==='daily'?20:10;}

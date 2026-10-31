@@ -1,3 +1,4 @@
+import {waveGoldBudget,cappedWaveGold} from './run-economy';
 import {CampGuardian} from './camp-guardian';
 import {campContact,siegeApproach,campAttackLane,campAttackStation,type CampStrike} from './camp-siege';
 import {recordChallengeClear} from './challenge-rewards';
@@ -385,7 +386,8 @@ export class ArenaScene extends Phaser.Scene {
     hazard: {x:number;y:number;time:number} | undefined;
     rewardPool(){return rollReward(this.hp,this.maxHp);}
     private goldPayout=new GoldPayout();private waveBaseGold=0;
-    grantGold(n:number,multiplier:1|.5=1){this.waveBaseGold+=n*multiplier;const paid=this.goldPayout.grant(n,multiplier);this.stats.gold+=paid;this.waveStats.gold+=paid;this.save.gold+=paid;return paid;}
+    creditGold(paid:number){this.stats.gold+=paid;this.waveStats.gold+=paid;this.save.gold+=paid;return paid;}
+    grantGold(n:number,multiplier:1|.5=1){this.waveBaseGold+=n*multiplier;return this.creditGold(cappedWaveGold(this.options.mode,this.stats.wave,this.waveStats.gold,this.goldPayout.grant(n,multiplier)));}
     grantPetals(n:number){this.stats.petals=(this.stats.petals||0)+n;this.waveStats.petals=(this.waveStats.petals||0)+n;this.save.petals=(this.save.petals||0)+n;}
     grantReward(id:RewardId){
         if(id==='heal')this.heal(this.maxHp*.25);
@@ -961,7 +963,9 @@ export class ArenaScene extends Phaser.Scene {
         this.challengeUnlocks.push(...rewards);
         if(rewards.length)this.notifyCombat('GIFT READY TO CLAIM · '+rewards.map(id=>id==='lethwei'?'LETHWEI MASTER':'FOX RONIN').join(' + '));
         this.earned=earnedWaveGold(this.stats.wave,this.waveStats.kills,this.waveStats.damage,this.waveObjectives);
-        const earnedGold=this.grantGold(this.earned.combat+this.earned.perfect+this.earned.objective);
+        let earnedGold=this.grantGold(this.earned.combat+this.earned.perfect+this.earned.objective);
+        const goldBudget=waveGoldBudget(this.options.mode,this.stats.wave);
+        if(goldBudget!==undefined)earnedGold+=this.creditGold(Math.max(0,goldBudget-this.waveStats.gold));
         const earnedPetals = wavePetals(this.options.mode,this.stats.wave);
         if(earnedPetals>0)this.grantPetals(earnedPetals);
         this.banner(`WAVE CLEAR · +${earnedGold} GOLD${earnedPetals>0?` · +${earnedPetals} ✿ PETALS`:''}`,0xd8ba85);
