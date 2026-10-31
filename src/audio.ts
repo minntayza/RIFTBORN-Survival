@@ -1,3 +1,4 @@
+import {UI_SOUND_CUES,cueCooldown} from './ui-audio';
 import {combatVoice,voicePitch,type AttackVoice} from './combat-audio';
 import {CombatHaptics} from './haptics';
 export class AudioManager {
@@ -11,6 +12,9 @@ export class AudioManager {
     private noise?:AudioBuffer;
     private noiseContext?:AudioContext;
     private accentAt=-1000;
+    private cueAt=new Map<string,number>();
+    private cueTimers=new Set<ReturnType<typeof setTimeout>>();
+    private cueGeneration=0;
     musicTimer?: number;
     last = 0;
     private gunnerAccentAt=-1000;
@@ -48,8 +52,21 @@ export class AudioManager {
         if(voice.ring)this.tone(voice.ring*pitch,Math.min(.14,duration*1.3),voice.gain*.16,'sine');
         if(this.element&&now-this.accentAt>180){this.accentAt=now;if(this.element==='reach')this.tone(1750,.045,.009,'triangle');else if(this.element==='power')this.tone(85,.1,.012,'triangle');else this.tone(650,.18,.008,'sine');}
     }
+    private uiCue(kind:string){
+        const notes=UI_SOUND_CUES[kind];if(!notes)return false;
+        const now=performance.now();if(now-(this.cueAt.get(kind)??-Infinity)<cueCooldown(kind))return true;
+        this.cueAt.set(kind,now);
+        const foreground=!['camp-hit','camp-warning','skill-ready'].includes(kind);
+        if(foreground){this.cueGeneration++;for(const timer of this.cueTimers)clearTimeout(timer);this.cueTimers.clear();}
+        const generation=this.cueGeneration;
+        for(const note of notes){
+            const sound=()=>{if(this.sound&&(typeof document==='undefined'||!document.hidden)&&(!foreground||generation===this.cueGeneration))this.tone(note.hz,note.duration,note.gain,note.wave);};
+            if(note.at===0)sound();else{const timer=setTimeout(()=>{this.cueTimers.delete(timer);sound();},note.at*1000);this.cueTimers.add(timer);}
+        }
+        return true;
+    }
     play(kind: string) { this.haptics.pulse(kind);if (!this.sound)
-        return; const now = performance.now(); if (['hit', 'xp', 'death'].includes(kind) && now - this.last < 45)
+        return; if(this.uiCue(kind))return; const now = performance.now(); if (['hit', 'xp', 'death'].includes(kind) && now - this.last < 45)
         return;
         const voice=combatVoice(kind,this.character);if(voice){this.physical(voice,kind);return;}
         if(kind==='bow-release'){this.tone(460,.045,.055,'triangle');this.tone(1050,.075,.018,'sine');return;}

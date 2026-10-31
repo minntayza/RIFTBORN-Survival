@@ -268,9 +268,9 @@ function pause() {
     overlay.querySelector('.panel')?.classList.add('camp-pause');
 }
 function resume() { scene!.paused = false; overlay.style.display = 'none'; menuState = 'game'; }
-function showChoices(wave = false) { if(wave){waveClear();return;} waveChoice = false; menuState = 'choice'; choices = upgradeChoices(scene!.hero, scene!.levels,scene!.cardRandom,scene!.weapon,scene!.stats.wave,scene!.cardEvolutions,scene!.zawgyi?.equipped); for(const u of choices)if(u.evolves)save.archive['card:'+u.evolves]=Math.max(save.archive['card:'+u.evolves]||0,1) as 1|2;renderChoices(); persist(); }
+function showChoices(wave = false) { if(wave){waveClear();return;} waveChoice = false; menuState = 'choice'; choices = upgradeChoices(scene!.hero, scene!.levels,scene!.cardRandom,scene!.weapon,scene!.stats.wave,scene!.cardEvolutions,scene!.zawgyi?.equipped); for(const u of choices)if(u.evolves)save.archive['card:'+u.evolves]=Math.max(save.archive['card:'+u.evolves]||0,1) as 1|2;renderChoices();audio.play(choices.some(u=>u.evolves)?'evolution-reveal':'card-reveal'); persist(); }
 function finishIntermission(){if(!scene||scene.ended)return;overlay.style.display='none';menuState='game';scene.nextWave();persist();}
-function evolutionMenu(){const s=scene!;for(const e of evolutionOptions(s.hero))save.archive[`weapon:${s.weapon}:${e.id}`]=Math.max(save.archive[`weapon:${s.weapon}:${e.id}`]||0,1) as 1|2;persist();menuState='evolution';shell(weaponAwakeningUi(s.hero,s.weapon,s.stats.wave,s.awakened,s.options.mode==='daily'),true);overlay.querySelector('.panel')?.classList.add('weapon-awakening-panel');}
+function evolutionMenu(){const s=scene!;for(const e of evolutionOptions(s.hero))save.archive[`weapon:${s.weapon}:${e.id}`]=Math.max(save.archive[`weapon:${s.weapon}:${e.id}`]||0,1) as 1|2;persist();menuState='evolution';shell(weaponAwakeningUi(s.hero,s.weapon,s.stats.wave,s.awakened,s.options.mode==='daily'),true);overlay.querySelector('.panel')?.classList.add('weapon-awakening-panel');audio.play('evolution-reveal');}
 function waveClear(){
  persist();
  if(scene!.challengeUnlocks.length){menuState='reward-unlocked';shell(challengeRewardsUi(save,'Rewards ready to claim!',scene!.challengeUnlocks.splice(0))+button('Keep fighting →','reward-continue','primary'),true);return;}
@@ -342,8 +342,8 @@ overlay.addEventListener('click', e => {
      overlay.querySelector<HTMLButtonElement>('#loadout-mode-trigger')?.focus({preventScroll:true});return;
     }
     if(a==='reward-open-gifts'){menu();openChallengeGifts();return;}
-    if(a==='reward-claim'){const id=b==='lethwei'?'lethwei':FOX_RONIN_REWARD;if(claimChallengeReward(save,id)){persist();audio.play('buy');menu();openChallengeGifts();toast((id==='lethwei'?'Lethwei Master':'Fox Ronin')+' claimed!');}return;}
-    if(a==='challenge-gifts'){openChallengeGifts();return;}
+    if(a==='reward-claim'){const id=b==='lethwei'?'lethwei':FOX_RONIN_REWARD;if(claimChallengeReward(save,id)){persist();audio.play('reward-unlock');menu();openChallengeGifts();toast((id==='lethwei'?'Lethwei Master':'Fox Ronin')+' claimed!');}return;}
+    if(a==='challenge-gifts'){openChallengeGifts();audio.play('gift-open');return;}
     if(a==='challenge-gifts-close'){overlay.querySelector<HTMLDialogElement>('#challenge-gifts')?.close();return;}
     if(a==='reward-preview'){rewardPreviewReturn=menuState;const id=b==='lethwei'?'lethwei':FOX_RONIN_REWARD;shell(challengeRewardsUi(save,b==='lethwei'?'Meet Lethwei Master':'Meet Fox Ronin',[id])+button('← Back','reward-preview-close','quiet'),true);return;}
     if(a==='reward-preview-close'){if(rewardPreviewReturn==='challenge-gifts'){menu();openChallengeGifts();}else if(rewardPreviewReturn==='run-loadout')runLoadout();else if(rewardPreviewReturn==='shop')shop();else menu();return;}
@@ -352,7 +352,7 @@ overlay.addEventListener('click', e => {
     if(a==='reward-loadout'){selectedMode='endless';dressPreview=undefined;if(b==='lethwei'&&save.heroes.includes('lethwei')){save.hero='lethwei';save.weapon='hempwraps';dressTab='survivor';}else{dressTab='style';dressStyle='character';if(save.heroes.includes('samurai')){save.hero='samurai';save.weapon='nodachi';dressPreview=FOX_RONIN_REWARD;}else toast('Fox Ronin is yours. Unlock Samurai to wear this outfit.');}persist();runLoadout();return;}
 
     if(a==='evolve'&&menuState==='evolution'&&evolutionOptions(scene!.hero).some(e=>e.id===b)){scene!.evolve(b as EvolutionId);finishIntermission();}
-    if(a==='cosmetic-buy'){if(buyCosmetic(save,el.dataset.action!.slice('cosmetic-buy:'.length))){persist();shop('cosmetics');}}
+    if(a==='cosmetic-buy'){if(buyCosmetic(save,el.dataset.action!.slice('cosmetic-buy:'.length))){persist();audio.play('reward-unlock');shop('cosmetics');}}
     if(a==='cosmetic-equip'){
         const id=el.dataset.action!.slice('cosmetic-equip:'.length),design=COSMETICS.find(c=>c.id===id);
         if(equipCosmetic(save,id)){
@@ -371,7 +371,7 @@ overlay.addEventListener('click', e => {
     if(a==='dress-cosmetic'&&selectedMode!=='daily'){const id=el.dataset.action!.slice('dress-cosmetic:'.length),design=COSMETICS.find(c=>c.id===id);if(design&&design.kind===dressStyle&&design.target===(dressStyle==='character'?save.hero:save.weapon)){if(save.cosmetics.owned.includes(id)){equipCosmetic(save,id);dressPreview=undefined;persist();}else dressPreview=id;runLoadout();}}
     if(a==='dress-default'&&selectedMode!=='daily'){delete save.cosmetics.equipped[`${dressStyle}:${dressStyle==='character'?save.hero:save.weapon}`];dressPreview=undefined;persist();runLoadout();}
     if(a==='dress-cancel'){dressPreview=undefined;runLoadout();}
-    if(a==='dress-buy'&&dressPreview&&selectedMode!=='daily'){const id=dressPreview;if(save.cosmetics.owned.includes(id)||buyCosmetic(save,id)){equipCosmetic(save,id);dressPreview=undefined;persist();runLoadout();audio.play('buy');}else toast('Not enough Petals for this design.');}
+    if(a==='dress-buy'&&dressPreview&&selectedMode!=='daily'){const id=dressPreview,owned=save.cosmetics.owned.includes(id);if(owned||buyCosmetic(save,id)){equipCosmetic(save,id);dressPreview=undefined;persist();runLoadout();audio.play(owned?'buy':'reward-unlock');}else toast('Not enough Petals for this design.');}
     if(a==='dress-preview-skill'){const daily=selectedMode==='daily'?dailySetup():undefined;void openSkillPreview(daily?dailyAppearance(save,daily):save,daily?.hero||save.hero,daily?.weapon||save.weapon,activeSkillSlot,el);}
     if(a==='loadout')runLoadout();
     if(a==='skill-slot'&&(b==='0'||b==='1')){activeSkillSlot=Number(b) as 0|1;refreshSkillSelection(`skill-slot:${b}`);}
@@ -467,7 +467,7 @@ overlay.addEventListener('click', e => {
         }
         purchasePending = true;
         if (purchase(save, kind, c)) {
-            audio.play('buy');
+            audio.play('reward-unlock');
             persist();
             toast('Unlocked. Make it count.');
         }
@@ -483,7 +483,7 @@ overlay.addEventListener('click', e => {
             toast('No rerolls remaining.');
             return;
         }
-        scene!.rerolls--;
+        scene!.rerolls--;audio.play('card-reroll');
         choices = upgradeChoices(scene!.hero, scene!.levels,scene!.cardRandom,scene!.weapon,scene!.stats.wave,scene!.cardEvolutions,scene!.zawgyi?.equipped);
         renderChoices();
     }

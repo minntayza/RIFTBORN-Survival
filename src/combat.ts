@@ -397,7 +397,7 @@ export class ArenaScene extends Phaser.Scene {
         if(!this.evolutionDue)return;
         if(this.awakened){id=this.awakened;this.fullEvolution=true;this.evolution[id]=2;}else{this.awakened=id;this.evolution[id]=1;}
         this.save.archive[`weapon:${this.weapon}:${id}`]=2;
-        this.audio.play('level');this.reveal(`${id==='reach'?'LIGHTNING':id==='power'?'WILDFIRE':'PHANTOM'} · ${this.fullEvolution?'FULL EVOLUTION':'AWAKENING'}`);
+        this.audio.play('evolution-pick');this.reveal(`${id==='reach'?'LIGHTNING':id==='power'?'WILDFIRE':'PHANTOM'} · ${this.fullEvolution?'FULL EVOLUTION':'AWAKENING'}`);
     }
     createLandmark(){
         if(this.camp){this.landmark=undefined;return;}
@@ -933,7 +933,7 @@ export class ArenaScene extends Phaser.Scene {
             if(base==='health'){this.maxHp*=1.15;this.heal(this.maxHp*.35);this.ironHeart.activate();}
             if(base==='goldenbelt')this.heal(this.maxHp*.5);
             if(base==='baganvalour')this.heal(this.maxHp*.3);
-            this.reveal(CARD_EVOLUTIONS[base].name);this.audio.play('level');this.paused=false;return;
+            this.reveal(CARD_EVOLUTIONS[base].name);this.audio.play('evolution-pick');this.paused=false;return;
         }
         this.levels[id] = (this.levels[id] || 0) + 1;
         if (id === 'health') {
@@ -942,7 +942,7 @@ export class ArenaScene extends Phaser.Scene {
         }
         if (id === 'heal')
             this.heal(30);
-        this.audio.play('level');
+        this.audio.play('card-pick');
         this.paused = false;
     }
     finishWave() {
@@ -1057,6 +1057,8 @@ export class ArenaScene extends Phaser.Scene {
         if(this.camp){this.campGuardian??=new CampGuardian<Enemy>(this.camp.x+112,this.camp.y+88);this.campGuardian.update(dt,this.elapsed,this.camp.guardianLevel,this.siegeEnemies,(e,damage)=>this.guardianHit(e,damage));}
         this.tick += dt;
         this.attack -= dt;
+        const cooldowns=(this.zawgyi||this.pyusawhti||this.lethwei||this.heroAbilities)?.cooldowns;
+        const beforeReady=cooldowns?[...cooldowns]:[this.ability];
         this.zawgyi?.update(dt);
         this.pyusawhti?.update(dt);
         this.lethwei?.update(dt);
@@ -1065,6 +1067,7 @@ export class ArenaScene extends Phaser.Scene {
         this.skillInput.consume(this.time.now,(slot,dx,dy)=>{if(this.paused||this.ended||this.countdown>0)return false;if(this.zawgyi)return this.zawgyi.activate(slot,dx,dy);if(this.pyusawhti)return this.pyusawhti.activate(slot,dx,dy);if(this.lethwei)return this.lethwei.activate(slot,dx,dy);if(this.kyansittha)return this.kyansittha.activate(slot,dx,dy);if(this.heroAbilities)return this.heroAbilities.activate(slot,dx,dy);if(slot!==0||this.ability>0)return false;this.activate(dx,dy);return true;});
         this.swing = Math.max(0, this.swing - dt);
         this.ability = Math.max(0, this.ability - dt);
+        const afterReady=cooldowns||[this.ability];if(beforeReady.some((value,i)=>value>0&&afterReady[i]<=0))this.audio.play('skill-ready');
         this.invuln = Math.max(0, this.invuln - dt);
         if(this.invuln<=0)this.invulnFromBite=false;
         this.counter = Math.max(0, this.counter - dt);
@@ -1376,7 +1379,7 @@ export class ArenaScene extends Phaser.Scene {
     resolveCampStrikes(){
         if(!this.camp)return;
         for(const hit of this.campStrikes){if(hit.resolved||this.elapsed<hit.impactAt)continue;hit.resolved=true;
-            this.camp.hurt(hit.damage,this.elapsed);this.audio.play(hit.robot?'reload-pop':'tank-thump');
+            this.camp.hurt(hit.damage,this.elapsed);this.audio.play('camp-hit');if(this.camp.hp>0&&this.camp.hp/this.camp.max<=.3)this.audio.play('camp-warning');
             if(this.camp.hp<=0){this.lastCause='The camp fell';this.ended=true;this.paused=true;this.heroAbilities?.clear();this.stats.time=this.elapsed;this.onEnd();return;}
         }
         this.campStrikes=this.campStrikes.filter(hit=>this.elapsed-hit.impactAt<.5);
