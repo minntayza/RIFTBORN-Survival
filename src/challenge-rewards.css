@@ -27,3 +27,22 @@
 .run-unlock-progress>button{min-height:44px;white-space:normal}
 .reward-reveal .challenge-reward:only-child .reward-art{flex-basis:190px}.reward-reveal .challenge-reward:only-child .reward-art>svg{width:190px;height:230px}
 @media(max-width:480px){.challenge-gift-dialog .reward-art{min-height:190px}.challenge-gift-dialog .reward-art>svg{width:180px;height:190px}.reward-reveal .challenge-reward:only-child{flex-direction:column}.reward-reveal .challenge-reward:only-child .reward-art{flex-basis:auto}.run-unlock-progress{padding:12px}}
+
+/* Results can contain a single large reward inside a much narrower panel. */
+.reward-reveal{container-type:inline-size}
+.reward-reveal .challenge-reward:only-child{grid-column:1/-1;display:grid;grid-template-columns:minmax(120px,190px) minmax(0,1fr);gap:24px;align-items:center}
+.reward-reveal .challenge-reward:only-child .reward-art{min-width:0}
+.reward-reveal .challenge-reward:only-child .reward-art>svg{width:100%;max-width:190px;height:210px}
+.reward-reveal .reward-copy{overflow-wrap:break-word}
+@container(max-width:420px){
+ .reward-reveal .challenge-reward:only-child{grid-template-columns:minmax(0,1fr);gap:14px;text-align:center;padding:16px}
+ .reward-reveal .challenge-reward:only-child .reward-art>svg{height:170px;max-width:150px}
+ .reward-reveal .challenge-reward:only-child .reward-art{width:100%}
+}
+@media(orientation:landscape) and (max-height:600px){
+ .camp-results .reward-reveal{margin:0 0 18px;padding:14px}
+ .camp-results .reward-reveal h2{font-size:22px}
+ .camp-results .reward-reveal>header p{margin-bottom:10px}
+ .camp-results .reward-reveal .challenge-reward:only-child{grid-template-columns:120px minmax(0,1fr);padding:12px;gap:16px}
+ .camp-results .reward-reveal .challenge-reward:only-child .reward-art>svg{height:130px;max-width:120px}
+}
