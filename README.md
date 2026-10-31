@@ -1,111 +1,147 @@
 <p align="center">
-  <img src="docs/brand/github-banner.svg" alt="RIFTBORN — Keep the last light alive. Cute heroes. Relentless hordes. One camp worth defending." width="100%" />
+  <img src="docs/brand/github-banner.svg" alt="RIFTBORN — Keep the last light alive" width="100%" />
 </p>
 
 <div align="center">
 
-**A fantasy survival roguelite you can play straight from your browser.**
+# Your next run has something worth fighting for.
 
-Fight zombies and robots, evolve your build, and protect the last camp with seven distinctive survivors.
+**A browser survival roguelite with Burmese-inspired heroes, evolving builds, and a camp that needs you.**
 
-<a href="https://zombie-last-stand.vercel.app/"><img src="docs/brand/play-button.svg" alt="Play RIFTBORN in your browser" width="250" height="56" /></a>
+Survive zombies and robots. Discover your favorite hero. Return for a new daily defense.
 
-**No download · Guest play available · Best on mobile in landscape**
+<a href="https://riftborn-survival.vercel.app/"><img src="docs/brand/play-button.svg" alt="Play RIFTBORN free in your browser" width="250" height="56" /></a>
 
-[See the gameplay](#protect-the-last-light) · [Meet the survivors](#seven-survivors-seven-ways-to-fight) · [Run locally](#run-locally)
+**No download · No account required to start · Desktop and mobile**
+
+[The game in 30 seconds](#the-game-in-30-seconds) · [Why come back?](#built-around-one-more-run) · [Burmese heroes](#burmese-inspiration-at-the-heart-of-the-roster) · [How to run](#run-it-yourself)
 
 </div>
 
-[![RIFTBORN home: choose Endless or take today's defender into the Daily Challenge](docs/screenshots/home.png)](https://zombie-last-stand.vercel.app/)
+[![RIFTBORN home screen — choose a survivor, enter Endless, or take on the Daily Challenge](docs/screenshots/home.png)](https://riftborn-survival.vercel.app/)
 
-| CHOOSE YOUR HERO | EVOLVE YOUR BUILD | DEFEND THE CAMP |
-| :---: | :---: | :---: |
-| Seven survivors with distinct fighting styles. | Unique cards, elemental awakenings, and outfits. | Ten waves, a woodland guardian, and a final siege. |
+## The game in 30 seconds
 
-## Your next stand starts here
+**You move. Your hero attacks. You decide what happens next.**
 
-**First visit?** Press Play, choose Endless for your own loadout or Daily Challenge for today’s shared defender, then move and let your attacks handle nearby enemies. Collect XP and choose your first upgrade.
+1. **Choose your fight.** Bring your own survivor into Endless, or play today's assigned survivor and loadout in Daily Challenge.
+2. **Build as you survive.** Defeat enemies, collect XP, and choose upgrade cards. Mix shared powers with your hero's five unique cards.
+3. **Find your turning point.** Evolve your cards and awaken your weapon with Lightning, Wildfire, or Phantom.
+4. **Leave with a reason to return.** Chase a better run, earn an exclusive reward, or come back for the next daily defense.
 
-**Survive. Adapt. Come back stronger.** Collect XP, choose upgrades, and combine character-specific techniques with shared powers. Turn a simple attack into a crowd-clearing build, then see how long you can keep it alive.
-
-| Endless | Daily Challenge |
+| Endless: test your build | Daily Challenge: protect something |
 | --- | --- |
-| Pick your survivor and loadout. Face growing waves and chase a personal best. | Take today's shared survivor and loadout into a ten-wave camp defence. |
-| Awaken after wave 10; fully evolve your element after wave 20. | Awaken after wave 5, reinforce the camp, and survive the final siege. |
+| Your survivor. Your loadout. Growing waves with no fixed finish. | Today's shared survivor and loadout. Ten waves. One camp to defend. |
+| Chase personal bests and earn Gold. | Split your attention between your own survival and the camp. Earn Petals from wave clears. |
+| Weapon awakening after Wave 10; full elemental evolution after Wave 20. | Weapon awakening after Wave 5, camp reinforcement choices, and a final siege. |
 
-## Protect the last light
+## Built around “one more run”
 
-The Daily Challenge gives the fight a second purpose: **keep the camp standing while keeping yourself alive.** Some enemies hunt you; marked attackers head for the camp. Choose your priorities, recover between waves, and call on a little woodland guardian to help defend the beacon.
+RIFTBORN's retention design connects **a satisfying fight now, a visible goal next, and a different challenge tomorrow.** These are design goals, not claims of measured player retention.
+
+| When | What brings the player back | How the game supports it |
+| --- | --- | --- |
+| **During a run** | “One more upgrade could complete this build.” | XP choices, five unique cards per hero, card evolutions, and elemental weapon awakenings. |
+| **After a defeat** | “I can get further with a different approach.” | Personal records, run results, and different survivors, skills, and upgrade combinations. |
+| **Across runs** | “I know what I'm working toward.” | Gift previews show the reward, its unlock condition, progress, and a manual claim when earned. |
+| **Tomorrow** | “Who is defending the camp today?” | A daily survivor and loadout create a fresh starting point for the ten-wave camp defense. |
+| **Over time** | “I want to master another hero.” | Seven fighting styles, character-specific evolutions, outfits, and weapon skins. |
+
+**The promise is simple: make progress easy to understand before asking players to invest another run.**
+
+### Two rewards you earn, not buy
+
+| Reward | Your goal | Why it matters |
+| --- | --- | --- |
+| **Lethwei Master — playable survivor** | Clear Wave 15 in Endless, then claim him from the home-screen gift. | A concrete survival milestone unlocks a new close-range fighting style. |
+| **Fox Ronin — Samurai outfit** | Clear your first Daily Challenge, then claim it from the gift. | Your first successful camp defense leaves you with a visible reward. |
+
+Neither reward can be purchased with Gold or Petals. The gift stays marked until both rewards are claimed. You can inspect the characters before earning them.
+
+New saves start with **0 Gold and 0 Petals**. Endless awards **Gold, never Petals**. Daily Challenge wave clears award Petals. Outfits and weapon skins offer additional collection goals.
+
+## Burmese inspiration at the heart of the roster
+
+RIFTBORN brings Burmese-inspired fantasy and martial arts into a colorful, approachable survivor game. These heroes are stylized game interpretations, not historical recreations.
+
+| Hero | Inspiration and identity | What you see in combat |
+| --- | --- | --- |
+| **Zawgyi** | A fantasy interpretation of the Burmese magical figure. | Staff combat and skills such as **Dat Lone**, **Flame Step**, and **Staff Slam**. |
+| **Lethwei Master** | Inspired by Myanmar's close-range martial art, Lethwei. | Wrapped fists, aggressive punches, nine-limb combos, and a spirit boxing ring. |
+| **Archer King** | A fantasy royal archer within the game's Burmese-inspired cast. | The **Duskstring Bow**, piercing arrows, volleys, and wind-powered archery. |
+
+Four more survivors broaden the ways to play:
+
+| Survivor | Fighting style |
+| --- | --- |
+| **Ninja** | Fast blades, shadow techniques, and a signature dash. |
+| **Samurai** | Heavy sword strikes, counters, and sweeping blade skills. |
+| **Gunner** | Ranged pressure, explosive tools, and tactical reloads. |
+| **Shield Tank** | Frontal defense, shield impacts, and ground-shaking attacks. |
+
+Ninja uses **Shadow Dash**. Other survivors equip **two skills**. Choose a survivor for the way they fight, then customize their appearance with outfits and weapon skins.
+
+## A camp worth defending
+
+In Daily Challenge, some enemies pursue you while marked siege attackers head for the camp. Saving yourself is only half the job.
+
+Between waves, choose how to reinforce your defense. Summon a **small woodland guardian** to fight nearby camp attackers, then hold the beacon through the final siege.
 
 <p align="center">
-  <img src="docs/screenshots/daily-gameplay.png" alt="Daily Challenge gameplay: Zawgyi at the camp beacon with Dat Lone and Flame Step equipped" width="480" />
+  <img src="docs/screenshots/daily-gameplay.png" alt="Zawgyi defending the camp beacon in Daily Challenge, with Dat Lone and Flame Step equipped" width="480" />
 </p>
 
-## Seven survivors. Seven ways to fight.
+**The memorable moment:** your guardian arrives, the last siege begins, and the camp is still standing because you protected it.
 
-| Survivor | Find your playstyle |
-| --- | --- |
-| **Ninja** | Fast melee attacks, shadow techniques, and a dash out of danger. |
-| **Samurai** | Powerful sword strikes, counters, and sweeping blade skills. |
-| **Gunner** | Ranged pressure, explosive tools, and tactical reloads. |
-| **Shield Tank** | Frontal defence, shield impacts, and ground-shaking attacks. |
-| **Zawgyi** | Magic staff combat with Dat Lone, Flame Step, or Staff Slam. |
-| **Archer King** | Duskstring Bow volleys, piercing arrows, and wind-powered archery. |
-| **Lethwei Master** | Close-range punches, nine-limb combos, and a spirit boxing ring. |
+## From a simple attack to your own build
 
-Customize your survivor with outfits and weapon skins, then choose the skills that suit your next run. Ninja uses his signature Shadow Dash; the other survivors equip two skills.
+Shared cards support damage, movement, recovery, and crowd control. Each survivor adds **five unique cards with their own evolutions**. Max an eligible card to bring its evolution into the upgrade choice pool. Inspect the possibilities in the Field Guide before starting a run.
 
-## Build something worth surviving for
+![Archer King's five unique upgrade cards and their matching evolution artwork](docs/screenshots/archer-cards.png)
 
-Shared upgrades support damage, movement, recovery, and crowd control. Each survivor also has **five unique cards** with their own evolutions. Max an eligible card to put its evolution into the level-up choice pool. The Field Guide lets you inspect cards and plan a build before entering combat.
+*Development gallery showing artwork used by the game's upgrade cards.*
 
-![Archer King card gallery — five illustrated unique upgrades and their evolution previews](docs/screenshots/archer-cards.png)
+Weapon awakenings add an elemental identity to your run:
 
-*Card gallery shown in the development preview; these designs are used by the game's cards.*
+- **Lightning:** chain damage between enemies.
+- **Wildfire:** ignite enemies and develop explosive attacks.
+- **Phantom:** attack faster and create ghostly attack echoes.
 
-Weapon awakening adds another choice for the run:
+Full evolutions strengthen these effects. Their behavior follows the equipped weapon, so a staff, bow, and melee weapon keep their own combat identity.
 
-| Element | Awakening | Full evolution in Endless |
-| --- | --- | --- |
-| **Lightning** | Chain lightning to a nearby enemy. | Chain through more enemies and gain piercing projectiles. |
-| **Wildfire** | Ignite enemies on hit. | Add explosive attacks and burning ground on kills. |
-| **Phantom** | Faster attacks and an echo every third attack. | More attack speed and an echo on every attack. |
+## Your first run
 
-## Earn your next reward
+1. Open **[RIFTBORN](https://riftborn-survival.vercel.app/)** and start as a guest.
+2. Pick **Endless** to explore your own build, or **Daily Challenge** to defend the camp with today's loadout.
+3. Keep moving, collect XP, and choose cards that support your fighting style.
+4. Use skills to escape pressure or break dangerous groups.
+5. After the run, check your results and open the home-screen gift to see your next reward goal.
 
-Open the floating gift on the home screen to preview rewards, check progress, and claim them when ready.
+**On a phone, play sideways for more room.** Portrait is also playable. The map-view button cycles **1× → 1.5× → 2×**. Mobile defaults to 1.5×; desktop defaults to 1× in Endless and 1.5× in Daily Challenge. Fullscreen support depends on the device and browser.
 
-- **Lethwei Master:** clear wave 15 in Endless.
-- **Fox Ronin:** clear your first Daily Challenge to earn Samurai's outfit.
-
-**Both rewards are earned through play. Neither can be bought with Gold or Petals.** New saves start with **0 Gold and 0 Petals**; earn Gold in Endless and Petals by clearing Daily Challenge waves. Endless does not award Petals.
-
-## Controls
+<details>
+<summary><strong>Controls</strong></summary>
 
 | Action | Desktop | Mobile |
 | --- | --- | --- |
 | Move | WASD / arrow keys | On-screen joystick |
-| Aim | Mouse; directional input when aiming skills | Drag a skill button to aim |
-| Attack | Automatic combat; hold left click for applicable weapon actions | Automatic when a target is in range |
+| Basic attack | Automatic combat | Automatic when a target is in range |
 | First skill / Ninja dash | Q / Space | First skill button |
 | Second skill, where equipped | E | Second skill button |
+| Aim a skill | Hold and aim with the mouse | Hold and drag a skill button |
 | Cancel skill aim | Escape / right click | Drag to the cancel area |
 | Pause | Escape / pause button | Pause button |
 | Choose an upgrade | Click or press 1, 2, 3 | Tap a card |
 
-**Phones are best played sideways.** Joystick placement and size are configurable. The map-view button cycles **1× → 1.5× → 2×**, with 1.5× as the default on mobile and 1× for Endless on desktop. Daily Challenge defaults to 1.5× on both desktop and mobile. Fullscreen availability depends on the browser and device; portrait remains playable.
+Joystick size and placement are configurable in Settings.
 
-## Progress and accounts
+</details>
 
-Guest play saves progress in the current browser. Optional Supabase sign-in supports account progress and cloud saves when configured. Guest and account progress are separate; guest progress is not imported into an account.
+## Run it yourself
 
-Local saves belong to the site's origin: localhost, a phone's network address, and the hosted game have separate storage. Clearing browser storage removes local progress. Daily records are personal records, not a public online leaderboard.
+**Built with TypeScript, Phaser 3, and Vite. Optional Supabase accounts and cloud saves.**
 
-## Run locally
-
-Built with **TypeScript · Phaser 3 · Vite**, with optional **Supabase** accounts.
-
-Requires **Node.js 20.19+ or 22.12+** and npm.
+Install **Node.js 20.19+ or 22.12+** and npm, then:
 
 ```bash
 git clone https://github.com/minntayza/RIFTBORN-Survival.git
@@ -114,44 +150,63 @@ npm ci
 npm run dev
 ```
 
-Open the address printed by Vite. For a phone on the same Wi-Fi network, use the printed network address. The development server listens on all network interfaces.
+Open the **Local** URL printed by Vite. To test on a phone, connect it to the same Wi-Fi network and open the printed **Network** URL. The development server listens on all network interfaces.
+
+**No backend credentials are needed for guest play.**
 
 ```bash
-npm run build    # Type-check and build to dist/
-npm run preview  # Preview the production build
 npm test         # Run automated tests
+npm run build    # Type-check and create the production build in dist/
+npm run preview  # Serve the production build locally
 ```
 
-Guest play does not require backend credentials. To enable accounts, configure the public browser values documented in [.env.example](.env.example) and set up the Supabase project using [supabase/](supabase/). Never expose a service-role key in the browser.
+<details>
+<summary><strong>Optional accounts and saved progress</strong></summary>
 
-## Development and testing
+Guest progress is stored in the current browser. Supabase sign-in enables account progress and cloud saves when configured. Guest and account progress are separate; signing in does not import the guest save.
 
-The repository includes unit tests, in-engine checks, and visual previews. With the development server running:
+To enable accounts, copy `.env.example` to `.env.local`, fill in the public browser credentials, and follow [the account setup guide](docs/accounts-setup.md). Never put a Supabase service-role key in browser configuration.
 
-- `tests/browser.html` — in-engine integration checks.
-- `tests/universal-aim-preview.html` — survivor skill-aiming practice.
-- `tests/camp-guardian-preview.html` — camp guardian and siege presentation.
-- `tests/evolution-showcase.html` — card and weapon evolution previews.
-- `tests/mobile-review.html` — responsive layout review.
+Localhost, a phone's network URL, and the hosted game each have separate browser storage. Clearing that storage removes local guest progress. Daily records are personal records, not a public leaderboard.
 
-Automated checks complement browser inspection. Real-phone testing is still needed for touch comfort, long-session performance, and device-specific fullscreen behavior.
+</details>
+
+<details>
+<summary><strong>Developer previews and project structure</strong></summary>
+
+With the development server running, open:
+
+| Preview | Purpose |
+| --- | --- |
+| `/tests/browser.html` | In-engine integration checks |
+| `/tests/universal-aim-preview.html` | Survivor skill aiming |
+| `/tests/camp-guardian-preview.html` | Guardian and siege presentation |
+| `/tests/evolution-showcase.html` | Card and weapon evolutions |
+| `/tests/mobile-review.html` | Responsive layout review |
 
 | Location | Responsibility |
 | --- | --- |
-| `src/main.ts` | Menus, navigation, HUD integration, and persistence |
-| `src/combat.ts` | Arena scene, combat, enemies, and wave lifecycle |
-| `src/*-combat.ts` | Character-specific combat systems |
-| `src/upgrades.ts`, `src/card-evolutions.ts` | Card choices and evolution effects |
-| `src/last-camp*.ts`, `src/camp-guardian.ts` | Camp defence and guardian |
-| `src/save.ts`, `src/accounts.ts` | Local progress and account integration |
-| `public/assets/` | Runtime art assets |
-| `tests/` | Automated checks and development previews |
-| `docs/screenshots/` | README screenshots |
+| `src/main.ts` | Menus, navigation, HUD, and persistence |
+| `src/combat.ts` | Arena combat, enemies, and waves |
+| `src/*-combat.ts` | Character combat systems |
+| `src/upgrades.ts`, `src/card-evolutions.ts` | Upgrade cards and evolutions |
+| `src/last-camp*.ts`, `src/camp-guardian.ts` | Camp defense and guardian |
+| `src/save.ts`, `src/accounts.ts` | Saves and accounts |
+| `public/assets/` | Runtime artwork |
+| `tests/` | Automated checks and visual previews |
 
-## Deploy
+Automated checks complement browser inspection. Physical-phone testing is still needed for touch comfort, long-session performance, and browser-specific behavior.
 
-Run `npm run build` and publish `dist/` to a static host. Vercel build settings are in [vercel.json](vercel.json). Set the optional Supabase environment values on the host if accounts are enabled. For subdirectory hosting, configure Vite's base path.
+</details>
+
+<details>
+<summary><strong>Deploy</strong></summary>
+
+Run `npm run build` and publish `dist/` to a static host. Vercel settings are in [vercel.json](vercel.json). Configure the optional Supabase environment values on your host if accounts are enabled. For subdirectory hosting, configure Vite's base path.
+
+</details>
 
 ---
 
-**[Take your next stand →](https://zombie-last-stand.vercel.app/)**
+<p align="center"><strong>Choose a hero. Build your next breakthrough. Keep the last light alive.</strong></p>
+<p align="center"><a href="https://riftborn-survival.vercel.app/">Play RIFTBORN</a> · <a href="https://github.com/minntayza/RIFTBORN-Survival">Explore the source</a></p>
